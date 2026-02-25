@@ -92,7 +92,9 @@ export default function Page() {
 
                             {/* Name */}
                             <div className="flex flex-col gap-1">
-                                <label className="kt-form-label text-mono">Name</label>
+                                <label className="kt-form-label font-normal text-mono">
+                                    Name
+                                </label>
                                 <Field
                                     name="name"
                                     className="kt-input"
@@ -107,7 +109,9 @@ export default function Page() {
 
                             {/* Email */}
                             <div className="flex flex-col gap-1">
-                                <label className="kt-form-label text-mono">Email</label>
+                                <label className="kt-form-label font-normal text-mono">
+                                    Email
+                                </label>
                                 <Field
                                     name="email"
                                     type="email"
@@ -123,7 +127,9 @@ export default function Page() {
 
                             {/* Password */}
                             <div className="flex flex-col gap-1">
-                                <label className="kt-form-label">Password</label>
+                                <label className="kt-form-label font-normal text-mono">
+                                    Password
+                                </label>
                                 <div className="kt-input flex items-center">
                                     <Field
                                         name="password"
@@ -151,7 +157,9 @@ export default function Page() {
 
                             {/* Confirm Password */}
                             <div className="flex flex-col gap-1">
-                                <label className="kt-form-label">Confirm Password</label>
+                                <label className="kt-form-label font-normal text-mono">
+                                    Confirm Password
+                                </label>
                                 <div className="kt-input flex items-center">
                                     <Field
                                         name="passwordConfirmation"
@@ -182,15 +190,15 @@ export default function Page() {
                             </div>
 
                             {/* Checkbox */}
-                            <label className="kt-checkbox-group">
+                            <label className="kt-checkbox-group flex items-center gap-2">
                                 <Field
                                     type="checkbox"
                                     name="accept"
                                     className="kt-checkbox kt-checkbox-sm"
                                 />
-                                <span className="kt-checkbox-label">
-                                    I accept    {" "}
+                                <span className="kt-checkbox-label ">
                                     <a className="text-sm link" href="#">
+                                    I accept    {" "}
                                         Terms & Conditions
                                     </a>
                                 </span>

@@ -2,14 +2,11 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
-import { Eye, EyeOff, AlertCircle, LoaderCircle } from 'lucide-react';
-import { signIn } from 'next-auth/react';
+import { Eye, EyeOff, LoaderCircle, AlertCircle } from 'lucide-react';
 
 export default function Page() {
-  const router = useRouter();
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -25,100 +22,146 @@ export default function Page() {
   });
 
   return (
-    <div className="block w-full max-w-md mx-auto space-y-5">
-      <h1 className="text-2xl font-semibold tracking-tight text-center">
-        Sign in
-      </h1>
+    <div className="flex items-center justify-center grow bg-center bg-no-repeat page-bg min-h-screen">
+      <div className="kt-card max-w-[370px] w-full">
+        <div className="kt-card-content flex flex-col gap-5 p-10">
 
-      {error && (
-        <div className="flex items-center gap-2 text-red-500 text-sm">
-          <AlertCircle size={16} />
-          {error}
+          <div className="text-center mb-2.5">
+            <h3 className="text-lg font-medium text-mono leading-none mb-2.5">
+              Sign in
+            </h3>
+            <div className="flex items-center justify-center">
+              <span className="text-sm text-secondary-foreground me-1.5">
+                Need an account?
+              </span>
+              <Link href="/signup" className="text-sm link">
+                Sign up
+              </Link>
+            </div>
+          </div>
+
+          {error && (
+            <div className="flex items-center gap-2 text-red-500 text-sm">
+              <AlertCircle size={16} />
+              {error}
+            </div>
+          )}
+
+          <Formik
+            initialValues={{
+              email: '',
+              password: '',
+              rememberMe: false,
+            }}
+            validationSchema={SigninSchema}
+            onSubmit={async (values) => {
+              try {
+                setIsProcessing(true);
+                setError(null);
+                console.log(values);
+              } catch (err: any) {
+                setError('Something went wrong. Please try again.');
+              } finally {
+                setIsProcessing(false);
+              }
+            }}
+          >
+            {() => (
+              <Form className="flex flex-col gap-5">
+
+                {/* Email */}
+                <div className="flex flex-col gap-1">
+                  <label className="kt-form-label font-normal text-mono">
+                    Email
+                  </label>
+
+                  <Field
+                    name="email"
+                    type="email"
+                    placeholder="email@email.com"
+                    className="kt-input"
+                  />
+
+                  <ErrorMessage
+                    name="email"
+                    component="p"
+                    className="text-red-500 text-xs"
+                  />
+                </div>
+
+                {/* Password */}
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center justify-between gap-1">
+                    <label className="kt-form-label font-normal text-mono">
+                      Password
+                    </label>
+
+                    <Link
+                      href="/resetPassword"
+                      className="text-sm kt-link shrink-0"
+                    >
+                      Forgot Password?
+                    </Link>
+                  </div>
+
+                  <div className="kt-input flex items-center justify-between">
+                    <Field
+                      name="password"
+                      type={passwordVisible ? 'text' : 'password'}
+                      placeholder="Enter Password"
+                      className="w-full bg-transparent outline-none"
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() => setPasswordVisible(!passwordVisible)}
+                      className="kt-btn kt-btn-sm kt-btn-ghost kt-btn-icon bg-transparent! -me-1.5"
+                    >
+                      {passwordVisible ? (
+                        <EyeOff size={18} />
+                      ) : (
+                        <Eye size={18} />
+                      )}
+                    </button>
+                  </div>
+
+                  <ErrorMessage
+                    name="password"
+                    component="p"
+                    className="text-red-500 text-xs"
+                  />
+                </div>
+
+                {/* Remember me */}
+                <label className="flex items-center gap-2">
+                  <Field
+                    type="checkbox"
+                    name="rememberMe"
+                    className="kt-checkbox kt-checkbox-sm"
+                  />
+                  <span >
+                    Remember me
+                  </span>
+                </label>
+
+                {/* Submit */}
+                <button
+                  type="submit"
+                  disabled={isProcessing}
+                  className="kt-btn kt-btn-primary flex justify-center grow"
+                >
+                  {isProcessing && (
+                    <LoaderCircle className="animate-spin mr-2" size={16} />
+                  )}
+                  Sign In
+                </button>
+
+              </Form>
+            )}
+          </Formik>
+
         </div>
-      )}
-
-      <Formik
-        initialValues={{
-          email: '',
-          password: '',
-          rememberMe: false,
-        }}
-        validationSchema={SigninSchema}
-        onSubmit={async (values) => {
-          console.log(values)
-        }}
-      >
-        {() => (
-          <Form className="space-y-4">
-
-            <div>
-              <Field
-                name="email"
-                placeholder="Your email"
-                className="w-full border p-2 rounded"
-              />
-              <ErrorMessage
-                name="email"
-                component="p"
-                className="text-red-500 text-sm"
-              />
-            </div>
-
-            <div className="relative">
-              <Field
-                name="password"
-                type={passwordVisible ? 'text' : 'password'}
-                placeholder="Your password"
-                className="w-full border p-2 rounded"
-              />
-
-              <button
-                type="button"
-                onClick={() => setPasswordVisible(!passwordVisible)}
-                className="absolute right-2 top-2"
-              >
-                {passwordVisible ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-
-              <ErrorMessage
-                name="password"
-                component="p"
-                className="text-red-500 text-sm"
-              />
-            </div>
-            <div className="flex justify-end">
-              <Link
-                href="/resetPassword"
-                className="text-sm text-gray-600 hover:underline"
-              >Forget Password?</Link>
-            </div>
-            <div className="flex items-center gap-2">
-              <Field type="checkbox" name="rememberMe" />
-              <label className="text-sm text-gray-600">
-                Remember me
-              </label>
-            </div>
-
-            <button
-              type="submit"
-              disabled={isProcessing}
-              className="w-full bg-black text-white p-2 rounded flex justify-center items-center gap-2"
-            >
-              {isProcessing && (
-                <LoaderCircle className="animate-spin" size={16} />
-              )}
-              Continue
-            </button>
-          </Form>
-        )}
-      </Formik>
-
-      <p className="text-sm text-gray-500 text-center">
-        Don&apos;t have an account?{' '}
-        <Link href="/signup" className="font-semibold text-black">
-          Sign Up
-        </Link>
-      </p>
+      </div>
     </div>
   );
 }
