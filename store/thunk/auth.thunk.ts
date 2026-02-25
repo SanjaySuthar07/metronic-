@@ -22,3 +22,68 @@ export const registerUser = createAsyncThunk(
         }
     }
 );
+
+interface LoginPayload {
+    email: string;
+    password: string;
+}
+
+export const loginUser = createAsyncThunk(
+    'auth/login',
+    async (payload: LoginPayload, { rejectWithValue }) => {
+        try {
+            const response = await api.post('/login', payload);
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.errors
+                    ? Object.values(error.response.data.errors).flat().join(" ")
+                    : error.response?.data?.message || "Login failed";
+
+            return rejectWithValue(message);
+        }
+    }
+);
+interface ForgetPasswordPayload {
+    email: string;
+}
+
+export const forgetPassword = createAsyncThunk(
+    'auth/forgetPassword',
+    async (payload: ForgetPasswordPayload, { rejectWithValue }) => {
+        try {
+            const response = await api.post('/forgot-password', payload);
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.errors
+                    ? Object.values(error.response.data.errors).flat().join(" ")
+                    : error.response?.data?.message || "Something went wrong";
+
+            return rejectWithValue(message);
+        }
+    }
+);
+
+interface ResetPasswordPayload {
+    email: string;
+    token: string;
+    password: string;
+}
+
+export const resetPassword = createAsyncThunk(
+    'auth/resetPassword',
+    async (payload: ResetPasswordPayload, { rejectWithValue }) => {
+        try {
+            const response = await api.post('/reset-password', payload);
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.errors
+                    ? Object.values(error.response.data.errors).flat().join(" ")
+                    : error.response?.data?.message || "Something went wrong";
+
+            return rejectWithValue(message);
+        }
+    }
+);

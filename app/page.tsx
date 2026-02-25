@@ -15,7 +15,7 @@ export default function Home() {
     if (!isAuthenticated) {
       router.replace("/signup");
     } else {
-      router.replace("/changePassword");
+      router.replace("/dashboard");
     }
   }, [isAuthenticated, router]);
 

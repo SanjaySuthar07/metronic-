@@ -4,16 +4,16 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
-import { Eye, EyeOff } from 'lucide-react';
+import { AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { useDispatch, useSelector } from "react-redux";
 import { registerUser } from "@/store/thunk/auth.thunk";
 import { AppDispatch, RootState } from "@/store";
-import AuthSuccessModal from "../modal/AuthSuccessModal";
-import { measureMemory } from 'vm';
+import VerifyEmailModal from '../modal/VerifyEmailModal';
 export default function Page() {
     const router = useRouter();
     const [passwordVisible, setPasswordVisible] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const [showSuccess, setShowSuccess] = useState(false)
     const [passwordConfirmationVisible, setPasswordConfirmationVisible] =
         useState(false);
@@ -68,14 +68,13 @@ export default function Page() {
                             resetForm()
                         } else {
                             setIsSuccess(false);
-                            setMessage(resultAction.payload as string);
+                            setError(resultAction.payload as string);
                         }
                     }}
                 >
                     {() => (
                         <Form className="kt-card-content flex flex-col gap-5 p-10">
 
-                            {/* Heading */}
                             <div className="text-center mb-2.5">
                                 <h3 className="text-lg font-medium text-mono leading-none mb-2.5">
                                     Sign up
@@ -84,13 +83,17 @@ export default function Page() {
                                     <span className="text-sm text-secondary-foreground me-1.5">
                                         Already have an Account ?
                                     </span>
-                                    <Link href="/signin" className="text-sm link">
+                                    <Link href="/signin" className="text-sm kt-link">
                                         Sign In
                                     </Link>
                                 </div>
                             </div>
-
-                            {/* Name */}
+                            {error && (
+                                <div className="flex items-center gap-2 text-red-500 text-sm">
+                                    <AlertCircle size={16} />
+                                    {error}
+                                </div>
+                            )}
                             <div className="flex flex-col gap-1">
                                 <label className="kt-form-label font-normal text-mono">
                                     Name
@@ -107,7 +110,6 @@ export default function Page() {
                                 />
                             </div>
 
-                            {/* Email */}
                             <div className="flex flex-col gap-1">
                                 <label className="kt-form-label font-normal text-mono">
                                     Email
@@ -125,7 +127,6 @@ export default function Page() {
                                 />
                             </div>
 
-                            {/* Password */}
                             <div className="flex flex-col gap-1">
                                 <label className="kt-form-label font-normal text-mono">
                                     Password
@@ -155,7 +156,6 @@ export default function Page() {
                                 />
                             </div>
 
-                            {/* Confirm Password */}
                             <div className="flex flex-col gap-1">
                                 <label className="kt-form-label font-normal text-mono">
                                     Confirm Password
@@ -189,7 +189,6 @@ export default function Page() {
                                 />
                             </div>
 
-                            {/* Checkbox */}
                             <label className="kt-checkbox-group flex items-center gap-2">
                                 <Field
                                     type="checkbox"
@@ -197,8 +196,8 @@ export default function Page() {
                                     className="kt-checkbox kt-checkbox-sm"
                                 />
                                 <span className="kt-checkbox-label ">
-                                    <a className="text-sm link" href="#">
                                     I accept    {" "}
+                                    <a className="text-sm kt-link" href="#">
                                         Terms & Conditions
                                     </a>
                                 </span>
@@ -208,12 +207,10 @@ export default function Page() {
                                 component="p"
                                 className="text-red-500 text-xs"
                             />
-                            <AuthSuccessModal
+                            <VerifyEmailModal
                                 isOpen={showSuccess}
                                 onClose={() => setShowSuccess(false)}
-                                title="Registration Successful"
                                 message={message} />
-                            {/* Submit Button */}
                             <button
                                 type="submit"
                                 disabled={loading}

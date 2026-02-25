@@ -1,16 +1,19 @@
 'use client';
-
 import { useState } from 'react';
 import Link from 'next/link';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { Eye, EyeOff, LoaderCircle, AlertCircle } from 'lucide-react';
-
+import { loginUser } from "@/store/thunk/auth.thunk";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/store";
+import { useRouter } from "next/navigation";
 export default function Page() {
   const [passwordVisible, setPasswordVisible] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
+  const dispatch = useDispatch<AppDispatch>();
+  const { loading } = useSelector((state: RootState) => state.auth);
+  const router = useRouter();
   const SigninSchema = Yup.object().shape({
     email: Yup.string()
       .email('Please enter a valid email address.')
@@ -34,7 +37,7 @@ export default function Page() {
               <span className="text-sm text-secondary-foreground me-1.5">
                 Need an account?
               </span>
-              <Link href="/signup" className="text-sm link">
+              <Link href="/signup" className="text-sm kt-link">
                 Sign up
               </Link>
             </div>
@@ -55,21 +58,29 @@ export default function Page() {
             }}
             validationSchema={SigninSchema}
             onSubmit={async (values) => {
-              try {
-                setIsProcessing(true);
-                setError(null);
-                console.log(values);
-              } catch (err: any) {
-                setError('Something went wrong. Please try again.');
-              } finally {
-                setIsProcessing(false);
+              const resultAction = await dispatch(
+                loginUser({
+                  email: values.email,
+                  password: values.password,
+                })
+              );
+
+              if (loginUser.fulfilled.match(resultAction)) {
+                const data = resultAction.payload;
+
+                if (data.status) {
+                  router.push("/");
+                  // alert("success")
+                }
+              } else {
+                setError(resultAction.payload as string);
               }
             }}
           >
             {() => (
-              <Form className="flex flex-col gap-5">
-
-                {/* Email */}
+              <Form
+                noValidate
+                className="flex flex-col gap-5">
                 <div className="flex flex-col gap-1">
                   <label className="kt-form-label font-normal text-mono">
                     Email
@@ -89,7 +100,6 @@ export default function Page() {
                   />
                 </div>
 
-                {/* Password */}
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center justify-between gap-1">
                     <label className="kt-form-label font-normal text-mono">
@@ -97,7 +107,7 @@ export default function Page() {
                     </label>
 
                     <Link
-                      href="/resetPassword"
+                      href="/forget-password"
                       className="text-sm kt-link shrink-0"
                     >
                       Forgot Password?
@@ -132,7 +142,6 @@ export default function Page() {
                   />
                 </div>
 
-                {/* Remember me */}
                 <label className="flex items-center gap-2">
                   <Field
                     type="checkbox"
@@ -144,16 +153,15 @@ export default function Page() {
                   </span>
                 </label>
 
-                {/* Submit */}
                 <button
                   type="submit"
-                  disabled={isProcessing}
+                  disabled={loading}
                   className="kt-btn kt-btn-primary flex justify-center grow"
                 >
-                  {isProcessing && (
+                  {loading && (
                     <LoaderCircle className="animate-spin mr-2" size={16} />
                   )}
-                  Sign In
+                  {loading ? "Processing..." : "Sign In"}
                 </button>
 
               </Form>

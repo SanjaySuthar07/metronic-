@@ -1,17 +1,12 @@
 "use client";
-
 import Link from "next/link";
 import Image from "next/image";
-import { useSelector } from "react-redux";
-import { RootState } from "@/store";
-const img = "/assets/media/illustrations/30.svg"
 interface Props {
   isOpen: boolean;
   onClose: () => void;
 }
 
-export default function CheckEmailModal({ isOpen, onClose, title, message }: Props) {
-  const { user } = useSelector((state: RootState) => state.auth);
+export default function AuthSuccessModal({ isOpen, onClose, title, message }: Props) {
 
   if (!isOpen) return null;
 
@@ -20,17 +15,15 @@ export default function CheckEmailModal({ isOpen, onClose, title, message }: Pro
 
       <div className="bg-white rounded-xl w-full max-w-md p-8 relative">
 
-        {/* Close Button */}
         <button
-          onClick={onClose}
           className="absolute top-3 right-3 text-gray-500 hover:text-black"
+          onClick={onClose}
         >
           ✕
         </button>
-
         <div className="flex justify-center py-6">
           <Image
-            src="/assets/media/illustrations/30.svg"
+            src="/assets/media/illustrations/Group.svg"
             alt="illustration"
             width={120}
             height={120}
@@ -39,42 +32,21 @@ export default function CheckEmailModal({ isOpen, onClose, title, message }: Pro
         </div>
 
         <h3 className="text-lg font-semibold text-center mb-3">
-          Check your email
+          Email Verified Successfully
         </h3>
 
         <p className="text-sm text-center text-gray-500 mb-6">
-          Please click the link sent to your email{" "}
-          <span className="font-medium text-black">
-            {user?.email}
-          </span>
-          <br />
-          to verify your account.
-        </p>
-        <p className="text-sm text-center text-gray-500 mb-6">
-          {title}
-          <br />
-          {message}
+          Your email address has been successfully verified. You can now access your account.{" "}
         </p>
 
         <div className="flex justify-center gap-3">
           <Link
             href="/signin"
-            className="bg-black text-white px-4 py-2 rounded"
+            className="kt-btn kt-btn-primary flex justify-center rounded"
           >
-            Signin
+            Sign in
           </Link>
         </div>
-
-        <div className="text-center mt-4 text-sm">
-          Didn’t receive an email?{" "}
-          <Link
-            href="/resend-verification"
-            className="underline font-medium"
-          >
-            Resend
-          </Link>
-        </div>
-
       </div>
     </div>
   );
