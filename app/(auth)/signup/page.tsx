@@ -5,16 +5,21 @@ import { useRouter } from 'next/navigation';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { Eye, EyeOff } from 'lucide-react';
-import { useSelector } from 'react-redux';
-
+import { useDispatch, useSelector } from "react-redux";
+import { registerUser } from "@/store/thunk/auth.thunk";
+import { AppDispatch, RootState } from "@/store";
+import AuthSuccessModal from "../modal/AuthSuccessModal";
+import { measureMemory } from 'vm';
 export default function Page() {
     const router = useRouter();
     const [passwordVisible, setPasswordVisible] = useState(false);
+    const [isSuccess, setIsSuccess] = useState(false);
+    const [showSuccess, setShowSuccess] = useState(false)
     const [passwordConfirmationVisible, setPasswordConfirmationVisible] =
         useState(false);
-    const [isProcessing, setIsProcessing] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-
+    const dispatch = useDispatch<AppDispatch>();
+    const { loading } = useSelector((state: RootState) => state.auth);
+    const [message, setMessage] = useState("")
     const SignupSchema = Yup.object().shape({
         name: Yup.string().required('Name is required'),
         email: Yup.string()
@@ -33,134 +38,185 @@ export default function Page() {
     });
 
     return (
-        <div className="max-w-md mx-auto mt-10 space-y-5">
-            <h1 className="text-2xl font-semibold text-center">
-                Sign Up
-            </h1>
+        <div className="flex items-center justify-center grow bg-center bg-no-repeat page-bg min-h-screen">
+            <div className="kt-card max-w-[370px] w-full">
+                <Formik
+                    initialValues={{
+                        name: '',
+                        email: '',
+                        password: '',
+                        passwordConfirmation: '',
+                        accept: false,
+                    }}
+                    validationSchema={SignupSchema}
+                    onSubmit={async (values, { resetForm }) => {
+                        const payload = {
+                            name: values.name,
+                            email: values.email,
+                            password: values.password,
+                        };
 
-            {error && (
-                <div className="text-red-500 text-sm text-center">
-                    {error}
-                </div>
-            )}
-            <Formik
-                initialValues={{
-                    name: '',
-                    email: '',
-                    password: '',
-                    passwordConfirmation: '',
-                    accept: false,
-                }}
-                validationSchema={SignupSchema}
-                onSubmit={async (values) => {
-                    console.log(values)
-                }}
-            >
-                {() => (
-                    <Form className="space-y-4">
-                        <div>
-                            <Field
-                                name="name"
-                                placeholder="Name"
-                                className="w-full border p-2 rounded"
-                            />
-                            <ErrorMessage
-                                name="name"
-                                component="p"
-                                className="text-red-500 text-sm"
-                            />
-                        </div>
+                        const resultAction = await dispatch(registerUser(payload));
 
-                        <div>
-                            <Field
-                                name="email"
-                                placeholder="Email"
-                                className="w-full border p-2 rounded"
-                            />
-                            <ErrorMessage
-                                name="email"
-                                component="p"
-                                className="text-red-500 text-sm"
-                            />
-                        </div>
+                        if (registerUser.fulfilled.match(resultAction)) {
+                            const data = resultAction.payload;
+                            if (data.status) {
+                                setIsSuccess(true);
+                                setMessage(data.message);
+                            }
+                            setShowSuccess(true)
+                            resetForm()
+                        } else {
+                            setIsSuccess(false);
+                            setMessage(resultAction.payload as string);
+                        }
+                    }}
+                >
+                    {() => (
+                        <Form className="kt-card-content flex flex-col gap-5 p-10">
 
-                        <div className="relative">
-                            <Field
-                                name="password"
-                                type={passwordVisible ? 'text' : 'password'}
-                                placeholder="Password"
-                                className="w-full border p-2 rounded"
-                            />
-                            <button
-                                type="button"
-                                onClick={() => setPasswordVisible(!passwordVisible)}
-                                className="absolute right-2 top-2"
-                            >
-                                {passwordVisible ? <EyeOff size={18} /> : <Eye size={18} />}
-                            </button>
-                            <ErrorMessage
-                                name="password"
-                                component="p"
-                                className="text-red-500 text-sm"
-                            />
-                        </div>
+                            {/* Heading */}
+                            <div className="text-center mb-2.5">
+                                <h3 className="text-lg font-medium text-mono leading-none mb-2.5">
+                                    Sign up
+                                </h3>
+                                <div className="flex items-center justify-center">
+                                    <span className="text-sm text-secondary-foreground me-1.5">
+                                        Already have an Account ?
+                                    </span>
+                                    <Link href="/signin" className="text-sm link">
+                                        Sign In
+                                    </Link>
+                                </div>
+                            </div>
 
-                        <div className="relative">
-                            <Field
-                                name="passwordConfirmation"
-                                type={passwordConfirmationVisible ? 'text' : 'password'}
-                                placeholder="Confirm Password"
-                                className="w-full border p-2 rounded"
-                            />
-                            <button
-                                type="button"
-                                onClick={() =>
-                                    setPasswordConfirmationVisible(!passwordConfirmationVisible)
-                                }
-                                className="absolute right-2 top-2"
-                            >
-                                {passwordConfirmationVisible ? (
-                                    <EyeOff size={18} />
-                                ) : (
-                                    <Eye size={18} />
-                                )}
-                            </button>
-                            <ErrorMessage
-                                name="passwordConfirmation"
-                                component="p"
-                                className="text-red-500 text-sm"
-                            />
-                        </div>
+                            {/* Name */}
+                            <div className="flex flex-col gap-1">
+                                <label className="kt-form-label text-mono">Name</label>
+                                <Field
+                                    name="name"
+                                    className="kt-input"
+                                    placeholder="Enter Name"
+                                />
+                                <ErrorMessage
+                                    name="name"
+                                    component="p"
+                                    className="text-red-500 text-xs"
+                                />
+                            </div>
 
-                        <div>
-                            <label className="flex items-center gap-2">
-                                <Field type="checkbox" name="accept" />
-                                I agree to the Privacy Policy
+                            {/* Email */}
+                            <div className="flex flex-col gap-1">
+                                <label className="kt-form-label text-mono">Email</label>
+                                <Field
+                                    name="email"
+                                    type="email"
+                                    className="kt-input"
+                                    placeholder="email@email.com"
+                                />
+                                <ErrorMessage
+                                    name="email"
+                                    component="p"
+                                    className="text-red-500 text-xs"
+                                />
+                            </div>
+
+                            {/* Password */}
+                            <div className="flex flex-col gap-1">
+                                <label className="kt-form-label">Password</label>
+                                <div className="kt-input flex items-center">
+                                    <Field
+                                        name="password"
+                                        type={passwordVisible ? "text" : "password"}
+                                        placeholder="Enter Password"
+                                        className="flex-1 outline-none bg-transparent"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setPasswordVisible(!passwordVisible)}
+                                    >
+                                        {passwordVisible ? (
+                                            <EyeOff size={18} />
+                                        ) : (
+                                            <Eye size={18} />
+                                        )}
+                                    </button>
+                                </div>
+                                <ErrorMessage
+                                    name="password"
+                                    component="p"
+                                    className="text-red-500 text-xs"
+                                />
+                            </div>
+
+                            {/* Confirm Password */}
+                            <div className="flex flex-col gap-1">
+                                <label className="kt-form-label">Confirm Password</label>
+                                <div className="kt-input flex items-center">
+                                    <Field
+                                        name="passwordConfirmation"
+                                        type={passwordConfirmationVisible ? "text" : "password"}
+                                        placeholder="Re-enter Password"
+                                        className="flex-1 outline-none bg-transparent"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            setPasswordConfirmationVisible(
+                                                !passwordConfirmationVisible
+                                            )
+                                        }
+                                    >
+                                        {passwordConfirmationVisible ? (
+                                            <EyeOff size={18} />
+                                        ) : (
+                                            <Eye size={18} />
+                                        )}
+                                    </button>
+                                </div>
+                                <ErrorMessage
+                                    name="passwordConfirmation"
+                                    component="p"
+                                    className="text-red-500 text-xs"
+                                />
+                            </div>
+
+                            {/* Checkbox */}
+                            <label className="kt-checkbox-group">
+                                <Field
+                                    type="checkbox"
+                                    name="accept"
+                                    className="kt-checkbox kt-checkbox-sm"
+                                />
+                                <span className="kt-checkbox-label">
+                                    I accept    {" "}
+                                    <a className="text-sm link" href="#">
+                                        Terms & Conditions
+                                    </a>
+                                </span>
                             </label>
                             <ErrorMessage
                                 name="accept"
                                 component="p"
-                                className="text-red-500 text-sm"
+                                className="text-red-500 text-xs"
                             />
-                        </div>
-
-                        <button
-                            type="submit"
-                            disabled={isProcessing}
-                            className="w-full bg-black text-white p-2 rounded"
-                        >
-                            {isProcessing ? 'Processing...' : 'Continue'}
-                        </button>
-                    </Form>
-                )}
-            </Formik>
-
-            <p className="text-center text-sm">
-                Already have an account?{' '}
-                <Link href="/signin" className="underline">
-                    Sign In
-                </Link>
-            </p>
+                            <AuthSuccessModal
+                                isOpen={showSuccess}
+                                onClose={() => setShowSuccess(false)}
+                                title="Registration Successful"
+                                message={message} />
+                            {/* Submit Button */}
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="kt-btn kt-btn-primary flex justify-center grow"
+                            >
+                                {loading ? "Processing..." : "Sign up"}
+                            </button>
+                        </Form>
+                    )}
+                </Formik>
+            </div>
         </div>
     );
 }

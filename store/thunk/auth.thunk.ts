@@ -13,9 +13,12 @@ export const registerUser = createAsyncThunk(
             const response = await api.post('/register', payload);
             return response.data;
         } catch (error: any) {
-            return rejectWithValue(
-                error.response?.data?.message || 'Registration failed'
-            );
+            const message =
+                error.response?.data?.errors
+                    ? Object.values(error?.response?.data?.errors).flat().join(" ")
+                    : error.response?.data?.message || "Registration failed";
+
+            return rejectWithValue(message);
         }
     }
 );

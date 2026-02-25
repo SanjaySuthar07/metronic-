@@ -1,11 +1,23 @@
-import { redirect } from "next/navigation";
-// import '@/css/styles.css';
+'use client';
+
+import { useSelector } from "react-redux";
+import { RootState } from "@/store";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
-  const isAuth = false
-  if (!isAuth) {
-    redirect("signup")
-  } else {
-    redirect("changePassword")
-  }
+  const router = useRouter();
+  const { isAuthenticated } = useSelector(
+    (state: RootState) => state.auth
+  );
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.replace("/signup");
+    } else {
+      router.replace("/changePassword");
+    }
+  }, [isAuthenticated, router]);
+
+  return null;
 }
