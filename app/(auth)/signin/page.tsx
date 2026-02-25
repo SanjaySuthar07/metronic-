@@ -30,23 +30,6 @@ export default function Page() {
         Sign in
       </h1>
 
-      <button
-        type="button"
-        onClick={() => signIn('google', { callbackUrl: '/' })}
-        className="w-full border p-2 rounded"
-      >
-        Sign in with Google
-      </button>
-
-      <div className="relative py-2">
-        <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t" />
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-white px-2 text-gray-500">or</span>
-        </div>
-      </div>
-
       {error && (
         <div className="flex items-center gap-2 text-red-500 text-sm">
           <AlertCircle size={16} />

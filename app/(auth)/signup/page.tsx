@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { Eye, EyeOff } from 'lucide-react';
+import { useSelector } from 'react-redux';
 
 export default function Page() {
     const router = useRouter();
@@ -36,10 +37,6 @@ export default function Page() {
             <h1 className="text-2xl font-semibold text-center">
                 Sign Up
             </h1>
-
-            <button className="w-full border p-2 rounded">
-                Sign up with Google
-            </button>
 
             {error && (
                 <div className="text-red-500 text-sm text-center">
