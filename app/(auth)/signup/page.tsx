@@ -4,20 +4,21 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
-import { AlertCircle, Eye, EyeOff } from 'lucide-react';
+import { AlertCircle, Eye, EyeOff, LoaderCircle } from 'lucide-react';
 import { useDispatch, useSelector } from "react-redux";
 import { registerUser } from "@/store/thunk/auth.thunk";
 import { AppDispatch, RootState } from "@/store";
 import VerifyEmailModal from '../modal/VerifyEmailModal';
+import { useTheme } from '@/hooks/theme/useTheam';
+import BackgroundImg from '@/components/common/AuthBackground/AuthBackground';
 export default function Page() {
-    const router = useRouter();
     const [passwordVisible, setPasswordVisible] = useState(false);
-    const [isSuccess, setIsSuccess] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [showSuccess, setShowSuccess] = useState(false)
     const [passwordConfirmationVisible, setPasswordConfirmationVisible] =
         useState(false);
     const dispatch = useDispatch<AppDispatch>();
+    const { theme } = useTheme()
     const { loading } = useSelector((state: RootState) => state.auth);
     const [message, setMessage] = useState("")
     const SignupSchema = Yup.object().shape({
@@ -38,7 +39,8 @@ export default function Page() {
     });
 
     return (
-        <div className="flex items-center justify-center grow bg-center bg-no-repeat page-bg min-h-screen">
+        <div className="flex relative items-center justify-center grow bg-center bg-no-repeat page-bg min-h-screen">
+            <BackgroundImg theme={theme} />
             <div className="kt-card max-w-[370px] w-full">
                 <Formik
                     initialValues={{
@@ -61,13 +63,11 @@ export default function Page() {
                         if (registerUser.fulfilled.match(resultAction)) {
                             const data = resultAction.payload;
                             if (data.status) {
-                                setIsSuccess(true);
                                 setMessage(data.message);
                             }
                             setShowSuccess(true)
                             resetForm()
                         } else {
-                            setIsSuccess(false);
                             setError(resultAction.payload as string);
                         }
                     }}
@@ -216,7 +216,10 @@ export default function Page() {
                                 disabled={loading}
                                 className="kt-btn kt-btn-primary flex justify-center grow"
                             >
-                                {loading ? "Processing..." : "Sign up"}
+                                {loading && (
+                                    <LoaderCircle className="animate-spin mr-1" size={16} />
+                                )}
+                                Sign up
                             </button>
                         </Form>
                     )}

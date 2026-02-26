@@ -8,21 +8,27 @@ import { useDispatch } from 'react-redux';
 import { forgetPassword } from '@/store/thunk/auth.thunk';
 import { AppDispatch } from '@/store';
 import CheckEmailModal from "../modal/CheckEmailModal";
+import { useTheme } from '@/hooks/theme/useTheam';
+import BackgroundImg from '@/components/common/AuthBackground/AuthBackground';
+
 export default function ForgetPassword() {
     const dispatch = useDispatch<AppDispatch>();
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [emailSent, setEmailSent] = useState("");
+    const { theme } = useTheme()
+
     const EmailSchema = Yup.object().shape({
         email: Yup.string()
             .email('Please enter a valid email address.')
             .required('Email is required.'),
-    }); 
+    });
 
     return (
         <div className="flex items-center justify-center grow bg-center bg-no-repeat page-bg min-h-screen">
             <div className="kt-card max-w-[370px] w-full">
+                <BackgroundImg theme={theme} />
 
                 <Formik
                     initialValues={{ email: '' }}

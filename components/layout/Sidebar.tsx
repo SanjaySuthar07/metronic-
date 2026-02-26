@@ -1,113 +1,94 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { ChevronDown, ChevronRight, Plus, Minus } from 'lucide-react'; // ya apna icon library
+import { useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Plus, Minus } from "lucide-react";
 
 type MenuItem = {
     title: string;
     icon?: string;
     href?: string;
-    badge?: string;
     children?: MenuItem[];
-    soon?: boolean;
     isHeading?: boolean;
 };
 
 const sidebarMenu: MenuItem[] = [
     {
-        title: 'Dashboards',
-        icon: 'ki-filled ki-element-11',
+        title: "Dashboards",
+        icon: "ki-filled ki-element-11",
         children: [
-            { title: 'Light Sidebar', href: '/dashboards/light' },
-            { title: 'Dark Sidebar', href: '/dashboards/dark', active: true },
+            { title: "Light Sidebar", href: "/dashboards/light" },
+            { title: "Dark Sidebar", href: "/dashboards/dark" },
+            { title: "Empty Dashboard", href: "/dashboards/empty" },
         ],
     },
 
-    { title: 'User', isHeading: true },
+    { title: "USER", isHeading: true },
 
     {
-        title: 'Public Profile',
-        icon: 'ki-filled ki-profile-circle',
-        children: [
-            {
-                title: 'Profiles',
-                children: [
-                    { title: 'Default', href: '/public-profile/profiles/default' },
-                    { title: 'Creator', href: '/public-profile/profiles/creator' },
-                    { title: 'Company', href: '/public-profile/profiles/company' },
-                    { title: 'NFT', href: '/public-profile/profiles/nft' },
-                    { title: 'Blogger', href: '/public-profile/profiles/blogger' },
-                    { title: 'CRM', href: '/public-profile/profiles/crm' },
-                    { title: 'Gamer', href: '/public-profile/profiles/gamer' },
-                    { title: 'Feeds', href: '/public-profile/profiles/feeds' },
-                    { title: 'Plain', href: '/public-profile/profiles/plain' },
-                    { title: 'Modal', href: '/public-profile/profiles/modal' },
-                ],
-            },
-            {
-                title: 'Projects',
-                children: [
-                    { title: '3 Columns', href: '/public-profile/projects/3-columns' },
-                    { title: '2 Columns', href: '/public-profile/projects/2-columns' },
-                ],
-            },
-            { title: 'Works', href: '/public-profile/works' },
-            { title: 'Teams', href: '/public-profile/teams' },
-            { title: 'Network', href: '/public-profile/network' },
-            { title: 'Activity', href: '/public-profile/activity' },
-        ],
+        title: "Onboarding",
+        icon: "ki-filled ki-rocket",
+        href: "/onboarding",
     },
+    {
+        title: "Public Profile",
+        icon: "ki-filled ki-profile-circle",
+        href: "/public-profile",
+    },
+    {
+        title: "My Account",
+        icon: "ki-filled ki-setting-2",
+        href: "/my-account",
+    },
+    {
+        title: "Community",
+        icon: "ki-filled ki-people",
+        href: "/community",
+    },
+    {
+        title: "User Management",
+        icon: "ki-filled ki-user",
+        href: "/user-management",
+    },
+    {
+        title: "Authentication",
+        icon: "ki-filled ki-shield",
+        href: "/authentication",
+    },
+
+    { title: "PAGES", isHeading: true },
 
     {
-        title: 'My Account',
-        icon: 'ki-filled ki-setting-2',
-        children: [
-            {
-                title: 'Account Home',
-                children: [
-                    { title: 'Get Started', href: '/account/home/get-started' },
-                    { title: 'User Profile', href: '/account/home/user-profile' },
-                    // ...
-                ],
-            },
-        ],
+        title: "Marketplace",
+        icon: "ki-filled ki-shop",
+        href: "/marketplace",
     },
-
-
-    { title: 'Apps', isHeading: true },
-
     {
-        title: 'Store - Client',
-        icon: 'ki-filled ki-users',
-        children: [
-            { title: 'Home', href: '/store-client/home' },
-            { title: 'Search Results - Grid', href: '/store-client/search-results-grid' },
-        ],
+        title: "Social",
+        icon: "ki-filled ki-share",
+        href: "/social",
     },
-
     {
-        title: 'Project Planning',
-        icon: 'ki-filled ki-calendar-tick',
-        href: '/plugins/fullcalendar',
+        title: "Company",
+        icon: "ki-filled ki-briefcase",
+        href: "/company",
     },
-
-    { title: 'Store - Admin', soon: true },
-    { title: 'AI Prompt', soon: true },
-    { title: 'Invoice Generator', soon: true },
+    {
+        title: "Blog",
+        icon: "ki-filled ki-document",
+        href: "/blog",
+    },
 ];
 
 export default function Sidebar() {
+    const pathname = usePathname();
     const [openItems, setOpenItems] = useState<Set<string>>(new Set());
 
     const toggleItem = (title: string) => {
         setOpenItems((prev) => {
             const newSet = new Set(prev);
-            if (newSet.has(title)) {
-                newSet.delete(title);
-            } else {
-                newSet.add(title);
-            }
+            newSet.has(title) ? newSet.delete(title) : newSet.add(title);
             return newSet;
         });
     };
@@ -115,84 +96,52 @@ export default function Sidebar() {
     const renderMenuItem = (item: MenuItem, level = 0) => {
         const isOpen = openItems.has(item.title);
         const hasChildren = item.children && item.children.length > 0;
-        const paddingLeft = level * 5 + 2.5;
+        const isActive = item.href && pathname === item.href;
 
         if (item.isHeading) {
             return (
-                <div className="pt-2.5 pb-px">
-                    <span className="uppercase text-xs font-medium text-muted-foreground px-2.5">
+                <div className="mt-6 mb-2 px-4">
+                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
                         {item.title}
                     </span>
                 </div>
             );
         }
 
-        if (item.soon) {
-            return (
-                <div className="flex items-center gap-2.5 px-2.5 py-2 text-sm font-medium text-muted-foreground">
-                    <i className={`${item.icon} text-lg`} />
-                    <span>{item.title}</span>
-                    <span className="ml-auto text-xs bg-accent/40 text-accent-foreground px-1.5 py-0.5 rounded">
-                        Soon
-                    </span>
-                </div>
-            );
-        }
-
-        const content = (
-            <>
-                {item.icon && (
-                    <i className={`${item.icon} text-lg min-w-[20px]`} />
-                )}
-
-                <span className="text-sm font-medium flex-1">
-                    {item.title}
-                </span>
-
-                {hasChildren && (
-                    <span className="ml-auto">
-                        {isOpen ? <Minus size={11} /> : <Plus size={11} />}
-                    </span>
-                )}
-
-                {item.href && !hasChildren && (
-                    <ChevronRight size={14} className="ml-auto opacity-0 group-hover:opacity-70" />
-                )}
-            </>
-        );
-
-        if (item.href && !hasChildren) {
-            return (
-                <Link
-                    href={item.href}
-                    className={`
-            group flex items-center gap-2.5 px-2.5 py-2 rounded-lg
-            hover:bg-accent/60 transition-colors
-            ${item.active ? 'bg-accent/60 text-primary font-semibold' : ''}
-          `}
-                    style={{ paddingLeft: `${paddingLeft}rem` }}
-                >
-                    {content}
-                </Link>
-            );
-        }
-
         return (
             <div>
-                <button
-                    onClick={() => hasChildren && toggleItem(item.title)}
-                    className={`
-            w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg cursor-pointer
-            hover:text-primary transition-colors
-            ${isOpen ? 'text-primary' : 'text-foreground'}
-          `}
-                    style={{ paddingLeft: `${paddingLeft}rem` }}
-                >
-                    {content}
-                </button>
+                {item.href && !hasChildren ? (
+                    <Link
+                        href={item.href}
+                        className={`
+              flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium transition-all
+              ${isActive
+                                ? "bg-gray-100 text-blue-600"
+                                : "text-gray-700 hover:bg-gray-100 hover:text-blue-600"}
+            `}
+                        style={{ paddingLeft: `${level * 16 + 16}px` }}
+                    >
+                        {item.icon && <i className={`${item.icon} text-lg`} />}
+                        <span className="flex-1">{item.title}</span>
+                    </Link>
+                ) : (
+                    <button
+                        onClick={() => toggleItem(item.title)}
+                        className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-blue-600 transition-all"
+                        style={{ paddingLeft: `${level * 16 + 16}px` }}
+                    >
+                        {item.icon && <i className={`${item.icon} text-lg`} />}
+                        <span className="flex-1 text-left">{item.title}</span>
+                        {hasChildren && (
+                            <span className="ml-auto">
+                                {isOpen ? <Minus size={14} /> : <Plus size={14} />}
+                            </span>
+                        )}
+                    </button>
+                )}
 
                 {hasChildren && isOpen && (
-                    <div className="mt-1 space-y-0.5">
+                    <div className="ml-2 border-l border-gray-200">
                         {item.children!.map((child) => (
                             <div key={child.title}>
                                 {renderMenuItem(child, level + 1)}
@@ -205,26 +154,17 @@ export default function Sidebar() {
     };
 
     return (
-        <div className="
-      fixed top-0 bottom-0 left-0 z-20 hidden lg:flex flex-col
-      w-64 bg-background border-r border-border
-    ">
-            {/* Header + Logo + Toggle */}
-            <div className="shrink-0 px-6 py-5 flex items-center justify-between">
+        <div className="fixed top-0 left-0 h-screen w-64 bg-white border-r border-gray-200 hidden lg:flex flex-col">
+            <div className="px-6 py-5 border-b border-gray-100">
                 <Link href="/">
-                    <img src="/logo-dark.svg" alt="Logo" className="h-7" />
+                    <img src="/logo-dark.svg" alt="Logo" className="h-6" />
                 </Link>
-                {/* Toggle button */}
             </div>
 
-            <div className="flex-1 overflow-y-auto px-3 lg:px-5 py-5">
-                <div className="space-y-1">
-                    {sidebarMenu.map((item) => (
-                        <div key={item.title}>
-                            {renderMenuItem(item)}
-                        </div>
-                    ))}
-                </div>
+            <div className="flex-1 overflow-y-auto py-4">
+                {sidebarMenu.map((item) => (
+                    <div key={item.title}>{renderMenuItem(item)}</div>
+                ))}
             </div>
         </div>
     );

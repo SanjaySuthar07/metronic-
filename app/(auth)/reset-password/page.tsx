@@ -8,6 +8,8 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { useDispatch } from 'react-redux';
 import { resetPassword } from '@/store/thunk/auth.thunk';
 import { AppDispatch } from '@/store';
+import { useTheme } from '@/hooks/theme/useTheam';
+import BackgroundImg from '@/components/common/AuthBackground/AuthBackground';
 
 export default function ResetPassword() {
 
@@ -22,6 +24,7 @@ export default function ResetPassword() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { theme } = useTheme()
 
   const ResetSchema = Yup.object().shape({
     password: Yup.string()
@@ -41,9 +44,9 @@ export default function ResetPassword() {
   }
 
   return (
-    <div className="flex items-center justify-center grow bg-center bg-no-repeat page-bg min-h-screen">
+    <div className="flex relative items-center justify-center grow bg-center bg-no-repeat page-bg min-h-screen">
+      <BackgroundImg theme={theme} />
       <div className="kt-card max-w-[370px] w-full">
-
         <Formik
           initialValues={{
             password: '',

@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
@@ -8,11 +8,14 @@ import { loginUser } from "@/store/thunk/auth.thunk";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/store";
 import { useRouter } from "next/navigation";
+import { useTheme } from '@/hooks/theme/useTheam';
+import BackgroundImg from '@/components/common/AuthBackground/AuthBackground';
 export default function Page() {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const dispatch = useDispatch<AppDispatch>();
   const { loading } = useSelector((state: RootState) => state.auth);
+  const { theme } = useTheme()
   const router = useRouter();
   const SigninSchema = Yup.object().shape({
     email: Yup.string()
@@ -23,9 +26,9 @@ export default function Page() {
       .required('Password is required.'),
     rememberMe: Yup.boolean(),
   });
-
   return (
-    <div className="flex items-center justify-center grow bg-center bg-no-repeat page-bg min-h-screen">
+    <div className="flex relative items-center justify-center grow bg-center bg-no-repeat page-bg min-h-screen">
+      <BackgroundImg theme={theme} />
       <div className="kt-card max-w-[370px] w-full">
         <div className="kt-card-content flex flex-col gap-5 p-10">
 
@@ -58,19 +61,19 @@ export default function Page() {
             }}
             validationSchema={SigninSchema}
             onSubmit={async (values) => {
+              console.log(values)
               const resultAction = await dispatch(
                 loginUser({
                   email: values.email,
                   password: values.password,
+                  remember_me: values.rememberMe,
                 })
               );
-
               if (loginUser.fulfilled.match(resultAction)) {
                 const data = resultAction.payload;
 
                 if (data.status) {
-                  router.push("/");
-                  // alert("success")
+                  router.push("/")
                 }
               } else {
                 setError(resultAction.payload as string);

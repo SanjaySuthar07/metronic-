@@ -4,12 +4,14 @@ import { useState } from 'react';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { Eye, EyeOff, LoaderCircle } from 'lucide-react';
-
+import { useTheme } from '@/hooks/theme/useTheam';
+import BackgroundImg from '@/components/common/AuthBackground/AuthBackground';
 export default function ChangePassword() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { theme } = useTheme()
 
   const ResetSchema = Yup.object().shape({
     password: Yup.string()
@@ -23,7 +25,7 @@ export default function ChangePassword() {
   return (
     <div className="flex items-center justify-center grow bg-center bg-no-repeat page-bg min-h-screen">
       <div className="kt-card max-w-[370px] w-full">
-
+        <BackgroundImg theme={theme} />
         <Formik
           initialValues={{
             password: '',

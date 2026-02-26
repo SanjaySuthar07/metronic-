@@ -49,7 +49,7 @@ interface ForgetPasswordPayload {
 }
 
 export const forgetPassword = createAsyncThunk(
-    'auth/forgetPassword',
+    'auth/forgot-password',
     async (payload: ForgetPasswordPayload, { rejectWithValue }) => {
         try {
             const response = await api.post('/forgot-password', payload);
@@ -72,7 +72,7 @@ interface ResetPasswordPayload {
 }
 
 export const resetPassword = createAsyncThunk(
-    'auth/resetPassword',
+    'auth/reset-password',
     async (payload: ResetPasswordPayload, { rejectWithValue }) => {
         try {
             const response = await api.post('/reset-password', payload);
