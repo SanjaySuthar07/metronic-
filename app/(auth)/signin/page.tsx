@@ -46,12 +46,12 @@ export default function Page() {
       password: values.password,
     };
 
-    const resultAction = await dispatch(loginUser(payload));
+    const result = await dispatch(loginUser(payload));
 
-    if (loginUser.fulfilled.match(resultAction)) {
+    if (loginUser.fulfilled.match(result)) {
       router.push('/');
     } else {
-      setError(resultAction.payload as string);
+      setError(result.payload as string);
     }
   }
 

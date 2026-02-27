@@ -113,3 +113,75 @@ export const logoutUser = createAsyncThunk(
         }
     }
 );
+
+export const getProfile = createAsyncThunk(
+    'auth/getProfile',
+    async (_, { rejectWithValue }) => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await api.get('/user', {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    Accept: 'application/json',
+                },
+            });
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || "Failed to fetch profile";
+            return rejectWithValue(message);
+        }
+    }
+);
+
+interface ChangePasswordPayload {
+    current_password: string;
+    new_password: string;
+    new_password_confirmation: string;
+}
+
+export const changePassword = createAsyncThunk(
+    'auth/change-password',
+    async (payload: ChangePasswordPayload, { rejectWithValue }) => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await api.post('/change-password', payload,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.errors
+                    ? Object.values(error.response.data.errors).flat().join(" ")
+                    : error.response?.data?.message || "Something went wrong";
+
+            return rejectWithValue(message);
+        }
+    }
+);
+
+export const getDashboard = createAsyncThunk(
+    'auth/getDashboard',
+    async (_, { rejectWithValue }) => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await api.get('/dashboard', {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    Accept: 'application/json',
+                },
+            });
+
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || "Failed to fetch dashboard";
+
+            return rejectWithValue(message);
+        }
+    }
+);

@@ -1,8 +1,14 @@
 "use client"
-import React from 'react'
-// import { useSelector } from 'react-redux'
+import { getDashboard, getProfile } from '@/store/thunk/auth.thunk'
+import React, { useEffect } from 'react'
+import { useDispatch } from 'react-redux'
 
 function Dashboard() {
+    const dispatch = useDispatch()
+    useEffect(() => {
+        dispatch(getProfile())
+        dispatch(getDashboard())
+    }, [])
     return (
         <div>
         </div>

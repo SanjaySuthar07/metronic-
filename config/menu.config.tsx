@@ -55,14 +55,7 @@ import {
 import { type MenuConfig } from './types';
 
 export const MENU_SIDEBAR: MenuConfig = [
-  {
-    title: 'Dashboards',
-    icon: LayoutGrid,
-    children: [
-      { title: 'Light Sidebar', path: '/' },
-      { title: 'Dark Sidebar', path: '/dark-sidebar' },
-    ],
-  },
+  { title: 'Dashboard', icon: LayoutGrid, path: '/dashboard' },
   { heading: 'User' },
   {
     title: 'Public Profile',

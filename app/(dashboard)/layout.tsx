@@ -1,5 +1,4 @@
 'use client';
-
 import { ReactNode, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -7,19 +6,17 @@ import { useSettings } from '@/providers/settings-provider';
 import { Footer } from './components/footer';
 import { Header } from './components/header';
 import { Sidebar } from './components/sidebar';
+import { useDispatch } from 'react-redux';
 
-export function Demo1Layout({ children }: { children: ReactNode }) {
+export function Layout({ children }: { children: ReactNode }) {
     const router = useRouter();
-    const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(false);
-
+    const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
     useEffect(() => {
         const token = localStorage.getItem('token');
         if (!token) {
-            setIsAuthenticated(false);
             router.replace('/signup');
         } else {
             setIsAuthenticated(true);
-            router.replace('/dashboard');
         }
     }, [router]);
 
@@ -28,7 +25,6 @@ export function Demo1Layout({ children }: { children: ReactNode }) {
 
     useEffect(() => {
         const bodyClass = document.body.classList;
-
         if (settings.layouts.demo1.sidebarCollapse) {
             bodyClass.add('sidebar-collapse');
         } else {
@@ -61,23 +57,20 @@ export function Demo1Layout({ children }: { children: ReactNode }) {
         };
     }, []);
 
-    if (!isAuthenticated) return null;
+    if (isAuthenticated === null) return null;
 
     return (
         <>
             {!isMobile && <Sidebar />}
-
             <div className="wrapper flex grow flex-col">
                 <Header />
-
                 <main className="grow pt-5" role="content">
                     {children}
                 </main>
-
                 <Footer />
             </div>
         </>
     );
 }
 
-export default Demo1Layout;
+export default Layout;
