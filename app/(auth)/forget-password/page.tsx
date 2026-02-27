@@ -30,7 +30,6 @@ export default function Page() {
   const [showModal, setShowModal] = useState(false);
   const [emailSent, setEmailSent] = useState('');
 
-  // ✅ Schema
   const formSchema = z.object({
     email: z
       .string()
@@ -38,7 +37,6 @@ export default function Page() {
       .email('Please enter a valid email address.'),
   });
 
-  // ✅ useForm
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -47,7 +45,6 @@ export default function Page() {
     mode: 'onSubmit',
   });
 
-  // ✅ Correct Submit Handler
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setLoading(true);
     setError(null);
@@ -68,7 +65,6 @@ export default function Page() {
   return (
     <Suspense>
       <Form {...form}>
-        {/* ✅ IMPORTANT FIX HERE */}
         <form onSubmit={form.handleSubmit(onSubmit)} className="block w-full space-y-5">
           <div className="text-center space-y-1 pb-3">
             <h1 className="text-2xl font-semibold tracking-tight">
@@ -88,7 +84,6 @@ export default function Page() {
             </Alert>
           )}
 
-          {/* Email Field */}
           <FormField
             control={form.control}
             name="email"
@@ -103,17 +98,15 @@ export default function Page() {
             )}
           />
 
-          {/* Submit Button */}
           <Button
             type="submit"
             disabled={loading}
             className="w-full"
           >
             {loading && <LoaderCircle className="animate-spin mr-2 h-4 w-4" />}
-            Submit
+            Send
           </Button>
 
-          {/* Back Button */}
           <Button type="button" variant="outline" className="w-full" asChild>
             <Link href="/signin">
               <ArrowLeft className="size-3.5 mr-1" />

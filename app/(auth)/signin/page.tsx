@@ -97,17 +97,11 @@ export default function Page() {
             <FormItem>
               <div className="flex justify-between items-center gap-2.5">
                 <FormLabel>Password<span className="text-red-500">*</span></FormLabel>
-                <Link
-                  href="/forget-password"
-                  className="text-sm font-semibold kt-link hover:text-primary"
-                >
-                  Forgot Password?
-                </Link>
               </div>
               <div className="relative">
                 <Input
                   placeholder="Your password"
-                  type={passwordVisible ? 'text' : 'password'} // Toggle input type
+                  type={passwordVisible ? 'text' : 'password'}
                   {...field}
                 />
                 <Button
@@ -115,7 +109,7 @@ export default function Page() {
                   variant="ghost"
                   mode="icon"
                   size="sm"
-                  onClick={() => setPasswordVisible(!passwordVisible)} // Toggle visibility
+                  onClick={() => setPasswordVisible(!passwordVisible)}
                   className="absolute end-0 top-1/2 -translate-y-1/2 h-7 w-7 me-1.5 bg-transparent!"
                   aria-label={
                     passwordVisible ? 'Hide password' : 'Show password'
@@ -132,8 +126,15 @@ export default function Page() {
             </FormItem>
           )}
         />
-
-        <div className="flex items-center space-x-2">
+        <div className="flex justify-end  m-0 p-0">
+          <Link
+            href="/forget-password"
+            className="text-sm font-semibold kt-link hover:text-primary"
+          >
+            Forgot Password?
+          </Link>
+        </div>
+        <div className="flex items-center gap-2 space-x-2">
           <FormField
             control={form.control}
             name="rememberMe"
@@ -174,6 +175,6 @@ export default function Page() {
           </Link>
         </p>
       </form>
-    </Form>
+    </Form >
   );
 }

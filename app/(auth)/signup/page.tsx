@@ -272,7 +272,7 @@ export default function Page() {
                             {(isProcessing || loading) ? (
                                 <LoaderCircleIcon className="size-4 animate-spin" />
                             ) : null}
-                            Continue
+                            Sign Up
                         </Button>
                     </div>
 
