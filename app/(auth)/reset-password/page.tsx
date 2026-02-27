@@ -9,7 +9,7 @@ import { useDispatch } from 'react-redux';
 import { resetPassword } from '@/store/thunk/auth.thunk';
 import { AppDispatch } from '@/store';
 import { useTheme } from '@/hooks/theme/useTheam';
-import BackgroundImg from '@/components/common/AuthBackground/AuthBackground';
+import BackgroundImg from '../component/AuthBackground';
 
 export default function ResetPassword() {
 

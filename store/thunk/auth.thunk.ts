@@ -87,3 +87,29 @@ export const resetPassword = createAsyncThunk(
         }
     }
 );
+
+
+export const logoutUser = createAsyncThunk(
+    'auth/logout',
+    async (_, { rejectWithValue }) => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await api.post(
+                '/logout',
+                {},
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        Accept: 'application/json',
+                    },
+                }
+            );
+
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || 'Logout failed';
+            return rejectWithValue(message);
+        }
+    }
+);

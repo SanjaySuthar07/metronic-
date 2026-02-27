@@ -7,17 +7,14 @@ import { useRouter } from "next/navigation";
 
 export default function Home() {
   const router = useRouter();
-  const { isAuthenticated } = useSelector(
-    (state: RootState) => state.auth
-  );
-
+  const token = localStorage.getItem('token');
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!token) {
       router.replace("/signup");
     } else {
       router.replace("/dashboard");
     }
-  }, [isAuthenticated, router]);
+  }, [token, router]);
 
   return null;
 }

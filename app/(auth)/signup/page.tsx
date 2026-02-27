@@ -1,230 +1,297 @@
 'use client';
-import { useState } from 'react';
+
+import { Suspense, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Formik, Form, Field, ErrorMessage } from 'formik';
-import * as Yup from 'yup';
-import { AlertCircle, Eye, EyeOff, LoaderCircle } from 'lucide-react';
-import { useDispatch, useSelector } from "react-redux";
-import { registerUser } from "@/store/thunk/auth.thunk";
-import { AppDispatch, RootState } from "@/store";
+import { zodResolver } from '@hookform/resolvers/zod';
+import { AlertCircle, Check, Eye, EyeOff } from 'lucide-react';
+import { signIn } from 'next-auth/react';
+import { useForm } from 'react-hook-form';
+import { apiFetch } from '@/lib/api';
+import { Alert, AlertIcon, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import VerifyEmailModal from '../modal/VerifyEmailModal';
-import { useTheme } from '@/hooks/theme/useTheam';
-import BackgroundImg from '@/components/common/AuthBackground/AuthBackground';
+import { useDispatch, useSelector } from 'react-redux';
+import { registerUser } from '@/store/thunk/auth.thunk';
+import { AppDispatch, RootState } from '@/store';
+import {
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { LoaderCircleIcon } from 'lucide-react';
+import { Icons } from '@/components/common/icons';
+import { RecaptchaPopover } from '@/components/common/recaptcha-popover';
+import { getSignupSchema, SignupSchemaType } from '../forms/signup-schema';
+
 export default function Page() {
+    const router = useRouter();
     const [passwordVisible, setPasswordVisible] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [showSuccess, setShowSuccess] = useState(false)
     const [passwordConfirmationVisible, setPasswordConfirmationVisible] =
         useState(false);
+    const [isProcessing, setIsProcessing] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [success, setSuccess] = useState<boolean | null>(false);
+    const [showRecaptcha, setShowRecaptcha] = useState(false);
     const dispatch = useDispatch<AppDispatch>();
-    const { theme } = useTheme()
     const { loading } = useSelector((state: RootState) => state.auth);
-    const [message, setMessage] = useState("")
-    const SignupSchema = Yup.object().shape({
-        name: Yup.string().required('Name is required'),
-        email: Yup.string()
-            .email('Invalid email')
-            .required('Email is required'),
-        password: Yup.string()
-            .min(6, 'Password must be at least 6 characters')
-            .required('Password is required'),
-        passwordConfirmation: Yup.string()
-            .oneOf([Yup.ref('password')], 'Passwords must match')
-            .required('Confirm your password'),
-        accept: Yup.boolean().oneOf(
-            [true],
-            'You must accept the Privacy Policy'
-        ),
+    const [showSuccess, setShowSuccess] = useState(false);
+    const [message, setMessage] = useState('');
+    useState(false);
+    const form = useForm<SignupSchemaType>({
+        resolver: zodResolver(getSignupSchema()),
+        defaultValues: {
+            name: '',
+            email: '',
+            password: '',
+            passwordConfirmation: '',
+            accept: false,
+        },
     });
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+
+        const isValid = await form.trigger();
+        if (!isValid) return;
+
+        setIsProcessing(true);
+        setError(null);
+
+        const values = form.getValues();
+
+        const payload = {
+            name: values.name,
+            email: values.email,
+            password: values.password,
+        };
+
+        const resultAction = await dispatch(registerUser(payload));
+
+        if (registerUser.fulfilled.match(resultAction)) {
+            const data = resultAction.payload;
+
+            if (data.status) {
+                setMessage(data.message);
+            }
+
+            setShowSuccess(true);
+            form.reset();
+        } else {
+            setError(resultAction.payload as string);
+        }
+
+        setIsProcessing(false);
+    };
+
+
+    if (success) {
+        return (
+            <Alert onClose={() => setSuccess(false)}>
+                <AlertIcon>
+                    <Check />
+                </AlertIcon>
+                <AlertTitle>
+                    You have successfully signed up! Please check your email to verify
+                    your account and then{' '}
+                    <Link
+                        href="/signin/"
+                        className="text-primary hover:text-primary-darker"
+                    >
+                        Log in
+                    </Link>
+                    .
+                </AlertTitle>
+            </Alert>
+        );
+    }
 
     return (
-        <div className="flex relative items-center justify-center grow bg-center bg-no-repeat page-bg min-h-screen">
-            <BackgroundImg theme={theme} />
-            <div className="kt-card max-w-[370px] w-full">
-                <Formik
-                    initialValues={{
-                        name: '',
-                        email: '',
-                        password: '',
-                        passwordConfirmation: '',
-                        accept: false,
-                    }}
-                    validationSchema={SignupSchema}
-                    onSubmit={async (values, { resetForm }) => {
-                        const payload = {
-                            name: values.name,
-                            email: values.email,
-                            password: values.password,
-                        };
+        <Suspense>
+            <Form {...form}>
+                <form onSubmit={handleSubmit} className="block w-full space-y-5">
+                    <div className="space-y-1.5 pb-3">
+                        <h1 className="text-2xl font-semibold tracking-tight text-center">
+                            Sign Up
+                        </h1>
+                    </div>
 
-                        const resultAction = await dispatch(registerUser(payload));
+                    {error && (
+                        <Alert variant="destructive" onClose={() => setError(null)}>
+                            <AlertIcon>
+                                <AlertCircle />
+                            </AlertIcon>
+                            <AlertTitle>{error}</AlertTitle>
+                        </Alert>
+                    )}
 
-                        if (registerUser.fulfilled.match(resultAction)) {
-                            const data = resultAction.payload;
-                            if (data.status) {
-                                setMessage(data.message);
-                            }
-                            setShowSuccess(true)
-                            resetForm()
-                        } else {
-                            setError(resultAction.payload as string);
-                        }
-                    }}
-                >
-                    {() => (
-                        <Form className="kt-card-content flex flex-col gap-5 p-10">
+                    <FormField
+                        control={form.control}
+                        name="name"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Name<span className="text-red-500">*</span></FormLabel>
+                                <FormControl>
+                                    <Input placeholder="Your Name" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
 
-                            <div className="text-center mb-2.5">
-                                <h3 className="text-lg font-medium text-mono leading-none mb-2.5">
-                                    Sign up
-                                </h3>
-                                <div className="flex items-center justify-center">
-                                    <span className="text-sm text-secondary-foreground me-1.5">
-                                        Already have an Account ?
-                                    </span>
-                                    <Link href="/signin" className="text-sm kt-link">
-                                        Sign In
-                                    </Link>
-                                </div>
-                            </div>
-                            {error && (
-                                <div className="flex items-center gap-2 text-red-500 text-sm">
-                                    <AlertCircle size={16} />
-                                    {error}
-                                </div>
-                            )}
-                            <div className="flex flex-col gap-1">
-                                <label className="kt-form-label font-normal text-mono">
-                                    Name
-                                </label>
-                                <Field
-                                    name="name"
-                                    className="kt-input"
-                                    placeholder="Enter Name"
-                                />
-                                <ErrorMessage
-                                    name="name"
-                                    component="p"
-                                    className="text-red-500 text-xs"
-                                />
-                            </div>
+                    <FormField
+                        control={form.control}
+                        name="email"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Email<span className="text-red-500">*</span></FormLabel>
+                                <FormControl>
+                                    <Input placeholder="Your email" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
 
-                            <div className="flex flex-col gap-1">
-                                <label className="kt-form-label font-normal text-mono">
-                                    Email
-                                </label>
-                                <Field
-                                    name="email"
-                                    type="email"
-                                    className="kt-input"
-                                    placeholder="email@email.com"
-                                />
-                                <ErrorMessage
-                                    name="email"
-                                    component="p"
-                                    className="text-red-500 text-xs"
-                                />
-                            </div>
-
-                            <div className="flex flex-col gap-1">
-                                <label className="kt-form-label font-normal text-mono">
-                                    Password
-                                </label>
-                                <div className="kt-input flex items-center">
-                                    <Field
-                                        name="password"
-                                        type={passwordVisible ? "text" : "password"}
-                                        placeholder="Enter Password"
-                                        className="flex-1 outline-none bg-transparent"
+                    <FormField
+                        control={form.control}
+                        name="password"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Password<span className="text-red-500">*</span></FormLabel>
+                                <div className="relative">
+                                    <Input
+                                        placeholder="Your password"
+                                        type={passwordVisible ? 'text' : 'password'}
+                                        {...field}
                                     />
-                                    <button
+                                    <Button
                                         type="button"
+                                        variant="ghost"
+                                        mode="icon"
+                                        size="sm"
                                         onClick={() => setPasswordVisible(!passwordVisible)}
+                                        className="absolute end-0 top-1/2 -translate-y-1/2 h-7 w-7 me-1.5 bg-transparent!"
+                                        aria-label={
+                                            passwordVisible ? 'Hide password' : 'Show password'
+                                        }
                                     >
                                         {passwordVisible ? (
-                                            <EyeOff size={18} />
+                                            <EyeOff className="text-muted-foreground" />
                                         ) : (
-                                            <Eye size={18} />
+                                            <Eye className="text-muted-foreground" />
                                         )}
-                                    </button>
+                                    </Button>
                                 </div>
-                                <ErrorMessage
-                                    name="password"
-                                    component="p"
-                                    className="text-red-500 text-xs"
-                                />
-                            </div>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
 
-                            <div className="flex flex-col gap-1">
-                                <label className="kt-form-label font-normal text-mono">
-                                    Confirm Password
-                                </label>
-                                <div className="kt-input flex items-center">
-                                    <Field
-                                        name="passwordConfirmation"
-                                        type={passwordConfirmationVisible ? "text" : "password"}
-                                        placeholder="Re-enter Password"
-                                        className="flex-1 outline-none bg-transparent"
+                    <FormField
+                        control={form.control}
+                        name="passwordConfirmation"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Confirm Password<span className="text-red-500">*</span></FormLabel>
+                                <div className="relative">
+                                    <Input
+                                        type={passwordConfirmationVisible ? 'text' : 'password'}
+                                        {...field}
+                                        placeholder="Confirm your password"
                                     />
-                                    <button
+                                    <Button
                                         type="button"
+                                        variant="ghost"
+                                        mode="icon"
+                                        size="sm"
                                         onClick={() =>
                                             setPasswordConfirmationVisible(
-                                                !passwordConfirmationVisible
+                                                !passwordConfirmationVisible,
                                             )
+                                        }
+                                        className="absolute end-0 top-1/2 -translate-y-1/2 h-7 w-7 me-1.5 bg-transparent!"
+                                        aria-label={
+                                            passwordConfirmationVisible
+                                                ? 'Hide password confirmation'
+                                                : 'Show password confirmation'
                                         }
                                     >
                                         {passwordConfirmationVisible ? (
-                                            <EyeOff size={18} />
+                                            <EyeOff className="text-muted-foreground" />
                                         ) : (
-                                            <Eye size={18} />
+                                            <Eye className="text-muted-foreground" />
                                         )}
-                                    </button>
+                                    </Button>
                                 </div>
-                                <ErrorMessage
-                                    name="passwordConfirmation"
-                                    component="p"
-                                    className="text-red-500 text-xs"
-                                />
-                            </div>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
 
-                            <label className="kt-checkbox-group flex items-center gap-2">
-                                <Field
-                                    type="checkbox"
-                                    name="accept"
-                                    className="kt-checkbox kt-checkbox-sm"
-                                />
-                                <span className="kt-checkbox-label ">
-                                    I accept    {" "}
-                                    <a className="text-sm kt-link" href="#">
-                                        Terms & Conditions
-                                    </a>
-                                </span>
-                            </label>
-                            <ErrorMessage
-                                name="accept"
-                                component="p"
-                                className="text-red-500 text-xs"
-                            />
-                            <VerifyEmailModal
-                                isOpen={showSuccess}
-                                onClose={() => setShowSuccess(false)}
-                                message={message} />
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="kt-btn kt-btn-primary flex justify-center grow"
-                            >
-                                {loading && (
-                                    <LoaderCircle className="animate-spin mr-1" size={16} />
-                                )}
-                                Sign up
-                            </button>
-                        </Form>
-                    )}
-                </Formik>
-            </div>
-        </div>
+                    <div className="flex items-center space-x-2">
+                        <FormField
+                            control={form.control}
+                            name="accept"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormControl>
+                                        <div className="flex items-center gap-2.5">
+                                            <Checkbox
+                                                id="accept"
+                                                checked={field.value}
+                                                onCheckedChange={(checked) => field.onChange(!!checked)}
+                                            />
+                                            <label
+                                                htmlFor="accept"
+                                                className="text-sm leading-none text-muted-foreground"
+                                            >
+                                                I agree to the
+                                            </label>
+                                            <Link
+                                                href="/privacy-policy"
+                                                target="_blank"
+                                                className="-ms-0.5 text-sm font-semibold text-foreground hover:text-primary"
+                                            >
+                                                Privacy Policy<span className="text-red-500">*</span>
+                                            </Link>
+                                        </div>
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
+
+                    <div className="flex flex-col gap-2.5">
+                        <Button type="submit" disabled={isProcessing || loading}>
+                            {(isProcessing || loading) ? (
+                                <LoaderCircleIcon className="size-4 animate-spin" />
+                            ) : null}
+                            Continue
+                        </Button>
+                    </div>
+
+                    <div className="text-sm text-muted-foreground text-center">
+                        Already have an account?{' '}
+                        <Link
+                            href="/signin"
+                            className="text-sm text-sm font-semibold kt-link hover:text-primary"
+                        >
+                            Sign In
+                        </Link>
+                    </div>
+                </form>
+            </Form>
+            <VerifyEmailModal
+                isOpen={showSuccess}
+                onClose={() => setShowSuccess(false)}
+                message={message}
+            />
+        </Suspense>
     );
 }

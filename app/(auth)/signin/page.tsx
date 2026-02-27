@@ -1,178 +1,179 @@
 'use client';
-import { useEffect, useState } from 'react';
+
+import { useState } from 'react';
 import Link from 'next/link';
-import { Formik, Form, Field, ErrorMessage } from 'formik';
-import * as Yup from 'yup';
-import { Eye, EyeOff, LoaderCircle, AlertCircle } from 'lucide-react';
-import { loginUser } from "@/store/thunk/auth.thunk";
-import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch, RootState } from "@/store";
-import { useRouter } from "next/navigation";
-import { useTheme } from '@/hooks/theme/useTheam';
-import BackgroundImg from '@/components/common/AuthBackground/AuthBackground';
+import { useRouter } from 'next/navigation';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { AlertCircle, Eye, EyeOff } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { Alert, AlertIcon, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { LoaderCircleIcon } from 'lucide-react';
+import { getSigninSchema, SigninSchemaType } from '../forms/signin-schema';
+import { useDispatch, useSelector } from 'react-redux';
+import { loginUser } from '@/store/thunk/auth.thunk';
+import { AppDispatch, RootState } from '@/store';
 export default function Page() {
+  const router = useRouter();
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const dispatch = useDispatch<AppDispatch>();
   const { loading } = useSelector((state: RootState) => state.auth);
-  const { theme } = useTheme()
-  const router = useRouter();
-  const SigninSchema = Yup.object().shape({
-    email: Yup.string()
-      .email('Please enter a valid email address.')
-      .required('Email is required.'),
-    password: Yup.string()
-      .min(6, 'Password must be at least 6 characters long.')
-      .required('Password is required.'),
-    rememberMe: Yup.boolean(),
+  const form = useForm<SigninSchemaType>({
+    resolver: zodResolver(getSigninSchema()),
+    defaultValues: {
+      email: '',
+      password: '',
+      rememberMe: false,
+    },
   });
+
+  async function onSubmit(values: SigninSchemaType) {
+    setError(null);
+
+    const payload = {
+      email: values.email,
+      password: values.password,
+    };
+
+    const resultAction = await dispatch(loginUser(payload));
+
+    if (loginUser.fulfilled.match(resultAction)) {
+      router.push('/');
+    } else {
+      setError(resultAction.payload as string);
+    }
+  }
+
   return (
-    <div className="flex relative items-center justify-center grow bg-center bg-no-repeat page-bg min-h-screen">
-      <BackgroundImg theme={theme} />
-      <div className="kt-card max-w-[370px] w-full">
-        <div className="kt-card-content flex flex-col gap-5 p-10">
-
-          <div className="text-center mb-2.5">
-            <h3 className="text-lg font-medium text-mono leading-none mb-2.5">
-              Sign in
-            </h3>
-            <div className="flex items-center justify-center">
-              <span className="text-sm text-secondary-foreground me-1.5">
-                Need an account?
-              </span>
-              <Link href="/signup" className="text-sm kt-link">
-                Sign up
-              </Link>
-            </div>
-          </div>
-
-          {error && (
-            <div className="flex items-center gap-2 text-red-500 text-sm">
-              <AlertCircle size={16} />
-              {error}
-            </div>
-          )}
-
-          <Formik
-            initialValues={{
-              email: '',
-              password: '',
-              rememberMe: false,
-            }}
-            validationSchema={SigninSchema}
-            onSubmit={async (values) => {
-              console.log(values)
-              const resultAction = await dispatch(
-                loginUser({
-                  email: values.email,
-                  password: values.password,
-                  remember_me: values.rememberMe,
-                })
-              );
-              if (loginUser.fulfilled.match(resultAction)) {
-                const data = resultAction.payload;
-
-                if (data.status) {
-                  router.push("/")
-                }
-              } else {
-                setError(resultAction.payload as string);
-              }
-            }}
-          >
-            {() => (
-              <Form
-                noValidate
-                className="flex flex-col gap-5">
-                <div className="flex flex-col gap-1">
-                  <label className="kt-form-label font-normal text-mono">
-                    Email
-                  </label>
-
-                  <Field
-                    name="email"
-                    type="email"
-                    placeholder="email@email.com"
-                    className="kt-input"
-                  />
-
-                  <ErrorMessage
-                    name="email"
-                    component="p"
-                    className="text-red-500 text-xs"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1">
-                  <div className="flex items-center justify-between gap-1">
-                    <label className="kt-form-label font-normal text-mono">
-                      Password
-                    </label>
-
-                    <Link
-                      href="/forget-password"
-                      className="text-sm kt-link shrink-0"
-                    >
-                      Forgot Password?
-                    </Link>
-                  </div>
-
-                  <div className="kt-input flex items-center justify-between">
-                    <Field
-                      name="password"
-                      type={passwordVisible ? 'text' : 'password'}
-                      placeholder="Enter Password"
-                      className="w-full bg-transparent outline-none"
-                    />
-
-                    <button
-                      type="button"
-                      onClick={() => setPasswordVisible(!passwordVisible)}
-                      className="kt-btn kt-btn-sm kt-btn-ghost kt-btn-icon bg-transparent! -me-1.5"
-                    >
-                      {passwordVisible ? (
-                        <EyeOff size={18} />
-                      ) : (
-                        <Eye size={18} />
-                      )}
-                    </button>
-                  </div>
-
-                  <ErrorMessage
-                    name="password"
-                    component="p"
-                    className="text-red-500 text-xs"
-                  />
-                </div>
-
-                <label className="flex items-center gap-2">
-                  <Field
-                    type="checkbox"
-                    name="rememberMe"
-                    className="kt-checkbox kt-checkbox-sm"
-                  />
-                  <span >
-                    Remember me
-                  </span>
-                </label>
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="kt-btn kt-btn-primary flex justify-center grow"
-                >
-                  {loading && (
-                    <LoaderCircle className="animate-spin mr-2" size={16} />
-                  )}
-                  {loading ? "Processing..." : "Sign In"}
-                </button>
-
-              </Form>
-            )}
-          </Formik>
-
+    <Form {...form}>
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="block w-full space-y-5"
+      >
+        <div className="space-y-1.5 pb-3">
+          <h1 className="text-2xl font-semibold tracking-tight text-center">
+            Sign in
+          </h1>
         </div>
-      </div>
-    </div>
+
+        {error && (
+          <Alert variant="destructive">
+            <AlertIcon>
+              <AlertCircle />
+            </AlertIcon>
+            <AlertTitle>{error}</AlertTitle>
+          </Alert>
+        )}
+
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email<span className="text-red-500">*</span></FormLabel>
+              <FormControl>
+                <Input placeholder="Your email" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="password"
+          render={({ field }) => (
+            <FormItem>
+              <div className="flex justify-between items-center gap-2.5">
+                <FormLabel>Password<span className="text-red-500">*</span></FormLabel>
+                <Link
+                  href="/forget-password"
+                  className="text-sm font-semibold kt-link hover:text-primary"
+                >
+                  Forgot Password?
+                </Link>
+              </div>
+              <div className="relative">
+                <Input
+                  placeholder="Your password"
+                  type={passwordVisible ? 'text' : 'password'} // Toggle input type
+                  {...field}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  mode="icon"
+                  size="sm"
+                  onClick={() => setPasswordVisible(!passwordVisible)} // Toggle visibility
+                  className="absolute end-0 top-1/2 -translate-y-1/2 h-7 w-7 me-1.5 bg-transparent!"
+                  aria-label={
+                    passwordVisible ? 'Hide password' : 'Show password'
+                  }
+                >
+                  {passwordVisible ? (
+                    <EyeOff className="text-muted-foreground" />
+                  ) : (
+                    <Eye className="text-muted-foreground" />
+                  )}
+                </Button>
+              </div>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="flex items-center space-x-2">
+          <FormField
+            control={form.control}
+            name="rememberMe"
+            render={({ field }) => (
+              <>
+                <Checkbox
+                  id="remember-me"
+                  checked={field.value}
+                  onCheckedChange={(checked) => field.onChange(!!checked)}
+                />
+                <label
+                  htmlFor="remember-me"
+                  className="text-sm leading-none text-muted-foreground"
+                >
+                  Remember me
+                </label>
+              </>
+            )}
+          />
+        </div>
+
+        <div className="flex flex-col gap-2.5">
+          <Button type="submit" disabled={loading}>
+            {loading ? (
+              <LoaderCircleIcon className="size-4 animate-spin" />
+            ) : null}
+            Continue
+          </Button>
+        </div>
+
+        <p className="text-sm text-muted-foreground text-center">
+          Don&apos;t have an account?{' '}
+          <Link
+            href="/signup"
+            className="text-sm font-semibold kt-link hover:text-primary"
+          >
+            Sign Up
+          </Link>
+        </p>
+      </form>
+    </Form>
   );
 }

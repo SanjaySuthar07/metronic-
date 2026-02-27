@@ -1,133 +1,133 @@
 'use client';
-import { useState } from 'react';
+
+import { Suspense, useState } from 'react';
 import Link from 'next/link';
-import { Formik, Form, Field, ErrorMessage } from 'formik';
-import * as Yup from 'yup';
-import { AlertCircle, LoaderCircle, ArrowLeft, Check } from 'lucide-react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { AlertCircle, ArrowLeft, Check, LoaderCircle } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { Alert, AlertIcon, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 import { useDispatch } from 'react-redux';
 import { forgetPassword } from '@/store/thunk/auth.thunk';
 import { AppDispatch } from '@/store';
-import CheckEmailModal from "../modal/CheckEmailModal";
-import { useTheme } from '@/hooks/theme/useTheam';
-import BackgroundImg from '@/components/common/AuthBackground/AuthBackground';
+import CheckEmailModal from '../modal/CheckEmailModal';
 
-export default function ForgetPassword() {
-    const dispatch = useDispatch<AppDispatch>();
-    const [error, setError] = useState<string | null>(null);
-    const [loading, setLoading] = useState(false);
-    const [showModal, setShowModal] = useState(false);
-    const [emailSent, setEmailSent] = useState("");
-    const { theme } = useTheme()
+export default function Page() {
+  const dispatch = useDispatch<AppDispatch>();
 
-    const EmailSchema = Yup.object().shape({
-        email: Yup.string()
-            .email('Please enter a valid email address.')
-            .required('Email is required.'),
-    });
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [emailSent, setEmailSent] = useState('');
 
-    return (
-        <div className="flex items-center justify-center grow bg-center bg-no-repeat page-bg min-h-screen">
-            <div className="kt-card max-w-[370px] w-full">
-                <BackgroundImg theme={theme} />
+  // ✅ Schema
+  const formSchema = z.object({
+    email: z
+      .string()
+      .min(1, 'Email is required')
+      .email('Please enter a valid email address.'),
+  });
 
-                <Formik
-                    initialValues={{ email: '' }}
-                    validationSchema={EmailSchema}
-                    onSubmit={async (values, { resetForm }) => {
+  // ✅ useForm
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      email: '',
+    },
+    mode: 'onSubmit',
+  });
 
-                        setLoading(true);
-                        setError(null);
+  // ✅ Correct Submit Handler
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    setLoading(true);
+    setError(null);
 
-                        const resultAction = await dispatch(forgetPassword(values));
+    const resultAction = await dispatch(forgetPassword(values));
 
-                        setLoading(false);
+    if (forgetPassword.fulfilled.match(resultAction)) {
+      setEmailSent(values.email);
+      setShowModal(true);
+      form.reset();
+    } else {
+      setError(resultAction.payload as string);
+    }
 
-                        if (forgetPassword.fulfilled.match(resultAction)) {
-                            setEmailSent(values.email);
-                            setShowModal(true);
-                            resetForm();
-                        } else {
-                            setError(resultAction.payload as string);
-                        }
-                    }}
-                >
-                    {() => (
-                        <Form
-                            noValidate
-                            className="kt-card-content flex flex-col gap-5 p-10"
-                        >
+    setLoading(false);
+  };
 
-                            <div className="text-center">
-                                <h3 className="text-lg font-medium text-mono">
-                                    Your Email
-                                </h3>
-                                <span className="text-sm text-secondary-foreground">
-                                    Enter your email to reset password
-                                </span>
-                            </div>
+  return (
+    <Suspense>
+      <Form {...form}>
+        {/* ✅ IMPORTANT FIX HERE */}
+        <form onSubmit={form.handleSubmit(onSubmit)} className="block w-full space-y-5">
+          <div className="text-center space-y-1 pb-3">
+            <h1 className="text-2xl font-semibold tracking-tight">
+              Forget Password
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Enter your email to receive a password reset link.
+            </p>
+          </div>
 
-                            {error && (
-                                <div className="flex items-center gap-2 text-red-500 text-sm">
-                                    <AlertCircle size={16} />
-                                    {error}
-                                </div>
-                            )}
+          {error && (
+            <Alert variant="destructive" onClose={() => setError(null)}>
+              <AlertIcon>
+                <AlertCircle />
+              </AlertIcon>
+              <AlertTitle>{error}</AlertTitle>
+            </Alert>
+          )}
 
-                            {/* {success && (
-                                <div className="flex items-center gap-2 text-green-600 text-sm">
-                                    <Check size={16} />
-                                    {success}
-                                </div>
-                            )} */}
+          {/* Email Field */}
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email <span className="text-red-500">*</span></FormLabel>
+                <FormControl>
+                  <Input placeholder="Your email" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-                            <div className="flex flex-col gap-1">
-                                <label className="kt-form-label font-normal text-mono">
-                                    Email
-                                </label>
+          {/* Submit Button */}
+          <Button
+            type="submit"
+            disabled={loading}
+            className="w-full"
+          >
+            {loading && <LoaderCircle className="animate-spin mr-2 h-4 w-4" />}
+            Submit
+          </Button>
 
-                                <Field
-                                    name="email"
-                                    type="email"
-                                    placeholder="email@email.com"
-                                    disabled={loading}
-                                    className="kt-input"
-                                />
+          {/* Back Button */}
+          <Button type="button" variant="outline" className="w-full" asChild>
+            <Link href="/signin">
+              <ArrowLeft className="size-3.5 mr-1" />
+              Back
+            </Link>
+          </Button>
+        </form>
+      </Form>
 
-                                <ErrorMessage
-                                    name="email"
-                                    component="p"
-                                    className="text-red-500 text-xs"
-                                />
-                            </div>
-
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="kt-btn kt-btn-primary flex justify-center grow"
-                            >
-                                {loading && (
-                                    <LoaderCircle className="animate-spin mr-2" size={16} />
-                                )}
-                                Continue
-                            </button>
-
-                            <Link
-                                href="/signin"
-                                className="kt-btn kt-btn-outline flex justify-center items-center gap-2"
-                            >
-                                <ArrowLeft size={16} />
-                                Back to Sign In
-                            </Link>
-
-                        </Form>
-                    )}
-                </Formik>
-                <CheckEmailModal
-                    isOpen={showModal}
-                    onClose={() => setShowModal(false)}
-                    email={emailSent}
-                />
-            </div>
-        </div>
-    );
+      <CheckEmailModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        email={emailSent}
+      />
+    </Suspense>
+  );
 }

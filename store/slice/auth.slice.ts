@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { registerUser, loginUser } from '../thunk/auth.thunk';
+import { registerUser, loginUser, logoutUser } from '../thunk/auth.thunk';
 
 
 interface AuthState {
@@ -21,10 +21,7 @@ const authSlice = createSlice({
     name: 'auth',
     initialState,
     reducers: {
-        logout: (state) => {
-            state.user = null;
-            state.tenant = null;
-        },
+       
     },
     extraReducers: (builder) => {
         builder
@@ -54,8 +51,13 @@ const authSlice = createSlice({
             .addCase(loginUser.rejected, (state) => {
                 state.loading = false;
             })
+            .addCase(logoutUser.fulfilled, (state) => {
+                state.user = null;
+                state.tenant = null;
+                state.isAuthenticated = false;
+                localStorage.removeItem('token');
+            })
     },
 });
 
-export const { logout } = authSlice.actions;
 export default authSlice.reducer;

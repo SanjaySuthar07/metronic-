@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 
 import { useTheme } from "@/hooks/theme/useTheam";
-import AuthBackground from "@/components/common/AuthBackground/AuthBackground";
+import AuthBackground from "../component/AuthBackground";
 export default function EmailVerified() {
     const { theme } = useTheme()
     return (
