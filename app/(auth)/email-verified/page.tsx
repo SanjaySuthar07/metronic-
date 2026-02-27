@@ -13,7 +13,8 @@ export default function EmailVerified() {
                 <div className="kt-card-content p-10">
                     <div className="flex justify-center py-10">
                         <Image
-                            src={status == "just_verified" ? "/assets/media/illustrations/Group.svg" : "/assets/media/illustrations/Group14.svg"}
+                            src={status == "just_verified" ? "/assets/media/illustrations/Group.svg" :
+                                status == "already_verified" ? "/assets/media/illustrations/Group16.svg" : "/assets/media/illustrations/Group18.svg"}
                             alt="image"
                             width={120}
                             height={120}

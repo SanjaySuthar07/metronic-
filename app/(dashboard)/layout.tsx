@@ -6,7 +6,6 @@ import { useSettings } from '@/providers/settings-provider';
 import { Footer } from './components/footer';
 import { Header } from './components/header';
 import { Sidebar } from './components/sidebar';
-import { useDispatch } from 'react-redux';
 
 export function Layout({ children }: { children: ReactNode }) {
     const router = useRouter();
@@ -65,6 +64,7 @@ export function Layout({ children }: { children: ReactNode }) {
             <div className="wrapper flex grow flex-col">
                 <Header />
                 <main className="grow pt-5" role="content">
+                   
                     {children}
                 </main>
                 <Footer />

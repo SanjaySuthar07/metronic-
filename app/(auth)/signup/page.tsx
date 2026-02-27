@@ -1,13 +1,10 @@
 'use client';
-
 import { Suspense, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AlertCircle, Check, Eye, EyeOff } from 'lucide-react';
-import { signIn } from 'next-auth/react';
 import { useForm } from 'react-hook-form';
-import { apiFetch } from '@/lib/api';
 import { Alert, AlertIcon, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -25,8 +22,6 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { LoaderCircleIcon } from 'lucide-react';
-import { Icons } from '@/components/common/icons';
-import { RecaptchaPopover } from '@/components/common/recaptcha-popover';
 import { getSignupSchema, SignupSchemaType } from '../forms/signup-schema';
 
 export default function Page() {

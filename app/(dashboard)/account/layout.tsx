@@ -15,6 +15,7 @@ import {
   ToolbarHeading,
   ToolbarTitle,
 } from '@/components/common/toolbar';
+import { DashboardHeader } from '../components/dashboardHeader';
 
 type NavRoutes = Record<
   string,
@@ -64,60 +65,55 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <Container>
-      <Toolbar>
-        <ToolbarHeading>
-          <ToolbarTitle>Account</ToolbarTitle>
-        </ToolbarHeading>
-        <ToolbarActions />
-      </Toolbar>
+      <DashboardHeader title={"Account"} />
 
-      <div className="flex flex-col gap-10 lg:flex-row lg:gap-14">
-        <div className="space-y-7 lg:w-[230px] shrink-0 pt-6">
-          <div className="flex items-center gap-3">
-            <Avatar className="size-12">
-              {user?.avatar && (
-                <AvatarImage src={user.avatar} alt={user?.name} />
-              )}
-              <AvatarFallback className="text-lg">
-                {getInitials(user?.name || user?.email || 'U')}
-              </AvatarFallback>
-            </Avatar>
+        <div className="flex flex-col gap-10 lg:flex-row lg:gap-14">
+          <div className="space-y-7 lg:w-[230px] shrink-0 pt-6">
+            <div className="flex items-center gap-3">
+              <Avatar className="size-12">
+                {user?.avatar && (
+                  <AvatarImage src={user.avatar} alt={user?.name} />
+                )}
+                <AvatarFallback className="text-lg">
+                  {getInitials(user?.name || user?.email || 'U')}
+                </AvatarFallback>
+              </Avatar>
 
-            <div>
-              <div className="capitalize font-semibold text-base">
-                {user?.name || 'User'}
-              </div>
-              <div className="capitalize text-muted-foreground text-xs">
-                {user?.user_type || 'Member'}
+              <div>
+                <div className="capitalize font-semibold text-base">
+                  {user?.name || 'User'}
+                </div>
+                <div className="capitalize text-muted-foreground text-xs">
+                  {user?.user_type || 'Member'}
+                </div>
               </div>
             </div>
+
+            <Tabs value={activeTab}>
+              <TabsList
+                variant="button"
+                className="flex flex-col mt-4 items-stretch gap-3 border-0"
+              >
+                {Object.entries(navRoutes).map(
+                  ([key, { title, icon: Icon, path }]) => (
+                    <TabsTrigger
+                      key={key}
+                      value={key}
+                      onClick={() => handleTabClick(key, path)}
+                      className="justify-start gap-2"
+                    >
+                      <Icon size={16} />
+                      <span>{title}</span>
+                    </TabsTrigger>
+                  ),
+                )}
+              </TabsList>
+            </Tabs>
           </div>
 
-          <Tabs value={activeTab}>
-            <TabsList
-              variant="button"
-              className="flex flex-col mt-4 items-stretch gap-3 border-0"
-            >
-              {Object.entries(navRoutes).map(
-                ([key, { title, icon: Icon, path }]) => (
-                  <TabsTrigger
-                    key={key}
-                    value={key}
-                    onClick={() => handleTabClick(key, path)}
-                    className="justify-start gap-2"
-                  >
-                    <Icon size={16} />
-                    <span>{title}</span>
-                  </TabsTrigger>
-                ),
-              )}
-            </TabsList>
-          </Tabs>
+          {/* Content */}
+          <div className="grow pt-6">{children}</div>
         </div>
-
-        {/* Content */}
-        <div className="grow pt-6">{children}</div>
-      </div>
     </Container>
   );
 }
