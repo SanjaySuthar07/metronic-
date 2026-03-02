@@ -1,9 +1,10 @@
 "use client";
 
+import { getProfile } from '@/store/thunk/auth.thunk';
 import React, { useEffect, Fragment } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toAbsoluteUrl } from '@/lib/helpers';
-import { Card, CardContent, CardHeader, CardHeading, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardHeading, CardTitle } from '@/components/ui/card';
 import { DashboardHeader } from '../components/dashboardHeader';
 import { getDashboard } from '@/store/thunk/dashboard.thunk';
 import Image from 'next/image';
@@ -24,6 +25,7 @@ function Dashboard() {
     const { count } = useSelector((s) => s.dashboard)
     console.log(count)
     useEffect(() => {
+        dispatch(getProfile());
         dispatch(getDashboard());
     }, [dispatch]);
 
@@ -45,7 +47,7 @@ function Dashboard() {
         { logo: 'rejected.svg', info: count?.total_rejected_invitation, desc: 'Rejected Invitations', path: '' },
     ];
     return (
-        <>
+        <Fragment >
             <Container>
                 <DashboardHeader title={"Dashboard"} description={"Central Hub for Personal Customizations"} />
                 <style>
@@ -57,35 +59,39 @@ function Dashboard() {
           background-image: url('${toAbsoluteUrl('/media/images/2600x1600/bg-3-dark.png')}');
         }
       `}
-                    {/* grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 */}
                 </style>
                 <Card>
-                    <CardHeader className="py-3">
+                    <CardHeader className="py-3 ">
                         <CardHeading>
                             <CardTitle>Users</CardTitle>
+                            {/* <CardDescription>
+                                List All Total User
+                            </CardDescription> */}
                         </CardHeading>
                     </CardHeader>
-                    <CardContent className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                    <CardContent className="flex flex-wrap gap-4">
                         {Users.map((item, index) => (
                             <CountBox key={index} item={item} />
                         ))}
                     </CardContent>
                 </Card>
-
-                <Card className='mt-3'>
+                <Card className='mt-5'>
                     <CardHeader className="py-3">
                         <CardHeading>
                             <CardTitle>Invitation</CardTitle>
+                            {/* <CardDescription>
+                                List All Total Invitation
+                            </CardDescription> */}
                         </CardHeading>
                     </CardHeader>
-                    <CardContent className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                    <CardContent className="flex flex-wrap gap-4">
                         {Invitation.map((item, index) => (
                             <CountBox key={index} item={item} />
                         ))}
                     </CardContent>
                 </Card>
             </Container>
-        </>
+        </Fragment>
     );
 }
 

@@ -116,12 +116,7 @@ export function Header() {
           </div>
         </div>
 
-        {/* Main Content (MegaMenu or Breadcrumbs) */}
-        {pathname.startsWith('/account') ? (
-          <Breadcrumb />
-        ) : (
-          !mobileMode && <MegaMenu />
-        )}
+        <MegaMenu />
 
         {/* HeaderTopbar */}
         <div className="flex items-center gap-3">

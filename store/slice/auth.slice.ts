@@ -5,11 +5,13 @@ import { registerUser, loginUser, logoutUser, getProfile } from '../thunk/auth.t
 interface AuthState {
     user: any;
     loading: boolean;
+    rememberUser: any;
 }
 
 const initialState: AuthState = {
     user: null,
     loading: false,
+    rememberUser: null,
 };
 
 
@@ -17,7 +19,9 @@ const authSlice = createSlice({
     name: 'auth',
     initialState,
     reducers: {
-
+        remember: (state, action) => {
+            state.rememberUser = action.payload
+        }
     },
     extraReducers: (builder) => {
         builder
@@ -26,7 +30,6 @@ const authSlice = createSlice({
             })
             .addCase(registerUser.fulfilled, (state, action) => {
                 state.loading = false;
-                localStorage.setItem('token', action.payload.token);
             })
             .addCase(registerUser.rejected, (state, action: any) => {
                 state.loading = false;
@@ -37,13 +40,14 @@ const authSlice = createSlice({
             .addCase(loginUser.fulfilled, (state, action) => {
                 state.loading = false;
                 localStorage.setItem('token', action.payload.token);
+                localStorage.setItem('refresh_token', action.payload.refresh_token);
             })
             .addCase(loginUser.rejected, (state) => {
                 state.loading = false;
             })
-            .addCase(logoutUser.fulfilled, (state) => {
-                state.user = null;
+            .addCase(logoutUser.fulfilled, () => {
                 localStorage.removeItem('token');
+                localStorage.removeItem('refresh_token');
             })
             .addCase(getProfile.pending, (state) => {
                 state.loading = true;
@@ -59,4 +63,5 @@ const authSlice = createSlice({
     },
 });
 
+export const { remember } = authSlice.actions
 export default authSlice.reducer;

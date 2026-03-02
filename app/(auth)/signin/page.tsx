@@ -22,35 +22,39 @@ import { getSigninSchema, SigninSchemaType } from '../forms/signin-schema';
 import { useDispatch, useSelector } from 'react-redux';
 import { loginUser } from '@/store/thunk/auth.thunk';
 import { AppDispatch, RootState } from '@/store';
+import { remember } from '@/store/slice/auth.slice';
 export default function Page() {
   const router = useRouter();
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const dispatch = useDispatch<AppDispatch>();
-  const { loading } = useSelector((state: RootState) => state.auth);
+  const { loading, rememberUser } = useSelector((state: RootState) => state.auth);
   const form = useForm<SigninSchemaType>({
     resolver: zodResolver(getSigninSchema()),
     defaultValues: {
-      email: '',
-      password: '',
-      rememberMe: false,
+      email: rememberUser?.email || '',
+      password: rememberUser?.password || '',
+      rememberMe: rememberUser?.rememberMe || false,
     },
   });
 
   async function onSubmit(values: SigninSchemaType) {
     setError(null);
-
     const payload = {
       email: values.email,
       password: values.password,
     };
-
     const result = await dispatch(loginUser(payload));
-
     if (loginUser.fulfilled.match(result)) {
       router.push('/');
     } else {
       setError(result.payload as string);
+    }
+    if (values.rememberMe) {
+      dispatch(remember({ email: values.email, rememberMe: values.rememberMe }))
+      dispatch(remember(values))
+    } else {
+      dispatch(remember(null))
     }
   }
 

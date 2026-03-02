@@ -12,7 +12,7 @@ export const getSignupSchema = () => {
         .string()
         .email({ message: 'Please enter a valid email address.' })
         .min(1, { message: 'Email is required.' }),
-      password: getPasswordSchema(), // Uses the updated password schema with direct messages
+      password: getPasswordSchema(),
       passwordConfirmation: z.string().min(1, {
         message: 'Password confirmation is required.',
       }),

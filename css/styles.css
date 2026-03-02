@@ -22,11 +22,10 @@
 @import './components/rating.css';
 @import './components/image-input.css';
 @import './components/scrollable.css';
-@import './demos/demo1.css';
-@import './newStyle.css'
+
 /* Demos */
+@import './demos/demo1.css';
 
 /** Dark/Light Theme Variant **/
-/* @custom-variant dark (&:is(.dark *));
-@custom-variant light (&:not(.dark *)); */
-
+@custom-variant dark (&:is(.dark *));
+@custom-variant light (&:not(.dark *));

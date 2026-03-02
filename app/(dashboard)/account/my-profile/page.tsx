@@ -39,10 +39,6 @@ export default function AccountDetails() {
 
   async function onSubmit(values: ProfileSchemaType) {
     console.log(values);
-
-    // Yaha dispatch kar sakte ho update profile thunk
-    // await dispatch(updateProfile(values));
-
     toast.success('Profile updated (UI only)');
   }
 
