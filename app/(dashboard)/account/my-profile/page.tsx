@@ -1,109 +1,123 @@
 'use client';
+
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '@/store';
-import { useFormik } from 'formik';
-import * as Yup from 'yup';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { getProfileSchema, ProfileSchemaType } from '../forms/profile-schema';
 import { Button } from '@/components/ui/button';
 import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardHeading,
-    CardTitle,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardHeading,
+  CardTitle,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { LoaderCircleIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function AccountDetails() {
-    const dispatch = useDispatch<AppDispatch>();
-    const { user, loading } = useSelector((state: RootState) => state.auth);
+  const dispatch = useDispatch<AppDispatch>();
+  const { user, loading } = useSelector((state: RootState) => state.auth);
 
-    const validationSchema = Yup.object({
-        name: Yup.string().required('Name is required'),
-    });
+  const form = useForm<ProfileSchemaType>({
+    resolver: zodResolver(getProfileSchema()),
+    defaultValues: {
+      name: user?.name || '',
+    },
+  });
 
-    const formik = useFormik({
-        enableReinitialize: true,
-        initialValues: {
-            name: user?.name || '',
-        },
-        validationSchema,
-        onSubmit: async (values) => {
-            toast.success('Profile updated (UI only)');
-            console.log(values);
-        },
-    });
+  async function onSubmit(values: ProfileSchemaType) {
+    console.log(values);
 
-    return (
-        <Card>
-            <CardHeader className="py-4">
-                <CardHeading>
-                    <CardTitle>Profile</CardTitle>
-                    <CardDescription>
-                        Manage profile information
-                    </CardDescription>
-                </CardHeading>
-            </CardHeader>
+    // Yaha dispatch kar sakte ho update profile thunk
+    // await dispatch(updateProfile(values));
 
-            <CardContent className="py-8">
-                <form
-                    onSubmit={formik.handleSubmit}
-                    className="space-y-6 max-w-[520px]"
-                >
-                    {/* Name */}
-                    <div>
-                        <Label>
-                            Name <span className="text-red-500">*</span>
-                        </Label>
-                        <Input
-                            name="name"
-                            value={formik.values.name}
-                            onChange={formik.handleChange}
-                            onBlur={formik.handleBlur}
-                            placeholder="Enter your name"
-                        />
-                        {formik.touched.name && formik.errors.name && (
-                            <p className="text-red-500 text-sm mt-1">
-                                {formik.errors.name}
-                            </p>
-                        )}
-                    </div>
+    toast.success('Profile updated (UI only)');
+  }
 
-                    {/* Email */}
-                    <div>
-                        <Label>Email</Label>
-                        <Input
-                            name="email"
-                            value={user?.email || ''}
-                            disabled
-                        />
-                    </div>
+  return (
+    <Card>
+      <CardHeader className="py-4">
+        <CardHeading>
+          <CardTitle>Profile</CardTitle>
+          <CardDescription>
+            Manage profile information
+          </CardDescription>
+        </CardHeading>
+      </CardHeader>
 
-                    {/* Buttons */}
-                    <div className="flex justify-end gap-3">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => formik.resetForm()}
-                        >
-                            Reset
-                        </Button>
+      <CardContent className="py-8">
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="space-y-6 max-w-[520px]"
+          >
+            {/* Name */}
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Name <span className="text-red-500">*</span>
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Enter your name"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-                        <Button type="submit" disabled={loading || !formik?.dirty}>
-                            {loading && (
-                                <LoaderCircleIcon
-                                    className="animate-spin mr-2"
-                                    size={16}
-                                />
-                            )}
-                            Save Profile
-                        </Button>
-                    </div>
-                </form>
-            </CardContent>
-        </Card>
-    );
+            {/* Email */}
+            <div>
+              <FormLabel>Email</FormLabel>
+              <Input
+                value={user?.email || ''}
+                disabled
+              />
+            </div>
+
+            {/* Buttons */}
+            <div className="flex justify-end gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => form.reset()}
+              >
+                Reset
+              </Button>
+
+              <Button
+                type="submit"
+                disabled={loading || !form.formState.isDirty}
+              >
+                {loading && (
+                  <LoaderCircleIcon
+                    className="animate-spin mr-2"
+                    size={16}
+                  />
+                )}
+                Save Profile
+              </Button>
+            </div>
+          </form>
+        </Form>
+      </CardContent>
+    </Card>
+  );
 }

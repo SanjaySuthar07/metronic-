@@ -98,11 +98,13 @@ export default function Page() {
                 <FormLabel>Password<span className="text-red-500">*</span></FormLabel>
               </div>
               <div className="relative">
-                <Input
-                  placeholder="Your password"
-                  type={passwordVisible ? 'text' : 'password'}
-                  {...field}
-                />
+                <FormControl>
+                  <Input
+                    placeholder="Your password"
+                    type={passwordVisible ? 'text' : 'password'}
+                    {...field}
+                  />
+                </FormControl>
                 <Button
                   type="button"
                   variant="ghost"

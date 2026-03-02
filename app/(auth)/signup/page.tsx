@@ -159,11 +159,13 @@ export default function Page() {
                             <FormItem>
                                 <FormLabel>Password<span className="text-red-500">*</span></FormLabel>
                                 <div className="relative">
-                                    <Input
-                                        placeholder="Your password"
-                                        type={passwordVisible ? 'text' : 'password'}
-                                        {...field}
-                                    />
+                                    <FormControl>
+                                        <Input
+                                            placeholder="Your password"
+                                            type={passwordVisible ? 'text' : 'password'}
+                                            {...field}
+                                        />
+                                    </FormControl>
                                     <Button
                                         type="button"
                                         variant="ghost"
@@ -194,11 +196,13 @@ export default function Page() {
                             <FormItem>
                                 <FormLabel>Confirm Password<span className="text-red-500">*</span></FormLabel>
                                 <div className="relative">
-                                    <Input
-                                        type={passwordConfirmationVisible ? 'text' : 'password'}
-                                        {...field}
-                                        placeholder="Confirm your password"
-                                    />
+                                    <FormControl>
+                                        <Input
+                                            type={passwordConfirmationVisible ? 'text' : 'password'}
+                                            {...field}
+                                            placeholder="Confirm your password"
+                                        />
+                                    </FormControl>
                                     <Button
                                         type="button"
                                         variant="ghost"
