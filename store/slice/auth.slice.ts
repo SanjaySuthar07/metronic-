@@ -45,9 +45,10 @@ const authSlice = createSlice({
             .addCase(loginUser.rejected, (state) => {
                 state.loading = false;
             })
-            .addCase(logoutUser.fulfilled, () => {
+            .addCase(logoutUser.fulfilled, (state) => {
                 localStorage.removeItem('token');
                 localStorage.removeItem('refresh_token');
+                state.user = null
             })
             .addCase(getProfile.pending, (state) => {
                 state.loading = true;

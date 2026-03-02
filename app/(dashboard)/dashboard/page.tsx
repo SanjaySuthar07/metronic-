@@ -21,11 +21,16 @@ type IChannelStatsItems = Array<IChannelStatsItem>;
 
 function Dashboard() {
     const dispatch = useDispatch();
-    const { count } = useSelector((s) => s.dashboard)
-    console.log(count)
+    const { count, loading } = useSelector((s: any) => s.dashboard);
+
     useEffect(() => {
-        dispatch(getDashboard());
-    }, [dispatch]);
+        const checkAuth = async () => {
+            if (!loading) {
+                await dispatch(getDashboard());
+            }
+        }
+        checkAuth()
+    }, []);
 
     const Users: IChannelStatsItems = [
         { logo: 'admin.svg', info: count?.total_admin, desc: 'Admin', path: '' },
@@ -57,7 +62,6 @@ function Dashboard() {
           background-image: url('${toAbsoluteUrl('/media/images/2600x1600/bg-3-dark.png')}');
         }
       `}
-                    {/* grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 */}
                 </style>
                 <Card>
                     <CardHeader className="py-3">

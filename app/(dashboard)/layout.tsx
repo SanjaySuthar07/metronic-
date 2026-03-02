@@ -6,13 +6,15 @@ import { useSettings } from '@/providers/settings-provider';
 import { Footer } from './components/footer';
 import { Header } from './components/header';
 import { Sidebar } from './components/sidebar';
+import { useSelector } from 'react-redux';
 
 export function Layout({ children }: { children: ReactNode }) {
     const router = useRouter();
     const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+    const { user } = useSelector((s) => s.auth)
     useEffect(() => {
         const token = localStorage.getItem('token');
-        if (!token) {
+        if (!token && !user?.email) {
             router.replace('/signup');
         } else {
             setIsAuthenticated(true);
@@ -64,7 +66,7 @@ export function Layout({ children }: { children: ReactNode }) {
             <div className="wrapper flex grow flex-col">
                 <Header />
                 <main className="grow pt-5" role="content">
-                   
+
                     {children}
                 </main>
                 <Footer />

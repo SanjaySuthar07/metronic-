@@ -15,12 +15,14 @@ function CountBox({ item }) {
                                 width={28}
                                 height={28}
                                 className="dark:hidden"
+                                style={{ width: "auto", height: "auto" }}
                             />
                             <Image
                                 src={toAbsoluteUrl(`/media/ui/${item.logoDark}`)}
                                 alt="logo"
                                 width={28}
                                 height={28}
+                                style={{ width: "auto", height: "auto" }}
                                 className="light:hidden"
                             />
                         </>
@@ -30,6 +32,7 @@ function CountBox({ item }) {
                             alt="logo"
                             width={28}
                             height={28}
+                            style={{ width: "auto", height: "auto" }}
                         />
                     )}
                 </div>

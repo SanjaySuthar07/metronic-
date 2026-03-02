@@ -5,13 +5,7 @@ export const getDashboard = createAsyncThunk(
     'auth/getDashboard',
     async (_, { rejectWithValue }) => {
         try {
-            const token = localStorage.getItem('token');
-            const response = await api.get('/dashboard', {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    Accept: 'application/json',
-                },
-            });
+            const response = await api.get('/dashboard');
 
             return response.data;
         } catch (error: any) {

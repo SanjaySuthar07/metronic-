@@ -93,18 +93,7 @@ export const logoutUser = createAsyncThunk(
     'auth/logout',
     async (_, { rejectWithValue }) => {
         try {
-            const token = localStorage.getItem('token');
-            const response = await api.post(
-                '/logout',
-                {},
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        Accept: 'application/json',
-                    },
-                }
-            );
-
+            const response = await api.post('/logout');
             return response.data;
         } catch (error: any) {
             const message =
@@ -118,13 +107,7 @@ export const getProfile = createAsyncThunk(
     'auth/getProfile',
     async (_, { rejectWithValue }) => {
         try {
-            const token = localStorage.getItem('token');
-            const response = await api.get('/user', {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    Accept: 'application/json',
-                },
-            });
+            const response = await api.get('/user');
             return response.data;
         } catch (error: any) {
             const message =
@@ -144,14 +127,7 @@ export const changePassword = createAsyncThunk(
     'auth/change-password',
     async (payload: ChangePasswordPayload, { rejectWithValue }) => {
         try {
-            const token = localStorage.getItem('token');
-            const response = await api.post('/change-password', payload,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
-            );
+            const response = await api.post('/change-password', payload);
             return response.data;
         } catch (error: any) {
             const message =

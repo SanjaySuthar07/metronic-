@@ -41,7 +41,7 @@ export default function ChangePassword() {
   const [showConfirm, setShowConfirm] = useState(false);
 
   const form = useForm<ChangePasswordSchemaType>({
-    resolver: zodResolver(getChangePasswordSchema()),
+    // resolver: zodResolver(getChangePasswordSchema()),
     defaultValues: {
       current_password: '',
       new_password: '',

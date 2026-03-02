@@ -16,7 +16,7 @@ import {
   Search,
   SquareChevronRight,
 } from 'lucide-react';
-import { toAbsoluteUrl } from '@/lib/helpers';
+import { getInitials, toAbsoluteUrl } from '@/lib/helpers';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useScrollPosition } from '@/hooks/use-scroll-position';
@@ -34,6 +34,7 @@ import { Breadcrumb } from './breadcrumb';
 import { MegaMenu } from './mega-menu';
 import { MegaMenuMobile } from './mega-menu-mobile';
 import { SidebarMenu } from './sidebar-menu';
+import { useSelector } from 'react-redux';
 
 export function Header() {
   const [isSidebarSheetOpen, setIsSidebarSheetOpen] = useState(false);
@@ -41,7 +42,7 @@ export function Header() {
 
   const pathname = usePathname();
   const mobileMode = useIsMobile();
-
+  const { user } = useSelector((s) => s.auth)
   const scrollPosition = useScrollPosition();
   const headerSticky: boolean = scrollPosition > 0;
 
@@ -176,11 +177,22 @@ export function Header() {
               />
               <UserDropdownMenu
                 trigger={
-                  <img
-                    className="size-9 rounded-full border-2 border-green-500 shrink-0 cursor-pointer"
-                    src={toAbsoluteUrl('/media/avatars/300-2.png')}
-                    alt="User Avatar"
-                  />
+                  user?.avatar ? (
+                    <img
+                      className="w-9 h-9 rounded-full border border-border object-cover"
+                      src={user.avatar}
+                      alt={user?.name}
+                    />
+                  ) : (
+                    <div className="capitalize w-9 h-9 rounded-full bg-primary text-white flex items-center justify-center text-sm font-semibold">
+                      {getInitials(user?.name || user?.email || 'U')}
+                    </div>
+                  )
+                  // <img
+                  //   className="size-9 rounded-full border-2 border-green-500 shrink-0 cursor-pointer"
+                  //   src={toAbsoluteUrl('/media/avatars/300-2.png')}
+                  //   alt="User Avatar"
+                  // />
                 }
               />
             </>
