@@ -17,8 +17,8 @@ import {
 import UserList from './components/user-list';
 
 export const metadata: Metadata = {
-  title: 'Users',
-  description: 'Manage users.',
+  title: 'Roles',
+  description: 'Manage Roles.',
 };
 
 export default async function Page() {
