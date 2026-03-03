@@ -23,10 +23,16 @@ import { useDispatch, useSelector } from 'react-redux';
 import { loginUser } from '@/store/thunk/auth.thunk';
 import { AppDispatch, RootState } from '@/store';
 import { remember } from '@/store/slice/auth.slice';
+import VerifyOtpPage from '../verify-otp/page';
 export default function Page() {
   const router = useRouter();
+  const [oppenQR, setOppenQR] = useState(false);
+  const [qrCode, setQrCode] = useState<string | null>(null);
+  const [userId, setUserId] = useState<number | null>(null);
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
+  const [userType, setUserType] = useState<string | null>(null);
   const dispatch = useDispatch<AppDispatch>();
   const { loading, rememberUser } = useSelector((state: RootState) => state.auth);
   const form = useForm<SigninSchemaType>({
@@ -38,30 +44,43 @@ export default function Page() {
     },
   });
 
-  async function onSubmit(values: SigninSchemaType) {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const isValid = await form.trigger();
+    if (!isValid) return;
     setError(null);
+    const values = form.getValues();
     const payload = {
       email: values.email,
       password: values.password,
     };
-    const result = await dispatch(loginUser(payload));
-    if (loginUser.fulfilled.match(result)) {
-      router.push('/');
+
+    const resultAction = await dispatch(loginUser(payload));
+
+    if (loginUser.fulfilled.match(resultAction)) {
+      const data = resultAction.payload;
+      if (data?.qr_code) {
+        setQrCode(data.qr_code);
+        setUserId(data.user_id);
+        setOppenQR(true);
+        setMessage(data?.message);
+        setUserType(data?.user_type);
+      }
+
+      if (values.rememberMe) {
+        dispatch(remember(values));
+      } else {
+        dispatch(remember(null));
+      }
     } else {
-      setError(result.payload as string);
+      setError(resultAction.payload as string);
     }
-    if (values.rememberMe) {
-      dispatch(remember({ email: values.email, rememberMe: values.rememberMe }))
-      dispatch(remember(values))
-    } else {
-      dispatch(remember(null))
-    }
-  }
+  };
 
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit(onSubmit)}
+        onSubmit={handleSubmit}
         className="block w-full space-y-5"
       >
         <div className="space-y-1.5 pb-3">
@@ -134,7 +153,7 @@ export default function Page() {
         <div className="flex justify-end  m-0 p-0">
           <Link
             href="/forget-password"
-            className="text-sm font-semibold kt-link hover:text-primary"
+            className="kt-link font-semibold  text-primary"
           >
             Forgot Password?
           </Link>
@@ -163,6 +182,7 @@ export default function Page() {
 
         <div className="flex flex-col gap-2.5">
           <Button type="submit" disabled={loading}>
+            {/* <Button type="submit" > */}
             {loading ? (
               <LoaderCircleIcon className="size-4 animate-spin" />
             ) : null}
@@ -174,12 +194,20 @@ export default function Page() {
           Don&apos;t have an account?{' '}
           <Link
             href="/signup"
-            className="text-sm font-semibold kt-link hover:text-primary"
+            className="text-primary font-semibold "
           >
             Sign Up
           </Link>
         </p>
       </form>
+      <VerifyOtpPage
+        oppenQR={oppenQR}
+        setOppenQR={setOppenQR}
+        qrCode={qrCode}
+        userId={userId}
+        message={message}
+        userType={userType}
+      />
     </Form >
   );
 }

@@ -45,6 +45,7 @@ api.interceptors.response.use((response) => response, async (error) => {
                 `Bearer ${newAccessToken}`;
             return api(originalRequest);
         } catch (refreshError) {
+            const dispatch = useDispatch()
             store.dispatch(removeData());
             window.location.href = '/signin';
             return Promise.reject(refreshError);

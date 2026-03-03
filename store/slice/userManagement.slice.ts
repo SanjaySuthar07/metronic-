@@ -42,7 +42,6 @@ const userManagementSlice = createSlice({
         state.users = [];
         state.loading = false;
         state.error = action.payload;
-
       })
       .addCase(fetchRoles.pending, (state) => {
         state.loading = true;

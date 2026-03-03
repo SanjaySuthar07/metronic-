@@ -1,7 +1,7 @@
 'use client';
-import { useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { redirect } from 'next/navigation';
+// import { redirect } from 'next/navigation';
 import {
   ColumnDef,
   getCoreRowModel,
@@ -10,7 +10,6 @@ import {
   SortingState,
   useReactTable,
 } from '@tanstack/react-table';
-
 import { AppDispatch, RootState } from '@/store';
 import { fetchUsers } from '@/store/thunk/userManagement.thunk';
 
@@ -44,6 +43,7 @@ const DataGridToolbar = ({
   selectedRole: string;
   onRoleChange: (value: string) => void;
 }) => {
+  const { roles } = useSelector((s) => s.userManagement)
   return (
     <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
@@ -62,8 +62,13 @@ const DataGridToolbar = ({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Type</SelectItem>
-            <SelectItem value="agency">Agency</SelectItem>
-            <SelectItem value="admin">Admin</SelectItem>
+            {
+              roles.map((role) => (
+                <Fragment key={role?.id}>
+                  <SelectItem value={role?.name}>{role?.name}</SelectItem>
+                </Fragment>
+              ))
+            }
           </SelectContent>
         </Select>
       </div>
@@ -80,12 +85,12 @@ const DataGridToolbar = ({
 
 const UserList = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { users, loading, total } = useSelector((state: RootState) => state.userManagement);
-
+  const { users, loading, total, } = useSelector((state: RootState) => state.userManagement);
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+  const [isEdit, setIsEdit] = useState(false)
+  const [editData, setEditData] = useState()
   const [inputValue, setInputValue] = useState('');
   const [selectedRole, setSelectedRole] = useState<string>('all');
-
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
@@ -96,33 +101,33 @@ const UserList = () => {
   useEffect(() => {
     setPagination((prev) => ({ ...prev, pageIndex: 0 }));
   }, [inputValue, selectedRole]);
- useEffect(() => {
-  const sortField = sorting?.[0]?.id;
-  const sortDirection = sorting?.[0]?.desc ? "desc" : "asc";
+  useEffect(() => {
+    const sortField = sorting?.[0]?.id;
+    const sortDirection = sorting?.[0]?.desc ? "desc" : "asc";
+    const roleFilter =
+      selectedRole && selectedRole !== "all"
+        ? selectedRole
+        : "";
 
-  const roleFilter =
-    selectedRole && selectedRole !== "all"
-      ? selectedRole
-      : undefined;
-
-  dispatch(
-    fetchUsers({
-      user_type: roleFilter,
-      page: pagination.pageIndex + 1,
-      per_page: pagination.pageSize,
-      search: inputValue.trim() || undefined,
-      sort: sortField,
-      dir: sortField ? sortDirection : undefined,
-    })
-  );
-}, [
-  dispatch,
-  pagination.pageIndex,
-  pagination.pageSize,
-  inputValue,
-  selectedRole,
-  sorting,
-]);
+    console.log("this", roleFilter)
+    dispatch(
+      fetchUsers({
+        user_type: roleFilter,
+        page: pagination.pageIndex + 1,
+        per_page: pagination.pageSize,
+        search: inputValue.trim() || undefined,
+        sort: sortField,
+        dir: sortField ? sortDirection : undefined,
+      })
+    );
+  }, [
+    dispatch,
+    pagination.pageIndex,
+    pagination.pageSize,
+    inputValue,
+    selectedRole,
+    sorting,
+  ]);
 
   const columns = useMemo<ColumnDef<any>[]>(() => [
     {
@@ -169,7 +174,6 @@ const UserList = () => {
         const type = row.original?.user_type;
         return type ? (
           <Badge variant="secondary" className="capitalize">
-            <BadgeDot />
             {type}
           </Badge>
         ) : (
@@ -195,20 +199,20 @@ const UserList = () => {
         skeleton: <Skeleton className="h-7 w-28" />,
       },
     },
-    {
-      accessorKey: 'email_verified_at',
-      enableSorting: true,
-      id: 'updated_at',
-      header: ({ column }) => <DataGridColumnHeader title="Last Sign In" column={column} />,
-      cell: ({ row }) => {
-        const last = row.original?.email_verified_at;
-        return last ? formatDate(new Date(last)) : '-';
-      },
-      size: 170,
-      meta: {
-        skeleton: <Skeleton className="h-7 w-32" />,
-      },
-    },
+    // {
+    //   accessorKey: 'email_verified_at',
+    //   enableSorting: true,
+    //   id: 'updated_at',
+    //   header: ({ column }) => <DataGridColumnHeader title="Last Sign In" column={column} />,
+    //   cell: ({ row }) => {
+    //     const last = row.original?.email_verified_at;
+    //     return last ? formatDate(new Date(last)) : '-';
+    //   },
+    //   size: 170,
+    //   meta: {
+    //     skeleton: <Skeleton className="h-7 w-32" />,
+    //   },
+    // },
     {
       id: 'actions',
       header: 'Actions',
@@ -221,13 +225,19 @@ const UserList = () => {
           </DropdownMenuTrigger>
           <DropdownMenuContent side="bottom" align="start">
             <DropdownMenuItem
+              onClick={() => {
+                setEditData(row.original);
+                setInviteDialogOpen(true)
+                setIsEdit(true)
+              }}
             >
               Edit
             </DropdownMenuItem>
             <DropdownMenuItem
               disabled={row.original.isProtected || row.original.isDefault}
               onClick={() => {
-
+                // setInviteDialogOpen(true)
+                // setIsEdit(true)
               }}
             >
               View
@@ -282,7 +292,7 @@ const UserList = () => {
         table={table}
         recordCount={total}
         isLoading={loading}
-        onRowClick={(row) => redirect(`/user-management/users/${row.id}`)}
+        // onRowClick={(row) => redirect(`/user-management/users/${row.id}`)}
         tableLayout={{
           columnsResizable: true,
           columnsPinnable: true,
@@ -290,7 +300,7 @@ const UserList = () => {
           columnsVisibility: true,
         }}
         tableClassNames={{
-          bodyRow: `border-b border-border hover:bg-muted/40 transition-colors cursor-pointer`,
+          bodyRow: `border-b border-border hover:bg-muted/80 transition-colors cursor-pointer`,
           headerRow: 'border-b border-border',
           edgeCell: 'px-5',
         }}
@@ -299,11 +309,14 @@ const UserList = () => {
           <DataGridToolbar
             inputValue={inputValue}
             onInputChange={setInputValue}
-            onAddUser={() => setInviteDialogOpen(true)}
+            onAddUser={() => {
+              setInviteDialogOpen(true)
+              setIsEdit(false)
+            }
+            }
             selectedRole={selectedRole}
             onRoleChange={setSelectedRole}
           />
-
           <CardTable>
             <ScrollArea>
               <DataGridTable />
@@ -319,6 +332,8 @@ const UserList = () => {
 
       <UserInviteDialog
         open={inviteDialogOpen}
+        isEdit={isEdit}
+        editData={editData}
         closeDialog={() => setInviteDialogOpen(false)}
       />
     </>

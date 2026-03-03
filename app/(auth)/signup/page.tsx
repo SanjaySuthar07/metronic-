@@ -110,7 +110,7 @@ export default function Page() {
             <Form {...form}>
                 <form onSubmit={handleSubmit} className="block w-full space-y-5">
                     <div className="space-y-1.5 pb-3">
-                        <h1 className="text-2xl font-semibold tracking-tight text-center">
+                        <h1 className="text-2xl font-semibold tracking-tight text-center ">
                             Sign Up
                         </h1>
                     </div>
@@ -279,7 +279,7 @@ export default function Page() {
                         Already have an account?{' '}
                         <Link
                             href="/signin"
-                            className="text-sm text-sm font-semibold kt-link hover:text-primary"
+                            className="text-primary font-semibold"
                         >
                             Sign In
                         </Link>

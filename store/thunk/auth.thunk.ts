@@ -44,6 +44,27 @@ export const loginUser = createAsyncThunk(
         }
     }
 );
+
+interface VerifyMfaPayload {
+    user_id: number;
+    otp: number;
+    user_type: string;
+}
+
+export const verifyMfa = createAsyncThunk(
+    'auth/verify-mfa',
+    async (payload: VerifyMfaPayload, { rejectWithValue }) => {
+        try {
+            const response = await api.post('/verify-Mfa', payload);
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || "Invalid OTP";
+            return rejectWithValue(message);
+        }
+    }
+);
+
 interface ForgetPasswordPayload {
     email: string;
 }

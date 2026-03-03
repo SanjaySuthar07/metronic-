@@ -22,11 +22,8 @@ export default function VerifyEmailModal({
 
     return (
         <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
-
-            <div className="kt-card max-w-[440px]  w-full">
-
+            <div className="kt-card max-w-[440px] w-full">
                 <div className="kt-card-content p-10">
-
                     {/* Illustration */}
                     <div className="flex justify-center py-6">
                         <Image
@@ -44,12 +41,10 @@ export default function VerifyEmailModal({
                             className="light:hidden"
                         />
                     </div>
-
                     {/* Heading */}
                     <h3 className="text-lg font-medium text-mono text-center mb-3">
                         Check your email
                     </h3>
-
                     {/* Description */}
                     <div className="text-sm text-center text-secondary-foreground mb-7.5">
                         Please click the link sent to your email{" "}
@@ -59,7 +54,6 @@ export default function VerifyEmailModal({
                         <br />
                         to verify your account. Thank you
                     </div>
-
                     {/* Button */}
                     <div className="flex justify-center mb-5">
                         <Link
@@ -69,7 +63,6 @@ export default function VerifyEmailModal({
                             Sign In
                         </Link>
                     </div>
-
                     {/* Resend */}
                     <div className="flex items-center justify-center gap-1 text-2sm">
                         <span className="text-secondary-foreground">
@@ -82,10 +75,8 @@ export default function VerifyEmailModal({
                             Resend
                         </span>
                     </div>
-
                 </div>
             </div>
-
         </div>
     );
 }

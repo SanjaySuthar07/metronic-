@@ -36,6 +36,7 @@ import {
 } from '@/components/ui/select';
 
 import { UserAddSchema, UserAddSchemaType } from '../forms/user-add-schema';
+import { useSelector } from 'react-redux';
 
 const mockRoles = [
   { id: '1', name: 'Admin' },
@@ -46,12 +47,16 @@ const mockRoles = [
 const UserAddDialog = ({
   open,
   closeDialog,
+  isEdit,
+  editData
 }: {
   open: boolean;
   closeDialog: () => void;
+  isEdit: boolean
+  editData: any
 }) => {
   const [isProcessing, setIsProcessing] = useState(false);
-
+  const { roles } = useSelector((s) => s.userManagement)
   const form = useForm<UserAddSchemaType>({
     resolver: zodResolver(UserAddSchema),
     defaultValues: {
@@ -64,17 +69,25 @@ const UserAddDialog = ({
 
   useEffect(() => {
     if (open) {
-      form.reset();
+      if (isEdit && editData) {
+        form.reset({
+          name: editData.name || '',
+          email: editData.email || '',
+          roleId: editData.user_type || '',
+        });
+      } else {
+        form.reset({
+          name: '',
+          email: '',
+          roleId: '',
+        });
+      }
     }
-  }, [open, form]);
+  }, [open, isEdit, editData, form]);
 
   const handleSubmit = async (values: UserAddSchemaType) => {
     setIsProcessing(true);
-
-    // Fake delay for future API simulation
     setTimeout(() => {
-      console.log('Submitted Values:', values);
-
       toast.custom(
         () => (
           <Alert variant="mono" icon="success" close={false}>
@@ -96,14 +109,12 @@ const UserAddDialog = ({
     <Dialog open={open} onOpenChange={closeDialog}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add User</DialogTitle>
+          <DialogTitle> {isEdit ? "Edit" : "Add"} User </DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)}>
             <DialogBody className="pt-2.5 space-y-6">
-
-              {/* Name */}
               <FormField
                 control={form.control}
                 name="name"
@@ -118,7 +129,6 @@ const UserAddDialog = ({
                 )}
               />
 
-              {/* Email */}
               <FormField
                 control={form.control}
                 name="email"
@@ -126,14 +136,13 @@ const UserAddDialog = ({
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter user email" {...field} />
+                      <Input disabled={isEdit} placeholder="Enter user email" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              {/* Role */}
               <FormField
                 control={form.control}
                 name="roleId"
@@ -150,7 +159,7 @@ const UserAddDialog = ({
                         </SelectTrigger>
                         <SelectContent>
                           <SelectGroup>
-                            {mockRoles.map((role) => (
+                            {roles.map((role) => (
                               <SelectItem key={role.id} value={role.id}>
                                 {role.name}
                               </SelectItem>
@@ -177,7 +186,7 @@ const UserAddDialog = ({
                 {isProcessing && (
                   <LoaderCircleIcon className="animate-spin" />
                 )}
-                Add user
+                {isEdit ? "Update User" : "Add User"}
               </Button>
             </DialogFooter>
           </form>

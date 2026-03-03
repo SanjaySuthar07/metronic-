@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { registerUser, loginUser, logoutUser, getProfile } from '../thunk/auth.thunk';
+import { registerUser, loginUser, verifyMfa, logoutUser, getProfile } from '../thunk/auth.thunk';
 
 
 interface AuthState {
@@ -67,6 +67,19 @@ const authSlice = createSlice({
                 localStorage.removeItem('token');
                 localStorage.removeItem('refresh_token');
                 state.user = null
+            })
+            .addCase(verifyMfa.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(verifyMfa.fulfilled, (state, action) => {
+                state.loading = false;
+                if (action.payload.token) {
+                    localStorage.setItem('token', action.payload.token);
+                    localStorage.setItem('refresh_token', action.payload.refresh_token);
+                }
+            })
+            .addCase(verifyMfa.rejected, (state) => {
+                state.loading = false;
             })
     },
 });
