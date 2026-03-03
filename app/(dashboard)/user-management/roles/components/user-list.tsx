@@ -15,7 +15,6 @@ import {
 
 import { AppDispatch, RootState } from '@/store';
 import { fetchUsers } from '@/store/thunk/userManagement.thunk';
-
 import { ChevronRight, Plus, Search, X } from 'lucide-react';
 import { formatDate, getInitials } from '@/lib/helpers';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -28,9 +27,7 @@ import { DataGridPagination } from '@/components/ui/data-grid-pagination';
 import { DataGridTable } from '@/components/ui/data-grid-table';
 import { Input } from '@/components/ui/input';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import { Skeleton } from '@/components/ui/skeleton';
 import UserInviteDialog from './user-add-dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const UserList = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -189,10 +186,8 @@ const UserList = () => {
     return (
       <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
 
-        {/* LEFT SIDE */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
 
-          {/* Search */}
           <div className="relative">
             <Search className="size-4 text-muted-foreground absolute start-3 top-1/2 -translate-y-1/2" />
             <Input
@@ -202,21 +197,8 @@ const UserList = () => {
               className="ps-9 w-full sm:w-64"
             />
           </div>
-
-          {/* Role Filter */}
-          <Select defaultValue="all">
-            <SelectTrigger className="w-full sm:w-40">
-              <SelectValue placeholder="All roles" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All roles</SelectItem>
-              <SelectItem value="agency">Agency</SelectItem>
-              <SelectItem value="admin">Admin</SelectItem>
-            </SelectContent>
-          </Select>
         </div>
 
-        {/* RIGHT SIDE */}
         <div>
           <Button
             className="bg-primary text-white"
@@ -230,10 +212,6 @@ const UserList = () => {
       </CardHeader>
     );
   };
-
-  /* ===============================
-     UI
-  ================================= */
 
   return (
     <>

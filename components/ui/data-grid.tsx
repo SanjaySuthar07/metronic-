@@ -122,7 +122,7 @@ function DataGrid<TData extends object>({ children, table, ...props }: DataGridP
     loadingMode: 'skeleton',
     tableLayout: {
       dense: false,
-      cellBorder: false,
+      cellBorder: true,
       rowBorder: true,
       rowRounded: false,
       stripped: false,

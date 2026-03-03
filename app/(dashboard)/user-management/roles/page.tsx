@@ -14,11 +14,11 @@ import {
   ToolbarHeading,
   ToolbarTitle,
 } from '@/components/common/toolbar';
-import RoleList from './components/role-list';
+import UserList from './components/user-list';
 
 export const metadata: Metadata = {
-  title: 'Roles',
-  description: 'Manage user roles.',
+  title: 'Users',
+  description: 'Manage users.',
 };
 
 export default async function Page() {
@@ -35,7 +35,7 @@ export default async function Page() {
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
-                  <BreadcrumbPage>Users</BreadcrumbPage>
+                  <BreadcrumbPage>User Management</BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
@@ -43,8 +43,9 @@ export default async function Page() {
           <ToolbarActions></ToolbarActions>
         </Toolbar>
       </Container>
+
       <Container>
-        <RoleList />
+        <UserList />
       </Container>
     </>
   );
