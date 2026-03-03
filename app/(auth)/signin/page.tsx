@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -38,49 +38,51 @@ export default function Page() {
   const form = useForm<SigninSchemaType>({
     resolver: zodResolver(getSigninSchema()),
     defaultValues: {
-      email: rememberUser?.email || '',
-      password: rememberUser?.password || '',
-      rememberMe: rememberUser?.rememberMe || false,
+      email: '',
+      password: '',
+      rememberMe: false,
     },
   });
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const isValid = await form.trigger();
-    if (!isValid) return;
+  useEffect(() => {
+    if (rememberUser) {
+      form.setValue('email', rememberUser.email || '');
+      form.setValue('password', rememberUser.password || '');
+      form.setValue('rememberMe', rememberUser.rememberMe || false);
+    }
+  }, [rememberUser, form]);
+  async function onSubmit(values: SigninSchemaType) {
     setError(null);
-    const values = form.getValues();
     const payload = {
       email: values.email,
       password: values.password,
     };
-
-    const resultAction = await dispatch(loginUser(payload));
-
-    if (loginUser.fulfilled.match(resultAction)) {
-      const data = resultAction.payload;
+    const result = await dispatch(loginUser(payload));
+    if (loginUser.fulfilled.match(result)) {
+      const data = result.payload;
       if (data?.qr_code) {
         setQrCode(data.qr_code);
         setUserId(data.user_id);
         setOppenQR(true);
         setMessage(data?.message);
-        setUserType(data?.user_type);
+        setUserType(data?.user_type)
       }
-
-      if (values.rememberMe) {
-        dispatch(remember(values));
-      } else {
-        dispatch(remember(null));
-      }
-    } else {
-      setError(resultAction.payload as string);
     }
-  };
+    else if (loginUser.rejected.match(result)) {
+      setError(result.payload as string);
+    }
+
+    if (values.rememberMe) {
+      dispatch(remember({ email: values.email, rememberMe: values.rememberMe }))
+      dispatch(remember(values))
+    } else {
+      dispatch(remember(null))
+    }
+  }
 
   return (
     <Form {...form}>
       <form
-        onSubmit={handleSubmit}
+        onSubmit={form.handleSubmit(onSubmit)}
         className="block w-full space-y-5"
       >
         <div className="space-y-1.5 pb-3">
