@@ -14,13 +14,17 @@ const initialState: AuthState = {
     rememberUser: null,
 };
 
-
 const authSlice = createSlice({
     name: 'auth',
     initialState,
     reducers: {
         remember: (state, action) => {
             state.rememberUser = action.payload
+        },
+        removeData: (state) => {
+            localStorage.removeItem('token');
+            localStorage.removeItem('refresh_token');
+            state.user = null
         }
     },
     extraReducers: (builder) => {
@@ -60,9 +64,11 @@ const authSlice = createSlice({
             .addCase(getProfile.rejected, (state) => {
                 state.loading = false;
                 state.user = null;
+                localStorage.removeItem('token');
+                localStorage.removeItem('refresh_token');
+                state.user = null
             })
     },
 });
-
-export const { remember } = authSlice.actions
+export const { remember, removeData } = authSlice.actions
 export default authSlice.reducer;

@@ -1,4 +1,6 @@
+import { removeData } from '@/store/slice/auth.slice';
 import axios from 'axios';
+import { useDispatch } from 'react-redux';
 const api = axios.create({
     baseURL: '/api',
     headers: {
@@ -42,8 +44,8 @@ api.interceptors.response.use((response) => response, async (error) => {
                 `Bearer ${newAccessToken}`;
             return api(originalRequest);
         } catch (refreshError) {
-            localStorage.removeItem('token');
-            localStorage.removeItem('refresh_token');
+            const dispatch = useDispatch()
+            dispatch(removeData())
             window.location.href = '/signin';
             return Promise.reject(refreshError);
         }

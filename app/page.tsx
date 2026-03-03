@@ -14,7 +14,6 @@ export default function Home() {
   useEffect(() => {
     const checkAuth = async () => {
       const token = localStorage.getItem("token");
-
       if (!token) {
         router.replace("/signup");
         return;
