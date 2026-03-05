@@ -1,24 +1,42 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { fetchUsers, fetchRoles } from "../thunk/userManagement.thunk";
 
-interface UserState {
-  users: any[];
-  roles: any[];
-  loading: boolean;
+interface UserManagementState {
+  users: {
+    data: any[];
+    total: number;
+    currentPage: number;
+    perPage: number;
+  };
+  roles: {
+    data: any[];
+    total: number;
+    currentPage: number;
+    perPage: number;
+  };
+  loadingUsers: boolean;
+  loadingRoles: boolean;
   error: string | null;
-  total: number;
-  currentPage: number;
-  perPage: number;
 }
 
-const initialState: UserState = {
-  users: [],
-  roles: [],
-  loading: false,
+const initialState: UserManagementState = {
+  users: {
+    data: [],
+    total: 0,
+    currentPage: 1,
+    perPage: 10,
+  },
+
+  roles: {
+    data: [],
+    total: 0,
+    currentPage: 1,
+    perPage: 10,
+  },
+
+  loadingUsers: false,
+  loadingRoles: false,
   error: null,
-  total: 0,
-  currentPage: 1,
-  perPage: 10,
 };
 
 const userManagementSlice = createSlice({
@@ -28,33 +46,30 @@ const userManagementSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchUsers.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+        state.loadingUsers = true;
       })
+
       .addCase(fetchUsers.fulfilled, (state, action) => {
-        state.loading = false;
-        state.users = action.payload.users.data;
-        state.total = action.payload.users.total;
-        state.currentPage = action.payload.users.current_page;
-        state.perPage = action.payload.users.per_page;
+        state.loadingUsers = false;
+
+        state.users.data = action.payload.users.data;
+        state.users.total = action.payload.users.total;
+        state.users.currentPage = action.payload.users.current_page;
+        state.users.perPage = action.payload.users.per_page;
       })
-      .addCase(fetchUsers.rejected, (state, action: any) => {
-        state.users = [];
-        state.loading = false;
-        state.error = action.payload;
-      })
+
       .addCase(fetchRoles.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+        state.loadingRoles = true;
       })
+
       .addCase(fetchRoles.fulfilled, (state, action) => {
-        state.loading = false;
-        state.roles = action.payload.roles;
+        state.loadingRoles = false;
+
+        state.roles.data = action.payload.roles.data;
+        state.roles.total = action.payload.roles.total;
+        state.roles.currentPage = action.payload.roles.current_page;
+        state.roles.perPage = action.payload.roles.per_page;
       })
-      .addCase(fetchRoles.rejected, (state, action: any) => {
-        state.loading = false;
-        state.error = action.payload;
-      });
   },
 });
 

@@ -6,7 +6,6 @@ export const getDashboard = createAsyncThunk(
     async (_, { rejectWithValue }) => {
         try {
             const response = await api.get('/dashboard');
-
             return response.data;
         } catch (error: any) {
             const message =

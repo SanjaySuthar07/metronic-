@@ -11,7 +11,12 @@ const api = axios.create({
 
 api.interceptors.request.use((config) => {
     const token = localStorage.getItem('token');
-    if (token) {
+    const publicRoutes = [
+        '/login',
+        '/register',
+        '/refresh'
+    ];
+    if (token && !publicRoutes.includes(config.url || '')) {
         config.headers.Authorization = `Bearer ${token}`;
     }
     return config;

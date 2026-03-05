@@ -38,12 +38,6 @@ import {
 import { UserAddSchema, UserAddSchemaType } from '../forms/user-add-schema';
 import { useSelector } from 'react-redux';
 
-const mockRoles = [
-  { id: '1', name: 'Admin' },
-  { id: '2', name: 'Manager' },
-  { id: '3', name: 'User' },
-];
-
 const UserAddDialog = ({
   open,
   closeDialog,
@@ -159,7 +153,7 @@ const UserAddDialog = ({
                         </SelectTrigger>
                         <SelectContent>
                           <SelectGroup>
-                            {roles.map((role) => (
+                            {roles?.data?.map((role) => (
                               <SelectItem key={role.id} value={role.id}>
                                 {role.name}
                               </SelectItem>

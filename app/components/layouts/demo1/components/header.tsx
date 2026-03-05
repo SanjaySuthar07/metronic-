@@ -16,7 +16,7 @@ import {
   Search,
   SquareChevronRight,
 } from 'lucide-react';
-import { toAbsoluteUrl } from '@/lib/helpers';
+import { getInitials, toAbsoluteUrl } from '@/lib/helpers';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useScrollPosition } from '@/hooks/use-scroll-position';
@@ -33,6 +33,7 @@ import { Breadcrumb } from './breadcrumb';
 import { MegaMenu } from './mega-menu';
 import { MegaMenuMobile } from './mega-menu-mobile';
 import { SidebarMenu } from './sidebar-menu';
+import { useSelector } from 'react-redux';
 
 export function Header() {
   const [isSidebarSheetOpen, setIsSidebarSheetOpen] = useState(false);
@@ -44,6 +45,7 @@ export function Header() {
   const scrollPosition = useScrollPosition();
   const headerSticky: boolean = scrollPosition > 0;
 
+  const { user } = useSelector((s) => s.auth)
   // Close sheet when route changes
   useEffect(() => {
     setIsMegaMenuSheetOpen(false);
@@ -123,23 +125,10 @@ export function Header() {
 
         {/* HeaderTopbar */}
         <div className="flex items-center gap-3">
-          
-            <>
-              {!mobileMode && (
-                <SearchDialog
-                  trigger={
-                    <Button
-                      variant="ghost"
-                      mode="icon"
-                      shape="circle"
-                      className="size-9 hover:bg-primary/10 hover:[&_svg]:text-primary"
-                    >
-                      <Search className="size-4.5!" />
-                    </Button>
-                  }
-                />
-              )}
-              <NotificationsSheet
+
+          <>
+            {!mobileMode && (
+              <SearchDialog
                 trigger={
                   <Button
                     variant="ghost"
@@ -147,44 +136,63 @@ export function Header() {
                     shape="circle"
                     className="size-9 hover:bg-primary/10 hover:[&_svg]:text-primary"
                   >
-                    <Bell className="size-4.5!" />
+                    <Search className="size-4.5!" />
                   </Button>
                 }
               />
-              <ChatSheet
-                trigger={
-                  <Button
-                    variant="ghost"
-                    mode="icon"
-                    shape="circle"
-                    className="size-9 hover:bg-primary/10 hover:[&_svg]:text-primary"
-                  >
-                    <MessageCircleMore className="size-4.5!" />
-                  </Button>
-                }
-              />
-              <AppsDropdownMenu
-                trigger={
-                  <Button
-                    variant="ghost"
-                    mode="icon"
-                    shape="circle"
-                    className="size-9 hover:bg-primary/10 hover:[&_svg]:text-primary"
-                  >
-                    <LayoutGrid className="size-4.5!" />
-                  </Button>
-                }
-              />
-              <UserDropdownMenu
-                trigger={
+            )}
+            <NotificationsSheet
+              trigger={
+                <Button
+                  variant="ghost"
+                  mode="icon"
+                  shape="circle"
+                  className="size-9 hover:bg-primary/10 hover:[&_svg]:text-primary"
+                >
+                  <Bell className="size-4.5!" />
+                </Button>
+              }
+            />
+            <ChatSheet
+              trigger={
+                <Button
+                  variant="ghost"
+                  mode="icon"
+                  shape="circle"
+                  className="size-9 hover:bg-primary/10 hover:[&_svg]:text-primary"
+                >
+                  <MessageCircleMore className="size-4.5!" />
+                </Button>
+              }
+            />
+            <AppsDropdownMenu
+              trigger={
+                <Button
+                  variant="ghost"
+                  mode="icon"
+                  shape="circle"
+                  className="size-9 hover:bg-primary/10 hover:[&_svg]:text-primary"
+                >
+                  <LayoutGrid className="size-4.5!" />
+                </Button>
+              }
+            />
+            <UserDropdownMenu
+              trigger={
+                user?.avatar ? (
                   <img
-                    className="size-9 rounded-full border-2 border-green-500 shrink-0 cursor-pointer"
-                    src={toAbsoluteUrl('/media/avatars/300-2.png')}
-                    alt="User Avatar"
+                    className="w-9 h-9 rounded-full border border-border object-cover"
+                    src={user.avatar}
+                    alt={user?.name}
                   />
-                }
-              />
-            </>
+                ) : (
+                  <div className="capitalize w-9 h-9 rounded-full bg-primary text-white flex items-center justify-center text-sm font-semibold">
+                    {getInitials(user?.name || user?.email || 'U')}
+                  </div>
+                )
+              }
+            />
+          </>
         </div>
       </Container>
     </header>

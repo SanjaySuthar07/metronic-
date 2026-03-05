@@ -4,7 +4,7 @@ import {
   Moon,
   User,
 } from 'lucide-react';
-import { signOut } from 'next-auth/react';
+// import { signOut } from 'next-auth/react';
 import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import {
@@ -15,15 +15,23 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Switch } from '@/components/ui/switch';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { getInitials } from '@/lib/helpers';
+import { logoutUser } from '@/store/thunk/auth.thunk';
+import { useRouter } from 'next/navigation';
 
 export function UserDropdownMenu({ trigger }: { trigger: ReactNode }) {
   const { theme, setTheme } = useTheme();
+  const router = useRouter()
   const handleThemeToggle = (checked: boolean) => {
     setTheme(checked ? 'dark' : 'light');
   };
   const { user } = useSelector((state) => state.auth);
+  const dispatch = useDispatch()
+  const signOut = async () => {
+    await dispatch(logoutUser())
+    router.push("/signin")
+  }
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>{trigger}</DropdownMenuTrigger>
