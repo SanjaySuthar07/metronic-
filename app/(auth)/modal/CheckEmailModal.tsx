@@ -6,6 +6,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/store";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { RiCloseFill } from "@remixicon/react";
 
 interface Props {
   isOpen: boolean;
@@ -26,6 +27,9 @@ export default function CheckEmailModal({
   return (
     <div className="fixed inset-0 bg-black/70 dark:bg-black/80 flex justify-center items-center z-50">
       <div className="kt-card max-w-[430px] w-full relative bg-white dark:bg-slate-900">
+        <span className="float-right m-3 cursor-pointer" onClick={onClose}>
+          <RiCloseFill></RiCloseFill>
+        </span>
         <div className="kt-card-content p-10">
           <div className="flex justify-center py-10">
             <Image

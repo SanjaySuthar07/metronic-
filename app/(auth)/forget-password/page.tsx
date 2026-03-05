@@ -25,7 +25,7 @@ export default function Page() {
 
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [showModal, setShowModal] = useState(false);
+  const [showModal, setShowModal] = useState(true);
   const [emailSent, setEmailSent] = useState('');
 
   const formSchema = z.object({
@@ -56,7 +56,6 @@ export default function Page() {
     } else {
       setError(resultAction.payload as string);
     }
-
     setLoading(false);
   };
 

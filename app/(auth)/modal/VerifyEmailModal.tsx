@@ -1,8 +1,8 @@
 "use client";
-
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import { RiCloseFill } from "@remixicon/react";
 
 interface Props {
     isOpen: boolean;
@@ -21,6 +21,9 @@ export default function VerifyEmailModal({
     return (
         <div className="fixed inset-0 bg-black/70 dark:bg-black/80 flex justify-center items-center z-50">
             <div className="kt-card max-w-[430px] w-full relative bg-white dark:bg-slate-900">
+                <span className="float-right m-3 cursor-pointer" onClick={onClose}>
+                    <RiCloseFill></RiCloseFill>
+                </span>
                 <div className="kt-card-content p-10">
                     <div className="flex justify-center py-6">
                         <Image

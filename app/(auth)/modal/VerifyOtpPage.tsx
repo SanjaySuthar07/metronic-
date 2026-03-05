@@ -1,5 +1,5 @@
 'use client';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,9 +8,10 @@ import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/store';
 import { verifyMfa } from '@/store/thunk/auth.thunk';
 import Image from 'next/image';
+import { RiCloseFill } from '@remixicon/react';
 interface Props {
     oppenQR: boolean;
-    setOppenQR: (value: boolean) => void;
+    onClose: () => void;
     qrCode: string | null;
     userId: number | null;
     message: string,
@@ -18,7 +19,7 @@ interface Props {
 }
 export default function VerifyOtpPage({
     oppenQR,
-    setOppenQR,
+    onClose,
     qrCode,
     message,
     userId,
@@ -38,7 +39,6 @@ export default function VerifyOtpPage({
 
     const handleChange = (index: number, value: string) => {
         if (!/^\d*$/.test(value)) return;
-
         const newOtp = [...otp];
         newOtp[index] = value.slice(-1);
         setOtp(newOtp);
@@ -93,7 +93,7 @@ export default function VerifyOtpPage({
             setSuccess(true);
 
             setTimeout(() => {
-                setOppenQR(false);
+                onClose()
                 router.push('/');
             }, 1200);
         } else {
@@ -106,6 +106,9 @@ export default function VerifyOtpPage({
     return (
         <div className="fixed inset-0 bg-black/70 dark:bg-black/80 flex justify-center items-center z-50">
             <div className="kt-card max-w-[430px] w-full relative bg-white dark:bg-slate-900">
+                <span className="float-right m-3 cursor-pointer" onClick={onClose}>
+                    <RiCloseFill></RiCloseFill>
+                </span>
                 <div className="kt-card-content p-10">
                     <div className="text-center flex flex-col justify-center items-center">
                         {qrCode ? ("") :

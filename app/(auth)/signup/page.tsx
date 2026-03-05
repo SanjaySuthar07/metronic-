@@ -30,7 +30,6 @@ export default function Page() {
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<boolean | null>(false);
-    const [showRecaptcha, setShowRecaptcha] = useState(false);
     const dispatch = useDispatch<AppDispatch>();
     const { loading } = useSelector((state: RootState) => state.auth);
     const [showSuccess, setShowSuccess] = useState(false);

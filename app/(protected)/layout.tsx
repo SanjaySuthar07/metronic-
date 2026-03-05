@@ -18,26 +18,26 @@ export default function Layout({ children }: { children: ReactNode }) {
 
   const [loadingAuth, setLoadingAuth] = useState(true);
 
-  // useEffect(() => {
-  //   const checkAuth = async () => {
-  //     const token = localStorage.getItem("token");
+  useEffect(() => {
+    const checkAuth = async () => {
+      const token = localStorage.getItem("token");
 
-  //     if (!token) {
-  //       router.replace("/signin");
-  //       return;
-  //     }
+      if (!token) {
+        router.replace("/signin");
+        return;
+      }
 
-  //     const result = await dispatch(getProfile());
+      const result = await dispatch(getProfile());
 
-  //     if (getProfile.rejected.match(result)) {
-  //       router.replace("/signin");
-  //     } else {
-  //       setLoadingAuth(false);
-  //     }
-  //   };
+      if (getProfile.rejected.match(result)) {
+        router.replace("/signin");
+      } else {
+        setLoadingAuth(false);
+      }
+    };
 
-  //   checkAuth();
-  // }, [dispatch, router]);
+    checkAuth();
+  }, [dispatch, router]);
 
   useEffect(() => {
     const bodyClass = document.body.classList;
@@ -53,7 +53,7 @@ export default function Layout({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  // if (loadingAuth) return null;
+  if (loadingAuth) return null;
 
   return (
     <>

@@ -208,7 +208,7 @@ export default function Page() {
       </form>
       <VerifyOtpPage
         oppenQR={oppenQR}
-        setOppenQR={setOppenQR}
+        onClose={() => setOppenQR(false)}
         qrCode={qrCode}
         userId={userId}
         message={message}

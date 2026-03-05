@@ -10,7 +10,6 @@ import { I18nProvider } from "@/providers/i18n-provider";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { AuthProvider } from "@/providers/auth-provider";
 import { QueryProvider } from "@/providers/query-provider";
-// import { ModulesProvider } from "@/providers/modules-provider";
 import { Suspense } from "react";
 import { Toaster } from "@/components/ui/sonner";
 const geistSans = Geist({
@@ -39,12 +38,10 @@ export default function RootLayout({
               <ThemeProvider>
                 <I18nProvider>
                   <TooltipsProvider>
-                    {/* <ModulesProvider> */}
                     <Provider store={store}>
                       <Suspense>{children}</Suspense>
                     </Provider>
                     <Toaster />
-                    {/* </ModulesProvider> */}
                   </TooltipsProvider>
                 </I18nProvider>
               </ThemeProvider>
