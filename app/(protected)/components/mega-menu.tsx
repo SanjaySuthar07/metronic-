@@ -16,7 +16,8 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from '@/components/ui/navigation-menu';
-import { MegaMenuSubApps } from '@/app/components/partials/mega-menu/mega-menu-sub-apps';
+import { MegaMenuSubApps } from '@/partials/mega-menu/mega-menu-sub-apps';
+// import { MegaMenuSubApps } from '@/app/components/partials/mega-menu/mega-menu-sub-apps';
 
 export function MegaMenu() {
   const pathname = usePathname();

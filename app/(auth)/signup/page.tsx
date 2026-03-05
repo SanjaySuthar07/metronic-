@@ -170,6 +170,7 @@ export default function Page() {
                                             placeholder="Your password"
                                             type={passwordVisible ? 'text' : 'password'}
                                             {...field}
+                                            autoComplete="password"
                                         />
                                     </FormControl>
                                     <Button
@@ -206,6 +207,7 @@ export default function Page() {
                                         <Input
                                             type={passwordConfirmationVisible ? 'text' : 'password'}
                                             {...field}
+                                            autoComplete="confirm-password"
                                             placeholder="Confirm your password"
                                         />
                                     </FormControl>

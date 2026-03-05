@@ -119,6 +119,7 @@ export default function Page() {
                 <Input
                   id='email'
                   placeholder="Your email"
+                  autoComplete="email"
                   {...field} />
               </FormControl>
               <FormMessage />
@@ -140,6 +141,7 @@ export default function Page() {
                     id='password'
                     placeholder="Your password"
                     type={passwordVisible ? 'text' : 'password'}
+                    autoComplete="current-password"
                     {...field}
                   />
                 </FormControl>

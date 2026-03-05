@@ -1,78 +1,73 @@
 'use client';
 import { ReactNode, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useDispatch } from 'react-redux';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useSettings } from '@/providers/settings-provider';
-import { Footer } from './components/footer';
-import { Header } from './components/header';
+import { AppDispatch } from '@/store';
+
 import { Sidebar } from './components/sidebar';
-import { useSelector } from 'react-redux';
+import { Header } from './components/header';
+import { Footer } from './components/footer';
 
-export function Layout({ children }: { children: ReactNode }) {
-    const router = useRouter();
-    const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-    const { user } = useSelector((s) => s.auth)
-    useEffect(() => {
-        const token = localStorage.getItem('token');
-        if (!token && !user?.email) {
-            router.replace('/signup');
-        } else {
-            setIsAuthenticated(true);
-        }
-    }, [router]);
+import { getProfile } from '@/store/thunk/auth.thunk';
 
-    const isMobile = useIsMobile();
-    const { settings, setOption } = useSettings();
+export default function Layout({ children }: { children: ReactNode }) {
+  const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
+  const isMobile = useIsMobile();
 
-    useEffect(() => {
-        const bodyClass = document.body.classList;
-        if (settings.layouts.demo1.sidebarCollapse) {
-            bodyClass.add('sidebar-collapse');
-        } else {
-            bodyClass.remove('sidebar-collapse');
-        }
-    }, [settings]);
+  const [loadingAuth, setLoadingAuth] = useState(true);
 
-    useEffect(() => {
-        setOption('layout', 'demo1');
-    }, [setOption]);
+  // useEffect(() => {
+  //   const checkAuth = async () => {
+  //     const token = localStorage.getItem("token");
 
-    useEffect(() => {
-        const bodyClass = document.body.classList;
+  //     if (!token) {
+  //       router.replace("/signin");
+  //       return;
+  //     }
 
-        bodyClass.add('demo1');
-        bodyClass.add('sidebar-fixed');
-        bodyClass.add('header-fixed');
+  //     const result = await dispatch(getProfile());
 
-        const timer = setTimeout(() => {
-            bodyClass.add('layout-initialized');
-        }, 1000);
+  //     if (getProfile.rejected.match(result)) {
+  //       router.replace("/signin");
+  //     } else {
+  //       setLoadingAuth(false);
+  //     }
+  //   };
 
-        return () => {
-            bodyClass.remove('demo1');
-            bodyClass.remove('sidebar-fixed');
-            bodyClass.remove('sidebar-collapse');
-            bodyClass.remove('header-fixed');
-            bodyClass.remove('layout-initialized');
-            clearTimeout(timer);
-        };
-    }, []);
+  //   checkAuth();
+  // }, [dispatch, router]);
 
-    if (isAuthenticated === null) return null;
+  useEffect(() => {
+    const bodyClass = document.body.classList;
 
-    return (
-        <>
-            {!isMobile && <Sidebar />}
-            <div className="wrapper flex grow flex-col">
-                <Header />
-                <main className="grow pt-5" role="content">
+    bodyClass.add('demo1');
+    bodyClass.add('sidebar-fixed');
+    bodyClass.add('header-fixed');
 
-                    {children}
-                </main>
-                <Footer />
-            </div>
-        </>
-    );
+    return () => {
+      bodyClass.remove('demo1');
+      bodyClass.remove('sidebar-fixed');
+      bodyClass.remove('header-fixed');
+    };
+  }, []);
+
+  // if (loadingAuth) return null;
+
+  return (
+    <>
+      {!isMobile && <Sidebar />}
+
+      <div className="wrapper flex grow flex-col">
+        <Header />
+
+        <main className="grow pt-5" role="content">
+          {children}
+        </main>
+
+        <Footer />
+      </div>
+    </>
+  );
 }
-
-export default Layout;

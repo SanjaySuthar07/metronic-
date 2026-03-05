@@ -30,7 +30,7 @@ import {
 } from '@/components/ui/sheet';
 import { Container } from '@/components/common/container';
 import { StoreClientTopbar } from '@/app/(protected)/store-client/components/common/topbar';
-import { Breadcrumb } from './breadcrumb';
+// import { Breadcrumb } from './breadcrumb';
 import { MegaMenu } from './mega-menu';
 import { MegaMenuMobile } from './mega-menu-mobile';
 import { SidebarMenu } from './sidebar-menu';
@@ -121,9 +121,7 @@ export function Header() {
 
         {/* HeaderTopbar */}
         <div className="flex items-center gap-3">
-          {pathname.startsWith('/store-client') ? (
-            <StoreClientTopbar />
-          ) : (
+   
             <>
               {!mobileMode && (
                 <SearchDialog
@@ -196,7 +194,6 @@ export function Header() {
                 }
               />
             </>
-          )}
         </div>
       </Container>
     </header>

@@ -1,6 +1,6 @@
 'use client';
-import { useDispatch, useSelector } from 'react-redux';
-import { RootState, AppDispatch } from '@/store';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { getProfileSchema, ProfileSchemaType } from '../forms/profile-schema';
@@ -26,7 +26,6 @@ import { LoaderCircleIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function AccountDetails() {
-  const dispatch = useDispatch<AppDispatch>();
   const { user, loading } = useSelector((state: RootState) => state.auth);
 
   const form = useForm<ProfileSchemaType>({
@@ -58,7 +57,6 @@ export default function AccountDetails() {
             onSubmit={form.handleSubmit(onSubmit)}
             className="space-y-6 max-w-[520px]"
           >
-            {/* Name */}
             <FormField
               control={form.control}
               name="name"
@@ -78,7 +76,6 @@ export default function AccountDetails() {
               )}
             />
 
-            {/* Email */}
             <div>
               <FormLabel>Email</FormLabel>
               <Input
@@ -88,7 +85,6 @@ export default function AccountDetails() {
               />
             </div>
 
-            {/* Buttons */}
             <div className="flex justify-end gap-3">
               <Button
                 type="button"

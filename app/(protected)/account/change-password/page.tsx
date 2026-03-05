@@ -77,7 +77,6 @@ export default function ChangePassword() {
             onSubmit={form.handleSubmit(onSubmit)}
             className="space-y-6 max-w-[520px]"
           >
-            {/* Current Password */}
             <FormField
               control={form.control}
               name="current_password"
@@ -114,7 +113,6 @@ export default function ChangePassword() {
               )}
             />
 
-            {/* New Password */}
             <FormField
               control={form.control}
               name="new_password"
@@ -151,7 +149,6 @@ export default function ChangePassword() {
               )}
             />
 
-            {/* Confirm Password */}
             <FormField
               control={form.control}
               name="new_password_confirmation"
@@ -189,7 +186,6 @@ export default function ChangePassword() {
               )}
             />
 
-            {/* Buttons */}
             <div className="flex justify-end gap-3">
               <Button
                 type="button"

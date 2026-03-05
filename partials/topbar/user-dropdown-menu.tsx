@@ -1,51 +1,25 @@
 import { ReactNode } from 'react';
 import Link from 'next/link';
-import { I18N_LANGUAGES, Language } from '@/i18n/config';
 import {
-  BetweenHorizontalStart,
-  Coffee,
-  CreditCard,
-  FileText,
-  Globe,
   Moon,
-  Settings,
-  Shield,
   User,
-  UserCircle,
-  Users,
 } from 'lucide-react';
-import { getInitials } from '@/lib/helpers';
+import { signOut } from 'next-auth/react';
 import { useTheme } from 'next-themes';
-import { useLanguage } from '@/providers/i18n-provider';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
   DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Switch } from '@/components/ui/switch';
-import { useRouter } from 'next/navigation';
-import { useDispatch, useSelector } from 'react-redux';
-import { logoutUser } from '@/store/thunk/auth.thunk';
-import { AppDispatch } from '@/store';
+import { useSelector } from 'react-redux';
+import { getInitials } from '@/lib/helpers';
+
 export function UserDropdownMenu({ trigger }: { trigger: ReactNode }) {
-  const dispatch = useDispatch<AppDispatch>();
-  const router = useRouter()
-  const { changeLanguage, language } = useLanguage();
   const { theme, setTheme } = useTheme();
-
-  const handleLanguage = (lang: Language) => {
-    changeLanguage(lang.code);
-  };
-
   const handleThemeToggle = (checked: boolean) => {
     setTheme(checked ? 'dark' : 'light');
   };
@@ -54,7 +28,6 @@ export function UserDropdownMenu({ trigger }: { trigger: ReactNode }) {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>{trigger}</DropdownMenuTrigger>
       <DropdownMenuContent className="w-64" side="bottom" align="end">
-        {/* Header */}
         <div className="flex items-center justify-between p-3">
           <div className="flex items-center gap-2">
             {user?.avatar ? (
@@ -85,11 +58,7 @@ export function UserDropdownMenu({ trigger }: { trigger: ReactNode }) {
             </div>
           </div>
         </div>
-
         <DropdownMenuSeparator />
-
-        {/* Menu Items */}
-      
         <DropdownMenuItem asChild>
           <Link
             href="/account/my-profile"
@@ -100,7 +69,6 @@ export function UserDropdownMenu({ trigger }: { trigger: ReactNode }) {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        {/* Footer */}
         <DropdownMenuItem
           className="flex items-center gap-2"
           onSelect={(event) => event.preventDefault()}
@@ -120,10 +88,7 @@ export function UserDropdownMenu({ trigger }: { trigger: ReactNode }) {
             variant="outline"
             size="sm"
             className="w-full"
-            onClick={async () => {
-              await dispatch(logoutUser());
-              router.push('/signin');
-            }}
+            onClick={() => signOut()}
           >
             Logout
           </Button>
