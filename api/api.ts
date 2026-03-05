@@ -1,7 +1,4 @@
-import { store } from "@/store";
-import { removeData } from "@/store/slice/auth.slice";
 import axios from 'axios';
-import { useDispatch } from 'react-redux';
 const api = axios.create({
     baseURL: '/api',
     headers: {
