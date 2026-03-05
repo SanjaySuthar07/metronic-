@@ -8,7 +8,6 @@ import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/store';
 import { verifyMfa } from '@/store/thunk/auth.thunk';
 import Image from 'next/image';
-
 interface Props {
     oppenQR: boolean;
     setOppenQR: (value: boolean) => void;
@@ -25,7 +24,6 @@ export default function VerifyOtpPage({
     userId,
     userType,
 }: Props) {
-    const searchParams = useSearchParams();
     const router = useRouter();
     const [otp, setOtp] = useState<string[]>(Array(6).fill(''));
     const [loading, setLoading] = useState(false);

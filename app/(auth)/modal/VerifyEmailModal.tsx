@@ -1,9 +1,6 @@
 "use client";
 
-import Link from "next/link";
 import Image from "next/image";
-import { useSelector } from "react-redux";
-import { RootState } from "@/store";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 

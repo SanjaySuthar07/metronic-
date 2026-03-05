@@ -41,7 +41,7 @@ export default function ChangePassword() {
   const [showConfirm, setShowConfirm] = useState(false);
 
   const form = useForm<ChangePasswordSchemaType>({
-    // resolver: zodResolver(getChangePasswordSchema()),
+    resolver: zodResolver(getChangePasswordSchema()),
     defaultValues: {
       current_password: '',
       new_password: '',
@@ -90,6 +90,7 @@ export default function ChangePassword() {
                     <FormControl>
                       <Input
                         type={showCurrent ? 'text' : 'password'}
+                        placeholder='Enter your current password'
                         {...field}
                       />
                     </FormControl>
@@ -126,6 +127,7 @@ export default function ChangePassword() {
                     <FormControl>
                       <Input
                         type={showNew ? 'text' : 'password'}
+                        placeholder='Enter your new password'
                         {...field}
                       />
                     </FormControl>
@@ -163,6 +165,7 @@ export default function ChangePassword() {
                     <FormControl>
                       <Input
                         type={showConfirm ? 'text' : 'password'}
+                        placeholder='Enter your confirm password'
                         {...field}
                       />
                     </FormControl>

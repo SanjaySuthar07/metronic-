@@ -1,5 +1,4 @@
 'use client';
-
 import React, { useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { SquarePen, UserPen } from 'lucide-react';
@@ -9,12 +8,6 @@ import { getInitials } from '@/lib/helpers';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Container } from '@/components/common/container';
-import {
-  Toolbar,
-  ToolbarActions,
-  ToolbarHeading,
-  ToolbarTitle,
-} from '@/components/common/toolbar';
 import { DashboardHeader } from '../components/dashboardHeader';
 
 type NavRoutes = Record<
@@ -65,7 +58,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <Container>
-      <DashboardHeader title={"Account"} />
+      <DashboardHeader title={"Account"} description={""} />
       <div className="flex flex-col gap-10 lg:flex-row lg:gap-14">
         <div className="space-y-7 lg:w-[230px] shrink-0 pt-6">
           <div className="flex items-center gap-3">
@@ -77,7 +70,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 {getInitials(user?.name || user?.email || 'U')}
               </AvatarFallback>
             </Avatar>
-
             <div>
               <div className="capitalize font-semibold text-base">
                 {user?.name || 'User'}

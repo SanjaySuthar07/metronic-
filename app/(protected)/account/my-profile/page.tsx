@@ -83,6 +83,7 @@ export default function AccountDetails() {
               <FormLabel>Email</FormLabel>
               <Input
                 value={user?.email || ''}
+                placeholder='Email'
                 disabled
               />
             </div>
