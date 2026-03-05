@@ -173,12 +173,9 @@ const RolesList = () => {
       header: ({ column }) => (
         <DataGridColumnHeader title="Permissions" column={column} />
       ),
-
       cell: ({ row }) => {
         const permissions = row.original?.permissions || [];
-
         if (!permissions.length) return "-";
-
         return (
           <div className="flex flex-wrap gap-1">
             {permissions?.slice(0, 3)?.map((perm: any) => (
