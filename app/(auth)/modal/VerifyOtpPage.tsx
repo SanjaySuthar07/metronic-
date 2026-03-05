@@ -91,10 +91,9 @@ export default function VerifyOtpPage({
 
         if (verifyMfa.fulfilled.match(result)) {
             setSuccess(true);
-
-            setTimeout(() => {
-                onClose()
-                router.push('/');
+            setTimeout(async () => {
+                await router.push('/');
+                await onClose()
             }, 1200);
         } else {
             setError(result.payload as string);

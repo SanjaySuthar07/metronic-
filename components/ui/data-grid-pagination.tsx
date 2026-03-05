@@ -48,7 +48,7 @@ function DataGridPagination(props: DataGridPaginationProps) {
     ? mergedProps.info
         .replace('{from}', from.toString())
         .replace('{to}', to.toString())
-        .replace('{count}', recordCount.toString())
+        .replace('{count}', recordCount?.toString())
     : `${from} - ${to} of ${recordCount}`;
 
   // Pagination limit logic

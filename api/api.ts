@@ -11,12 +11,7 @@ const api = axios.create({
 
 api.interceptors.request.use((config) => {
     const token = localStorage.getItem('token');
-    const publicRoutes = [
-        '/login',
-        '/register',
-        '/refresh'
-    ];
-    if (token && !publicRoutes.includes(config.url || '')) {
+    if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
@@ -45,12 +40,11 @@ api.interceptors.response.use((response) => response, async (error) => {
             );
             const newAccessToken = response.data.token;
             localStorage.setItem('token', newAccessToken);
-            originalRequest.headers.Authorization =
-                `Bearer ${newAccessToken}`;
+            originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
             return api(originalRequest);
         } catch (error) {
             store.dispatch(removeData());
-            window.location.href = '/signin';
+            // window.location.href = '/signin';
             return Promise.reject(error);
         }
     }

@@ -12,7 +12,11 @@ import {
 } from '@tanstack/react-table';
 
 import { AppDispatch, RootState } from '@/store';
-import { fetchRoles, fetchUsers } from '@/store/thunk/userManagement.thunk';
+import {
+  fetchRolesDropdown,
+  fetchUserDetail,
+  fetchUsers,
+} from '@/store/thunk/userManagement.thunk';
 
 import { EllipsisVertical, Plus, Search } from 'lucide-react';
 import { formatDate, getInitials } from '@/lib/helpers';
@@ -50,8 +54,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 
-// ======================= TOOLBAR =======================
-
 const DataGridToolbar = ({
   inputValue,
   onInputChange,
@@ -65,18 +67,19 @@ const DataGridToolbar = ({
   selectedRole: string;
   onRoleChange: (value: string) => void;
 }) => {
-
   const dispatch = useDispatch<AppDispatch>();
-
-  const { roles } = useSelector((state: RootState) => state.userManagement);
+  const [roles, setRoles] = useState<any[]>([]);
 
   useEffect(() => {
-    dispatch(fetchRoles());
+    const fetch = async () => {
+      const data = await dispatch(fetchRolesDropdown());
+      setRoles(data?.payload?.roles || []);
+    };
+    fetch();
   }, [dispatch]);
 
   return (
     <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
 
         <div className="relative">
@@ -98,9 +101,11 @@ const DataGridToolbar = ({
           <SelectContent>
             <SelectItem value="all">All Type</SelectItem>
 
-            {roles?.data?.map((role: any) => (
+            {roles.map((role: any) => (
               <Fragment key={role.id}>
-                <SelectItem value={role.name}>{role.name}</SelectItem>
+                <SelectItem value={role.name} className="capitalize">
+                  {role.name}
+                </SelectItem>
               </Fragment>
             ))}
           </SelectContent>
@@ -112,13 +117,9 @@ const DataGridToolbar = ({
         <Plus className="size-4 mr-1" />
         Add User
       </Button>
-
     </CardHeader>
   );
 };
-
-
-// ======================= USER LIST =======================
 
 const UserList = () => {
 
@@ -130,7 +131,7 @@ const UserList = () => {
 
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
-  const [editData, setEditData] = useState<any>();
+  const [editData, setEditData] = useState<any>(null);
 
   const [inputValue, setInputValue] = useState('');
   const [selectedRole, setSelectedRole] = useState('all');
@@ -142,14 +143,18 @@ const UserList = () => {
 
   const [sorting, setSorting] = useState<SortingState>([]);
 
+  const [columnOrder, setColumnOrder] = useState<string[]>([]);
+  const [columnPinning, setColumnPinning] = useState<any>({
+    left: [],
+    right: [],
+  });
 
-  // reset page when filter changes
+  const [columnVisibility, setColumnVisibility] = useState({});
+
   useEffect(() => {
     setPagination((prev) => ({ ...prev, pageIndex: 0 }));
   }, [inputValue, selectedRole]);
 
-
-  // fetch users
   useEffect(() => {
 
     const sortField = sorting?.[0]?.id;
@@ -180,14 +185,25 @@ const UserList = () => {
     sorting,
   ]);
 
-
-  // ================= TABLE COLUMNS =================
-
+  const handleEditUser = async (id: number) => {
+    try {
+      const res: any = await dispatch(fetchUserDetail({ id }));
+      if (res?.payload?.user) {
+        setEditData(res.payload.user);
+        setIsEdit(true);
+        setInviteDialogOpen(true);
+      }
+    } catch (error) {
+      console.error("Failed to fetch user details", error);
+    }
+  };
   const columns = useMemo<ColumnDef<any>[]>(() => [
+
     {
       accessorKey: 'name',
       id: 'name',
       enableSorting: true,
+
       header: ({ column }) =>
         <DataGridColumnHeader title="User" column={column} />,
 
@@ -199,6 +215,7 @@ const UserList = () => {
 
         return (
           <div className="flex items-center gap-3">
+
             <Avatar className="size-9">
               <AvatarFallback>
                 {getInitials(name !== '-' ? name : email)}
@@ -206,9 +223,10 @@ const UserList = () => {
             </Avatar>
 
             <div className="space-y-0.5">
-              <div className="font-medium text-sm">{name}</div>
+              <div className="font-medium text-sm capitalize">{name}</div>
               <div className="text-muted-foreground text-xs">{email}</div>
             </div>
+
           </div>
         );
       },
@@ -232,10 +250,12 @@ const UserList = () => {
       accessorKey: 'user_type',
       id: 'user_type',
       enableSorting: true,
+
       header: ({ column }) =>
         <DataGridColumnHeader title="User Type" column={column} />,
 
       cell: ({ row }) => {
+
         const type = row.original?.user_type;
 
         return type ? (
@@ -261,8 +281,12 @@ const UserList = () => {
         <DataGridColumnHeader title="Joined" column={column} />,
 
       cell: ({ row }) => {
+
         const date = row.original?.created_at;
-        return date ? formatDate(new Date(date)) : '-';
+
+        return date
+          ? formatDate(new Date(date))
+          : '-';
       },
 
       size: 160,
@@ -275,34 +299,37 @@ const UserList = () => {
     {
       id: 'actions',
       header: 'Actions',
+      enableSorting: false,
+      enableHiding: false,
+      size: 75,
 
       cell: ({ row }) => (
 
         <DropdownMenu>
 
           <DropdownMenuTrigger asChild>
-            <Button className="h-7 w-7" mode="icon" variant="ghost">
+
+            <Button
+              className="h-7 w-7"
+              mode="icon"
+              variant="ghost"
+            >
               <EllipsisVertical />
             </Button>
+
           </DropdownMenuTrigger>
 
-          <DropdownMenuContent>
+          <DropdownMenuContent align="end">
 
             <DropdownMenuItem
-              onClick={() => {
-                setEditData(row.original);
-                setInviteDialogOpen(true);
-                setIsEdit(true);
-              }}
+              onClick={() => handleEditUser(row.original.id)}
             >
               Edit
             </DropdownMenuItem>
 
             <DropdownMenuSeparator />
 
-            <DropdownMenuItem
-              variant="destructive"
-            >
+            <DropdownMenuItem variant="destructive">
               Delete
             </DropdownMenuItem>
 
@@ -311,10 +338,6 @@ const UserList = () => {
         </DropdownMenu>
       ),
 
-      size: 75,
-      enableSorting: false,
-      enableResizing: false,
-
       meta: {
         skeleton: <Skeleton className="size-5" />,
       },
@@ -322,6 +345,9 @@ const UserList = () => {
 
   ], []);
 
+  useEffect(() => {
+    setColumnOrder(columns.map((col) => col.id as string));
+  }, [columns]);
 
   const table = useReactTable({
 
@@ -339,22 +365,36 @@ const UserList = () => {
     state: {
       pagination,
       sorting,
+      columnOrder,
+      columnPinning,
+      columnVisibility,
     },
 
     onPaginationChange: setPagination,
     onSortingChange: setSorting,
+    onColumnOrderChange: setColumnOrder,
+    onColumnPinningChange: setColumnPinning,
+    onColumnVisibilityChange: setColumnVisibility,
+
+    columnResizeMode: 'onChange',
 
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
   });
 
-
   return (
     <>
+
       <DataGrid
         table={table}
         recordCount={users?.total}
         isLoading={loadingUsers}
+        tableLayout={{
+          columnsResizable: true,
+          columnsPinnable: true,
+          columnsMovable: true,
+          columnsVisibility: true,
+        }}
       >
 
         <Card>
@@ -391,6 +431,7 @@ const UserList = () => {
         editData={editData}
         closeDialog={() => setInviteDialogOpen(false)}
       />
+
     </>
   );
 };
