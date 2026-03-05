@@ -5,11 +5,11 @@ import { useDispatch } from 'react-redux';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { AppDispatch } from '@/store';
 
-import { Sidebar } from './components/sidebar';
-import { Header } from './components/header';
-import { Footer } from './components/footer';
 
 import { getProfile } from '@/store/thunk/auth.thunk';
+import { Header } from '../components/layouts/demo1/components/header';
+import { Sidebar } from '../components/layouts/demo1/components/sidebar';
+import { Footer } from '../components/layouts/demo1/components/footer';
 
 export default function Layout({ children }: { children: ReactNode }) {
   const router = useRouter();

@@ -2,7 +2,10 @@
 import { toAbsoluteUrl } from '@/lib/helpers';
 import { Card, CardContent } from '@/components/ui/card';
 import Image from 'next/image';
-function CountBox({ item }) {
+interface CountBox {
+    item?: any;
+}
+function CountBox({ item }: CountBox) {
     return (
         <Card className="rounded-xl overflow-hidden">
             <CardContent className="p-0 flex flex-col justify-between h-[140px] bg-cover bg-no-repeat channel-stats-bg">

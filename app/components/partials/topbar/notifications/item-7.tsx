@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { AvatarGroup } from '@/partials/common/avatar-group';
+import { AvatarGroup } from '@/app/components/partials/common/avatar-group';
 import {
   CalendarDays,
   Lock,

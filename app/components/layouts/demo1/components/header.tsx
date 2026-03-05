@@ -3,11 +3,11 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { SearchDialog } from '@/partials/dialogs/search/search-dialog';
-import { AppsDropdownMenu } from '@/partials/topbar/apps-dropdown-menu';
-import { ChatSheet } from '@/partials/topbar/chat-sheet';
-import { NotificationsSheet } from '@/partials/topbar/notifications-sheet';
-import { UserDropdownMenu } from '@/partials/topbar/user-dropdown-menu';
+import { SearchDialog } from '@/app/components/partials/dialogs/search/search-dialog';
+import { AppsDropdownMenu } from '@/app/components/partials/topbar/apps-dropdown-menu';
+import { ChatSheet } from '@/app/components/partials/topbar/chat-sheet';
+import { NotificationsSheet } from '@/app/components/partials/topbar/notifications-sheet';
+import { UserDropdownMenu } from '@/app/components/partials/topbar/user-dropdown-menu';
 import {
   Bell,
   LayoutGrid,
@@ -29,7 +29,6 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 import { Container } from '@/components/common/container';
-import { StoreClientTopbar } from '@/app/(protected)/store-client/components/common/topbar';
 import { Breadcrumb } from './breadcrumb';
 import { MegaMenu } from './mega-menu';
 import { MegaMenuMobile } from './mega-menu-mobile';
@@ -47,7 +46,6 @@ export function Header() {
 
   // Close sheet when route changes
   useEffect(() => {
-    setIsSidebarSheetOpen(false);
     setIsMegaMenuSheetOpen(false);
   }, [pathname]);
 
@@ -125,9 +123,7 @@ export function Header() {
 
         {/* HeaderTopbar */}
         <div className="flex items-center gap-3">
-          {pathname.startsWith('/store-client') ? (
-            <StoreClientTopbar />
-          ) : (
+          
             <>
               {!mobileMode && (
                 <SearchDialog
@@ -189,7 +185,6 @@ export function Header() {
                 }
               />
             </>
-          )}
         </div>
       </Container>
     </header>

@@ -2,9 +2,9 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { MegaMenuSubAccount } from '@/partials/mega-menu/mega-menu-sub-account';
-import { MegaMenuSubNetwork } from '@/partials/mega-menu/mega-menu-sub-network';
-import { MegaMenuSubProfiles } from '@/partials/mega-menu/mega-menu-sub-profiles';
+import { MegaMenuSubAccount } from '@/app/components/partials/mega-menu/mega-menu-sub-account';
+import { MegaMenuSubNetwork } from '@/app/components/partials/mega-menu/mega-menu-sub-network';
+import { MegaMenuSubProfiles } from '@/app/components/partials/mega-menu/mega-menu-sub-profiles';
 import { MENU_MEGA } from '@/config/menu.config';
 import { cn } from '@/lib/utils';
 import { useMenu } from '@/hooks/use-menu';
