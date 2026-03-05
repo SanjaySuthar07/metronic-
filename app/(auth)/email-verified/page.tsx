@@ -1,14 +1,13 @@
 "use client";
-
-import Link from "next/link";
 import Image from "next/image";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Button } from "@/components/ui/button";
 export default function EmailVerified() {
     const searchParams = useSearchParams();
+    const router = useRouter()
     const status = searchParams.get('status')
-    console.log(status)
     return (
-        <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
+        <div className="inset-0  flex justify-center items-center z-50">
             <div className="kt-card max-w-[440px] w-full">
                 <div className="kt-card-content p-10">
                     <div className="flex justify-center py-10">
@@ -37,17 +36,12 @@ export default function EmailVerified() {
                     </div>
 
                     <div className="flex justify-center">
-                        <Link
-                            href="/signin"
-                            className="kt-btn kt-btn-primary flex justify-center"
-                        >
+                        <Button onClick={() => router.push("signin")}>
                             Sign In
-                        </Link>
+                        </Button>
                     </div>
-
                 </div>
             </div>
-
         </div>
     );
 }

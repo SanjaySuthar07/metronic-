@@ -1,7 +1,6 @@
 'use client';
 import { Suspense, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AlertCircle, Check, Eye, EyeOff } from 'lucide-react';
 import { useForm } from 'react-hook-form';
@@ -25,7 +24,6 @@ import { LoaderCircleIcon } from 'lucide-react';
 import { getSignupSchema, SignupSchemaType } from '../forms/signup-schema';
 
 export default function Page() {
-    const router = useRouter();
     const [passwordVisible, setPasswordVisible] = useState(false);
     const [passwordConfirmationVisible, setPasswordConfirmationVisible] =
         useState(false);
@@ -113,15 +111,15 @@ export default function Page() {
                         <h1 className="text-2xl font-semibold tracking-tight text-center ">
                             Sign Up
                         </h1>
-                    <div className="text-sm text-muted-foreground text-center">
-                        Already have an account?{' '}
-                        <Link
-                            href="/signin"
-                            className="text-primary font-semibold"
-                        >
-                            Sign In
-                        </Link>
-                    </div>
+                        <div className="text-sm text-muted-foreground text-center">
+                            Already have an account?{' '}
+                            <Link
+                                href="/signin"
+                                className="text-primary font-semibold"
+                            >
+                                Sign In
+                            </Link>
+                        </div>
                     </div>
                     {error && (
                         <Alert variant="destructive" onClose={() => setError(null)}>

@@ -203,8 +203,6 @@ export default function Page() {
             Continue
           </Button>
         </div>
-
-
       </form>
       <VerifyOtpPage
         oppenQR={oppenQR}

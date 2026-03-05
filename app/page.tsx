@@ -13,20 +13,20 @@ export default function Home() {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        router.replace("/signup");
-        return;
-      }
-      let result
-      if (!loading) {
-        result = await dispatch(getProfile());
-      }
-      if (getProfile.rejected.match(result)) {
-        router.replace("/signup");
-      } else {
-        router.replace("/dashboard");
-      }
+      // const token = localStorage.getItem("token");
+      // if (!token) {
+      //   router.replace("/signup");
+      //   return;
+      // }
+      // let result
+      // if (!loading) {
+      //   result = await dispatch(getProfile());
+      // }
+      // if (getProfile.rejected.match(result)) {
+      //   router.replace("/signup");
+      // } else {
+      router.replace("/dashboard");
+      // }
     };
 
     checkAuth();

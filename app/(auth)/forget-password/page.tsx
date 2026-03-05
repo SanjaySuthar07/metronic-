@@ -1,9 +1,8 @@
 'use client';
-
 import { Suspense, useState } from 'react';
 import Link from 'next/link';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { AlertCircle, ArrowLeft, Check, LoaderCircle } from 'lucide-react';
+import { AlertCircle, ArrowLeft, LoaderCircle } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { Alert, AlertIcon, AlertTitle } from '@/components/ui/alert';
@@ -21,7 +20,6 @@ import { useDispatch } from 'react-redux';
 import { forgetPassword } from '@/store/thunk/auth.thunk';
 import { AppDispatch } from '@/store';
 import CheckEmailModal from '../modal/CheckEmailModal';
-
 export default function Page() {
   const dispatch = useDispatch<AppDispatch>();
 

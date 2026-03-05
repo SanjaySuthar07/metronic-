@@ -12,14 +12,14 @@ export function Layout({ children }: { children: ReactNode }) {
     const router = useRouter();
     const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
     const { user } = useSelector((s) => s.auth)
-    useEffect(() => {
-        const token = localStorage.getItem('token');
-        if (!token && !user?.email) {
-            router.replace('/signup');
-        } else {
-            setIsAuthenticated(true);
-        }
-    }, [router]);
+    // useEffect(() => {
+    //     const token = localStorage.getItem('token');
+    //     if (!token && !user?.email) {
+    //         router.replace('/signup');
+    //     } else {
+    //         setIsAuthenticated(true);
+    //     }
+    // }, [router]);
 
     const isMobile = useIsMobile();
     const { settings, setOption } = useSettings();
@@ -58,7 +58,7 @@ export function Layout({ children }: { children: ReactNode }) {
         };
     }, []);
 
-    if (isAuthenticated === null) return null;
+    // if (isAuthenticated === null) return null;
 
     return (
         <>
