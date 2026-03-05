@@ -109,12 +109,20 @@ export default function Page() {
         <Suspense>
             <Form {...form}>
                 <form onSubmit={handleSubmit} className="block w-full space-y-5">
-                    <div className="space-y-1.5 pb-3">
+                    <div>
                         <h1 className="text-2xl font-semibold tracking-tight text-center ">
                             Sign Up
                         </h1>
+                    <div className="text-sm text-muted-foreground text-center">
+                        Already have an account?{' '}
+                        <Link
+                            href="/signin"
+                            className="text-primary font-semibold"
+                        >
+                            Sign In
+                        </Link>
                     </div>
-
+                    </div>
                     {error && (
                         <Alert variant="destructive" onClose={() => setError(null)}>
                             <AlertIcon>
@@ -275,15 +283,7 @@ export default function Page() {
                         </Button>
                     </div>
 
-                    <div className="text-sm text-muted-foreground text-center">
-                        Already have an account?{' '}
-                        <Link
-                            href="/signin"
-                            className="text-primary font-semibold"
-                        >
-                            Sign In
-                        </Link>
-                    </div>
+
                 </form>
             </Form>
             <VerifyEmailModal

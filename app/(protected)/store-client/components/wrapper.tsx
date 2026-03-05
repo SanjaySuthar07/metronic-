@@ -1,12 +1,10 @@
 'use client';
 'use client';
-
 import * as React from 'react';
-import { useStoreClient } from '@/app/(dashboard)/store-client/components/context';
-import { StoreClientCartSheet } from '@/app/(dashboard)/store-client/components/sheets/cart-sheet';
-import { StoreClientProductDetailsSheet } from '@/app/(dashboard)/store-client/components/sheets/product-details-sheet';
-import { StoreClientWishlistSheet } from '@/app/(dashboard)/store-client/components/sheets/wishlist-sheet';
-
+import { useStoreClient } from '@/app/(protected)/store-client/components/context';
+import { StoreClientCartSheet } from '@/app/(protected)/store-client/components/sheets/cart-sheet';
+import { StoreClientProductDetailsSheet } from '@/app/(protected)/store-client/components/sheets/product-details-sheet';
+import { StoreClientWishlistSheet } from '@/app/(protected)/store-client/components/sheets/wishlist-sheet';
 export function StoreClientWrapper({
   children,
 }: {

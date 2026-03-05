@@ -6,7 +6,7 @@ import { Heart, Search, ShoppingCart, UserCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useStoreClient } from '@/app/(dashboard)/store-client/components/context';
+import { useStoreClient } from '@/app/(protected)/store-client/components/context';
 
 export function StoreClientTopbar() {
   const pathname = usePathname();

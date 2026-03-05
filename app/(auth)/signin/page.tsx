@@ -23,7 +23,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { loginUser } from '@/store/thunk/auth.thunk';
 import { AppDispatch, RootState } from '@/store';
 import { remember } from '@/store/slice/auth.slice';
-import VerifyOtpPage from '../verify-otp/page';
+import VerifyOtpPage from '../modal/VerifyOtpPage';
 export default function Page() {
   const router = useRouter();
   const [oppenQR, setOppenQR] = useState(false);
@@ -59,13 +59,13 @@ export default function Page() {
     const result = await dispatch(loginUser(payload));
     if (loginUser.fulfilled.match(result)) {
       const data = result.payload;
-      if (data?.qr_code) {
-        setQrCode(data.qr_code);
-        setUserId(data.user_id);
-        setOppenQR(true);
-        setMessage(data?.message);
-        setUserType(data?.user_type)
-      }
+      // if (data?.qr_code) {
+      setQrCode(data.qr_code);
+      setUserId(data.user_id);
+      setOppenQR(true);
+      setMessage(data?.message);
+      setUserType(data?.user_type)
+      // }
     }
     else if (loginUser.rejected.match(result)) {
       setError(result.payload as string);
@@ -85,10 +85,19 @@ export default function Page() {
         onSubmit={form.handleSubmit(onSubmit)}
         className="block w-full space-y-5"
       >
-        <div className="space-y-1.5 pb-3">
-          <h1 className="text-2xl font-semibold tracking-tight text-center">
-            Sign in
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight text-center ">
+            Sign In
           </h1>
+          <div className="text-sm text-muted-foreground text-center">
+            Need'an account?{' '}
+            <Link
+              href="/signup"
+              className="text-primary font-semibold"
+            >
+              Sign Up
+            </Link>
+          </div>
         </div>
 
         {error && (
@@ -104,10 +113,13 @@ export default function Page() {
           control={form.control}
           name="email"
           render={({ field }) => (
-            <FormItem>
+            <FormItem id="email" >
               <FormLabel>Email<span className="text-red-500">*</span></FormLabel>
               <FormControl>
-                <Input placeholder="Your email" {...field} />
+                <Input
+                  id='email'
+                  placeholder="Your email"
+                  {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -118,13 +130,14 @@ export default function Page() {
           control={form.control}
           name="password"
           render={({ field }) => (
-            <FormItem>
+            <FormItem id="password">
               <div className="flex justify-between items-center gap-2.5">
                 <FormLabel>Password<span className="text-red-500">*</span></FormLabel>
               </div>
               <div className="relative">
                 <FormControl>
                   <Input
+                    id='password'
                     placeholder="Your password"
                     type={passwordVisible ? 'text' : 'password'}
                     {...field}
@@ -184,7 +197,6 @@ export default function Page() {
 
         <div className="flex flex-col gap-2.5">
           <Button type="submit" disabled={loading}>
-            {/* <Button type="submit" > */}
             {loading ? (
               <LoaderCircleIcon className="size-4 animate-spin" />
             ) : null}
@@ -192,15 +204,7 @@ export default function Page() {
           </Button>
         </div>
 
-        <p className="text-sm text-muted-foreground text-center">
-          Don&apos;t have an account?{' '}
-          <Link
-            href="/signup"
-            className="text-primary font-semibold "
-          >
-            Sign Up
-          </Link>
-        </p>
+
       </form>
       <VerifyOtpPage
         oppenQR={oppenQR}

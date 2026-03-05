@@ -1,5 +1,4 @@
 'use client';
-
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
@@ -8,6 +7,7 @@ import { CheckCircle2, Loader2 } from 'lucide-react';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/store';
 import { verifyMfa } from '@/store/thunk/auth.thunk';
+import Image from 'next/image';
 
 interface Props {
     oppenQR: boolean;
@@ -45,8 +45,6 @@ export default function VerifyOtpPage({
         newOtp[index] = value.slice(-1);
         setOtp(newOtp);
         setError('');
-
-        // Auto focus next
         if (value && index < 5) {
             inputRefs.current[index + 1]?.focus();
         }
@@ -60,7 +58,6 @@ export default function VerifyOtpPage({
             inputRefs.current[index - 1]?.focus();
         }
     };
-
     const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>, index: number) => {
         e.preventDefault();
         const paste = e.clipboardData.getData('text').trim();
@@ -109,49 +106,53 @@ export default function VerifyOtpPage({
 
     if (!oppenQR) { return null }
     return (
-        <div className="fixed text-white inset-0 bg-black/80 flex justify-center items-center z-50">
-            <div className="kt-card max-w-[430px] w-full relative bg-white">
+        <div className="fixed inset-0 bg-black/70 dark:bg-black/80 flex justify-center items-center z-50">
+            <div className="kt-card max-w-[430px] w-full relative bg-white dark:bg-slate-900">
                 <div className="kt-card-content p-10">
-                    <div className="text-center">
-                        <h1 className="text-2xl font-bold text-black tracking-tight ">
-                            Set up 2FA Verification
+                    <div className="text-center flex flex-col justify-center items-center">
+                        <Image
+                            src="/assets/auth/2FAsmartphone.svg"
+                            alt="image"
+                            width={130}
+                            height={130}
+                            className="mt-5 mb-5"
+                        />
+                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
+                            {qrCode ? "Set up" : ""}  2FA Verification Code
                         </h1>
-                        <p className="mt-5 mb-5 text-sm text-black">
+                        <p className="mt-5 mb-5 text-sm text-gray-600 dark:text-gray-300">
                             {message}
                         </p>
                     </div>
                     <div className="px-8">
-                        <div className="relative mx-auto w-64 h-64 bg-white rounded-xl border border-slate-200 shadow-inner overflow-hidden">
-                            {success && (
-                                <div className="absolute inset-0 bg-white/95 backdrop-blur-sm flex items-center justify-center z-20 animate-fade-in">
-                                    <div className="text-center">
-                                        <CheckCircle2 className="mx-auto h-16 w-16 text-green-500 animate-scale-in" />
-                                        <p className="mt-4 text-lg font-medium ">
-                                            Verification Successful!
-                                        </p>
+                        {qrCode ? (
+                            <div className="relative mx-auto w-64 h-64 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-inner overflow-hidden">
+                                {success && (
+                                    <div className="absolute inset-0 bg-white/95 backdrop-blur-sm flex items-center justify-center z-20 animate-fade-in">
+                                        <div className="text-center">
+                                            <CheckCircle2 className="mx-auto h-16 w-16 text-green-500 animate-scale-in" />
+                                            <p className="mt-4 text-lg font-medium text-gray-900 dark:text-white">
+                                                Verification Successful!
+                                            </p>
+                                        </div>
                                     </div>
-                                </div>
-                            )}
-                            {!success && !loading && (
-                                <div className="absolute inset-0 z-10 pointer-events-none">
-                                    <div className="scan-line" />
-                                </div>
-                            )}
-                            {qrCode ? (
+                                )}
+                                {!success && !loading && (
+                                    <div className="absolute inset-0 z-10 pointer-events-none">
+                                        <div className="scan-line" />
+                                    </div>
+                                )}
                                 <img
                                     src={`data:image/svg+xml;base64,${qrCode}`}
                                     alt="2FA QR Code"
                                     className="w-full h-full object-contain p-4"
                                 />
-                            ) : (
-                                <div className="w-full h-full flex items-center justify-center text-slate-300">
-                                    QR Code loading...
-                                </div>
-                            )}
-                        </div>
+                            </div>
+                        )
+                            : ("")}
                         <div className="px-8">
-                            <div className="mt-5 mb-5 text-sm font-medium text-black text-center">
-                                Enter 6-digit code from your authenticator
+                            <div className="mt-5 mb-5 text-sm font-medium text-gray-700 dark:text-gray-300 text-center">
+                                {qrCode ? "Enter 6-digit code from your authenticator" : ""}
                             </div>
 
                             <div className="flex gap-3 justify-center mb-6">
@@ -166,12 +167,13 @@ export default function VerifyOtpPage({
                                         onKeyDown={(e) => handleKeyDown(e, i)}
                                         onPaste={(e) => handlePaste(e, i)}
                                         ref={(el) => (inputRefs.current[i] = el)}
-                                        className={`text-center text-2xl font-semibold h-14 w-14 border-2 transition-all ${error
-                                            ? 'border-red-400 focus:border-red-500'
-                                            : success
-                                                ? 'border-green-400'
-                                                : 'border-slate-300 focus:border-blue-500 focus:ring-blue-200'
-                                            } rounded-lg`}
+                                        className={`text-center text-2xl font-semibold h-14 w-14 border-2 transition-all
+${error
+                                                ? 'border-red-400 focus:border-red-500'
+                                                : success
+                                                    ? 'border-green-400'
+                                                    : 'border-slate-300 dark:border-slate-700 focus:border-blue-500 focus:ring-blue-200'
+                                            }dark:bg-slate-800 dark:text-white rounded-lg`}
                                         disabled={loading || success}
                                     />
                                 ))}

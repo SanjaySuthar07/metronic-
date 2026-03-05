@@ -29,7 +29,7 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 import { Container } from '@/components/common/container';
-import { StoreClientTopbar } from '@/app/(dashboard)/store-client/components/common/topbar';
+import { StoreClientTopbar } from '@/app/(protected)/store-client/components/common/topbar';
 import { Breadcrumb } from './breadcrumb';
 import { MegaMenu } from './mega-menu';
 import { MegaMenuMobile } from './mega-menu-mobile';

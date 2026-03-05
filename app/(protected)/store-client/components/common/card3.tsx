@@ -6,7 +6,7 @@ import { toAbsoluteUrl } from '@/lib/helpers';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { useStoreClient } from '@/app/(dashboard)/store-client/components/context';
+import { useStoreClient } from '@/app/(protected)/store-client/components/context';
 
 interface ICard3Props {
   badge?: boolean;
