@@ -110,13 +110,14 @@ export default function VerifyOtpPage({
             <div className="kt-card max-w-[430px] w-full relative bg-white dark:bg-slate-900">
                 <div className="kt-card-content p-10">
                     <div className="text-center flex flex-col justify-center items-center">
-                        <Image
-                            src="/assets/auth/2FAsmartphone.svg"
-                            alt="image"
-                            width={130}
-                            height={130}
-                            className="mt-5 mb-5"
-                        />
+                        {qrCode ? ("") :
+                            (<Image
+                                src="/assets/auth/2FAsmartphone.svg"
+                                alt="image"
+                                width={130}
+                                height={130}
+                                className="mt-5 mb-5"
+                            />)}
                         <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
                             {qrCode ? "Set up" : ""}  2FA Verification Code
                         </h1>
