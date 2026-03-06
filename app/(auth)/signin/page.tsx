@@ -27,6 +27,7 @@ import VerifyOtpPage from '../modal/VerifyOtpPage';
 import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 export default function Page() {
   const { executeRecaptcha } = useGoogleReCaptcha();
+  const [recaptchaReady, setRecaptchaReady] = useState(false);
   const [oppenQR, setOppenQR] = useState(false);
   const [qrCode, setQrCode] = useState<string | null>(null);
   const [userId, setUserId] = useState<number | null>(null);
@@ -44,7 +45,11 @@ export default function Page() {
       rememberMe: false,
     },
   });
-
+  useEffect(() => {
+    if (executeRecaptcha) {
+      setRecaptchaReady(true);
+    }
+  }, [executeRecaptcha]);
   useEffect(() => {
     if (rememberUser) {
       form.setValue('email', rememberUser.email || '');
@@ -220,6 +225,7 @@ export default function Page() {
           </Button>
         </div>
       </form>
+  
       <VerifyOtpPage
         oppenQR={oppenQR}
         onClose={() => setOppenQR(false)}
