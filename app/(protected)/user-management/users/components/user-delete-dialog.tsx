@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -66,20 +67,17 @@ const UserDeleteDialog = ({
       setIsProcessing(false);
     }
   };
-
+  // <strong>{user?.email || user?.name || user?.id}</strong>?
+  // {isProcessing && <LoaderCircleIcon className="animate-spin" />}
   return (
     <Dialog open={open} onOpenChange={closeDialog}>
       <DialogContent showCloseButton={false}>
         <DialogHeader>
           <DialogTitle>Confirm Delete</DialogTitle>
         </DialogHeader>
-        <div className="px-6 pb-4">
-          <p>
-            Are you sure you want to delete user{' '}
-            <strong>{user?.email || user?.name || user?.id}</strong>?
-            This action cannot be undone.
-          </p>
-        </div>
+        <DialogDescription>
+          Are you sure you want to delete the user <strong>{user?.name}</strong>?
+        </DialogDescription>
         <DialogFooter>
           <Button variant="outline" onClick={closeDialog}>
             Cancel

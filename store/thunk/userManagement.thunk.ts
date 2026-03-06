@@ -149,7 +149,7 @@ export const fetchRolesDropdown = createAsyncThunk(
 
 
 export const updateRoles = createAsyncThunk(
-  "roles/updateRoles", 
+  "roles/updateRoles",
   async (payload: any, { rejectWithValue }) => {
     try {
       const response = await api.put(`/roles/${payload.id}`, {
@@ -160,6 +160,24 @@ export const updateRoles = createAsyncThunk(
     } catch (error: any) {
       const message =
         error.response?.data?.message || "Failed to update role permissions";
+      return rejectWithValue(message);
+    }
+  }
+);
+
+export const createRole = createAsyncThunk(
+  "roles/createRole",
+  async (payload: { name: string; permissions: number[] }, { rejectWithValue }) => {
+    try {
+      const response = await api.post("/roles", {
+        name: payload.name,
+        permissions: payload.permissions,
+      });
+
+      return response.data;
+    } catch (error: any) {
+      const message =
+        error.response?.data?.message || "Failed to create role";
       return rejectWithValue(message);
     }
   }

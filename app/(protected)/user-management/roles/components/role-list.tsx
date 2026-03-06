@@ -40,6 +40,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import RoleInviteDialog from './role-form-dialog';
 import RoleDeleteDialog from './role-delete-dialog';
+import RoleViewDialog from './role-view-dialog';
 const DataGridToolbar = ({
   inputValue,
   onInputChange,
@@ -81,12 +82,8 @@ const DataGridToolbar = ({
 
 
 const RolesList = () => {
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [deleteRole, setDeleteRole] = useState<any>(null);
-  const handleDeleteRole = (role: any) => {
-    setDeleteRole(role);
-    setDeleteDialogOpen(true);
-  };
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
+
   const dispatch = useDispatch<AppDispatch>();
 
   const [isEdit, setIsEdit] = useState(false);
@@ -136,13 +133,17 @@ const RolesList = () => {
     sorting,
   ]);
 
-  const handleEditUser = async (id: number) => {
+  const handleEditUser = async (id: number, type: any) => {
     try {
       const res: any = await dispatch(fetchRoleDetail({ id }));
       if (res?.payload?.role) {
         setEditData(res.payload.role);
         setIsEdit(true);
-        setInviteDialogOpen(true);
+        if (type == "edit") {
+          setInviteDialogOpen(true);
+        } else {
+          setViewDialogOpen(true)
+        }
       }
 
     } catch (error) {
@@ -228,18 +229,12 @@ const RolesList = () => {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
-            <DropdownMenuItem onClick={() => handleEditUser(row.original.id)}>
+            <DropdownMenuItem  onClick={() => handleEditUser(row.original.id, "edit")}>
               Edit
             </DropdownMenuItem>
-            <DropdownMenuItem>
-              View
-            </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              variant="destructive"
-              onClick={() => handleDeleteRole(row.original)}
-            >
-              Delete
+            <DropdownMenuItem onClick={() => handleEditUser(row.original.id, "view")}>
+              View
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -326,15 +321,16 @@ const RolesList = () => {
         </Card>
       </DataGrid>
 
-      {deleteDialogOpen ?
-        <RoleDeleteDialog
-          open={deleteDialogOpen}
-          role={deleteRole}
-          closeDialog={() => {
-            setDeleteDialogOpen(false);
-            setDeleteRole(null);
-          }}
-        /> : ""
+      {
+        viewDialogOpen ?
+          <RoleViewDialog
+            open={viewDialogOpen}
+            closeDialog={() => {
+              setViewDialogOpen(false);
+            }}
+            isEdit={isEdit}
+            editData={editData}
+          /> : ""
       }
       {
         inviteDialogOpen ?

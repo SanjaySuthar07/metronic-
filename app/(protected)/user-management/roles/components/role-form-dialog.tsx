@@ -49,7 +49,8 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 import { RoleSchema, RoleSchemaType } from '../forms/role-schema';
-import { fetchPermissionsDropdown, updateRoles } from '@/store/thunk/userManagement.thunk';
+import { createRole, fetchPermissionsDropdown, fetchRoles, updateRoles } from '@/store/thunk/userManagement.thunk';
+import { toast } from 'sonner';
 
 const RoleInviteDialog = ({
   open,
@@ -69,7 +70,6 @@ const RoleInviteDialog = ({
   const [selectedPermissions, setSelectedPermissions] = useState<number[]>([]);
   const [isProcess, setIsProcess] = useState(false)
   const form = useForm<RoleSchemaType>({
-    // resolver: zodResolver(RoleSchema),
     defaultValues: {
       name: '',
       permissions: [],
@@ -124,26 +124,43 @@ const RoleInviteDialog = ({
   };
   const handleSubmit = async (values: RoleSchemaType) => {
     setIsProcess(true);
+
     const payload = {
       id: editData?.id,
       name: values.name,
       permissions: selectedPermissions,
     };
 
-    const res: any = await dispatch(updateRoles(payload));
-    console.log(res)
-    setIsProcess(false);
-    if (res?.meta?.requestStatus == "fulfilled") {
-      dispatch(
-        fetchRoles({
-          page: 1,
-          per_page: 10,
-        })
-      );
-      closeDialog();
-    }
-  };
+    let res: any;
 
+    if (isEdit) {
+      res = await dispatch(updateRoles(payload));
+    } else {
+      res = await dispatch(createRole({ name: values.name, permissions: selectedPermissions, }));
+    }
+    if (res?.meta?.requestStatus === "fulfilled") {
+      await dispatch(fetchRoles({ page: 1, per_page: 10 }));
+      closeDialog();
+      toast.success(
+        isEdit
+          ? "Roles Update Successfully"
+          : "Role Created Successfully",
+        {
+          position: "top-center",
+          style: {
+            background: "#16a34a",
+            color: "#fff",
+            border: "none",
+          },
+        }
+      );
+    }
+
+    setIsProcess(false);
+  };
+  const {
+    formState: { isDirty }
+  } = form;
   return (
     <Dialog open={open} onOpenChange={closeDialog}>
       <DialogContent showCloseButton={false}>
@@ -289,14 +306,22 @@ const RoleInviteDialog = ({
                 Cancel
               </Button>
 
-              <Button type="submit">
-                {
-                  isProcess ? <LoaderCircleIcon className="animate-spin" /> :
-                    isEdit ? 'Update Role' : 'Create Role'
+              <Button
+                type="submit"
+                disabled={
+                  isProcess ||
+                  (isEdit
+                    ? !isDirty && selectedPermissions.length === (editData?.permissions?.length || 0)
+                    : !form.watch("name") || selectedPermissions.length === 0)
                 }
-
-
-
+              >
+                {isProcess ? (
+                  <LoaderCircleIcon className="animate-spin" />
+                ) : isEdit ? (
+                  "Update Role"
+                ) : (
+                  "Create Role"
+                )}
               </Button>
             </DialogFooter>
           </form>

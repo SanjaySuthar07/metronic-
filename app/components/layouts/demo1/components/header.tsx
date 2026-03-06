@@ -127,20 +127,6 @@ export function Header() {
         <div className="flex items-center gap-3">
 
           <>
-            {!mobileMode && (
-              <SearchDialog
-                trigger={
-                  <Button
-                    variant="ghost"
-                    mode="icon"
-                    shape="circle"
-                    className="size-9 hover:bg-primary/10 hover:[&_svg]:text-primary"
-                  >
-                    <Search className="size-4.5!" />
-                  </Button>
-                }
-              />
-            )}
             <NotificationsSheet
               trigger={
                 <Button
@@ -153,7 +139,7 @@ export function Header() {
                 </Button>
               }
             />
-            <ChatSheet
+            {/* <ChatSheet
               trigger={
                 <Button
                   variant="ghost"
@@ -176,7 +162,7 @@ export function Header() {
                   <LayoutGrid className="size-4.5!" />
                 </Button>
               }
-            />
+            /> */}
             <UserDropdownMenu
               trigger={
                 user?.avatar ? (

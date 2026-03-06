@@ -6,7 +6,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
-import { apiFetch } from '@/lib/api';
+// import { apiFetch } from '@/lib/api';
 import { Alert, AlertIcon, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
@@ -26,7 +26,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { LoaderCircleIcon } from 'lucide-react';
-import { User } from '@/app/models/user';
+// import { User } from '@/app/models/user';
 
 // Validation schema for email confirmation
 const EmailConfirmationSchema = (userEmail: string) =>
@@ -67,64 +67,64 @@ const UserRestoreDialog = ({
   });
 
   // Define the mutation for restoring the user
-  const mutation = useMutation({
-    mutationFn: async () => {
-      // Call the restore endpoint (adjust the endpoint/method as needed)
-      const response = await apiFetch(
-        `/api/user-management/users/${user.id}/restore`,
-        {
-          method: 'PATCH',
-        },
-      );
+  // const mutation = useMutation({
+  //   mutationFn: async () => {
+  //     // Call the restore endpoint (adjust the endpoint/method as needed)
+  //     const response = await apiFetch(
+  //       `/api/user-management/users/${user.id}/restore`,
+  //       {
+  //         method: 'PATCH',
+  //       },
+  //     );
 
-      if (!response.ok) {
-        const { message } = await response.json();
-        throw new Error(message);
-      }
+  //     if (!response.ok) {
+  //       const { message } = await response.json();
+  //       throw new Error(message);
+  //     }
 
-      return response.json();
-    },
-    onSuccess: () => {
-      const message = 'User restored successfully.';
-      toast.custom(
-        () => (
-          <Alert variant="mono" icon="success">
-            <AlertIcon>
-              <RiCheckboxCircleFill />
-            </AlertIcon>
-            <AlertTitle>{message}</AlertTitle>
-          </Alert>
-        ),
-        {
-          position: 'top-center',
-        },
-      );
+  //     return response.json();
+  //   },
+  //   onSuccess: () => {
+  //     const message = 'User restored successfully.';
+  //     toast.custom(
+  //       () => (
+  //         <Alert variant="mono" icon="success">
+  //           <AlertIcon>
+  //             <RiCheckboxCircleFill />
+  //           </AlertIcon>
+  //           <AlertTitle>{message}</AlertTitle>
+  //         </Alert>
+  //       ),
+  //       {
+  //         position: 'top-center',
+  //       },
+  //     );
 
-      // Update user data
-      queryClient.invalidateQueries({ queryKey: ['user-user'] });
+  //     // Update user data
+  //     queryClient.invalidateQueries({ queryKey: ['user-user'] });
 
-      closeDialog();
-    },
-    onError: (error: Error) => {
-      const message = error.message;
-      toast.custom(
-        () => (
-          <Alert variant="mono" icon="destructive">
-            <AlertIcon>
-              <RiErrorWarningFill />
-            </AlertIcon>
-            <AlertTitle>{message}</AlertTitle>
-          </Alert>
-        ),
-        {
-          position: 'top-center',
-        },
-      );
-    },
-  });
+  //     closeDialog();
+  //   },
+  //   onError: (error: Error) => {
+  //     const message = error.message;
+  //     toast.custom(
+  //       () => (
+  //         <Alert variant="mono" icon="destructive">
+  //           <AlertIcon>
+  //             <RiErrorWarningFill />
+  //           </AlertIcon>
+  //           <AlertTitle>{message}</AlertTitle>
+  //         </Alert>
+  //       ),
+  //       {
+  //         position: 'top-center',
+  //       },
+  //     );
+  //   },
+  // });
 
   const handleSubmit = () => {
-    mutation.mutate();
+    // mutation.mutate();
   };
 
   return (
@@ -170,12 +170,13 @@ const UserRestoreDialog = ({
                   disabled={
                     !form.formState.isDirty ||
                     !form.formState.isValid ||
-                    mutation.status === 'pending'
+                    false
+                    // mutation.status === 'pending'
                   }
                 >
-                  {mutation.status === 'pending' && (
+                  {/* {mutation.status === 'pending' && (
                     <LoaderCircleIcon className="animate-spin" />
-                  )}
+                  )} */}
                   Restore user account
                 </Button>
               </DialogFooter>

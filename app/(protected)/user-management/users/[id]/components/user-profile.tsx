@@ -6,7 +6,6 @@ import { Badge, BadgeDot, BadgeProps } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { User, UserStatus } from '@/app/models/user';
 import { getUserStatusProps } from '../../constants/status';
 import UserProfileEditDialog from './user-profile-edit-dialog';
 
@@ -78,8 +77,8 @@ const UserProfile = ({
   );
 
   const Content = () => {
-    const statusPros = getUserStatusProps(user.status as UserStatus);
-    const statusVariant = statusPros.variant as keyof BadgeProps['variant'];
+    // const statusPros = getUserStatusProps(user.status as UserStatus);
+    // const statusVariant = statusPros.variant as keyof BadgeProps['variant'];
 
     return (
       <Card>
@@ -119,9 +118,10 @@ const UserProfile = ({
               <dt>Status:</dt>
               <dd>
                 <div className="inline-flex gap-2.5">
-                  <Badge variant={statusVariant} appearance="ghost">
+                  <Badge  appearance="ghost">
                     <BadgeDot />
-                    {statusPros.label}
+                    {/* {statusPros.label} */}
+                    label
                   </Badge>
                   {user.isTrashed && (
                     <Badge variant="destructive" appearance="light">
@@ -154,7 +154,7 @@ const UserProfile = ({
 
   return (
     <>
-      {isLoading || !user ? <Loading /> : <Content />}
+      <Content />
 
       <UserProfileEditDialog
         open={isEditDialogOpen}

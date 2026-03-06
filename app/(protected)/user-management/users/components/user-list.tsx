@@ -53,6 +53,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useRouter } from 'next/navigation';
 
 
 const DataGridToolbar = ({
@@ -107,7 +108,7 @@ const DataGridToolbar = ({
               if (role.name === 'Super Admin') {
                 return null;
               }
-              
+
               return (
                 <Fragment key={role.id}>
                   <SelectItem value={role.name} className="capitalize">
@@ -132,30 +133,30 @@ const DataGridToolbar = ({
 const UserList = () => {
 
   const dispatch = useDispatch<AppDispatch>();
+  const router = useRouter()
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteUserObj, setDeleteUserObj] = useState<any>(null);
+  const handleDeleteUser = (user: any) => {
+    setDeleteUserObj(user);
+    setDeleteDialogOpen(true);
+  };
 
-      const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-      const [deleteUserObj, setDeleteUserObj] = useState<any>(null);
-      const handleDeleteUser = (user: any) => {
-        setDeleteUserObj(user);
-        setDeleteDialogOpen(true);
-      };
+  const refreshUsers = () => {
+    // rerun the fetch with current filters/pagination
+    const roleFilter =
+      selectedRole && selectedRole !== 'all' ? selectedRole : '';
 
-      const refreshUsers = () => {
-        // rerun the fetch with current filters/pagination
-        const roleFilter =
-          selectedRole && selectedRole !== 'all' ? selectedRole : '';
-
-        dispatch(
-          fetchUsers({
-            user_type: roleFilter,
-            page: pagination.pageIndex + 1,
-            per_page: pagination.pageSize,
-            search: inputValue.trim() || undefined,
-            sort: sorting?.[0]?.id,
-            dir: sorting?.[0]?.desc ? 'desc' : 'asc',
-          })
-        );
-      };
+    dispatch(
+      fetchUsers({
+        user_type: roleFilter,
+        page: pagination.pageIndex + 1,
+        per_page: pagination.pageSize,
+        search: inputValue.trim() || undefined,
+        sort: sorting?.[0]?.id,
+        dir: sorting?.[0]?.desc ? 'desc' : 'asc',
+      })
+    );
+  };
 
   const { users, loadingUsers } = useSelector(
     (state: RootState) => state.userManagement
@@ -348,23 +349,21 @@ const UserList = () => {
             >
               <EllipsisVertical />
             </Button>
-
           </DropdownMenuTrigger>
-
           <DropdownMenuContent align="end">
-
             <DropdownMenuItem
               onClick={() => handleEditUser(row.original.id)}
             >
               Edit
             </DropdownMenuItem>
-
             <DropdownMenuSeparator />
-
+            <DropdownMenuItem onClick={() => router.push(`/user-management/users/${row.original.id}`)}>
+              View
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
             <DropdownMenuItem variant="destructive" onClick={() => handleDeleteUser(row.original)}>
               Delete
             </DropdownMenuItem>
-
           </DropdownMenuContent>
 
         </DropdownMenu>
@@ -456,7 +455,7 @@ const UserList = () => {
         </Card>
 
       </DataGrid>
-{
+      {
         deleteUserObj && (
           <UserDeleteDialog
             open={deleteDialogOpen}
