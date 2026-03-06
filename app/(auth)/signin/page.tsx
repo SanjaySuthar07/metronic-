@@ -26,6 +26,7 @@ import { remember } from '@/store/slice/auth.slice';
 import VerifyOtpPage from '../modal/VerifyOtpPage';
 import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 export default function Page() {
+  const router = useRouter();
   const { executeRecaptcha } = useGoogleReCaptcha();
   const [recaptchaReady, setRecaptchaReady] = useState(false);
   const [oppenQR, setOppenQR] = useState(false);
@@ -63,25 +64,32 @@ export default function Page() {
       setError("Recaptcha not ready. Please try again.");
       return;
     }
+
     let recaptchaToken;
+
     try {
       recaptchaToken = await executeRecaptcha("login");
     } catch (err) {
       setError("Failed to generate captcha token");
       return;
     }
+
     if (!recaptchaToken) {
       setError("Captcha token missing");
       return;
     }
+
     const payload = {
       email: values.email,
       password: values.password,
       recaptcha_token: recaptchaToken,
     };
+
     const result = await dispatch(loginUser(payload));
+
     if (loginUser.fulfilled.match(result)) {
       const data = result.payload;
+
       setQrCode(data.qr_code);
       setUserId(data.user_id);
       setOppenQR(true);
@@ -225,7 +233,6 @@ export default function Page() {
           </Button>
         </div>
       </form>
-  
       <VerifyOtpPage
         oppenQR={oppenQR}
         onClose={() => setOppenQR(false)}
