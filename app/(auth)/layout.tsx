@@ -6,7 +6,7 @@ export default function Layout({ children }: { children: ReactNode }) {
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <Card className="w-full max-w-[420px]">
         <CardContent className="p-6 sm:p-8">
-          {children}
+            {children}
         </CardContent>
       </Card>
     </div>

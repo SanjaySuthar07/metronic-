@@ -44,7 +44,7 @@ export default function Page() {
 
   useEffect(() => {
     if (!token) {
-      setError('Invalid or missing reset token.');
+      setError('Invalid or missing reset tokensss.');
       return;
     }
     setIsValidToken(true);

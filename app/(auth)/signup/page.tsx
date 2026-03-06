@@ -1,5 +1,5 @@
 'use client';
-import { Suspense, useState } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AlertCircle, Check, Eye, EyeOff } from 'lucide-react';
@@ -22,19 +22,32 @@ import {
 import { Input } from '@/components/ui/input';
 import { LoaderCircleIcon } from 'lucide-react';
 import { getSignupSchema, SignupSchemaType } from '../forms/signup-schema';
+import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 
 export default function Page() {
+
     const [passwordVisible, setPasswordVisible] = useState(false);
     const [passwordConfirmationVisible, setPasswordConfirmationVisible] =
         useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<boolean | null>(false);
+
     const dispatch = useDispatch<AppDispatch>();
     const { loading } = useSelector((state: RootState) => state.auth);
+
     const [showSuccess, setShowSuccess] = useState(false);
     const [message, setMessage] = useState('');
-    useState(false);
+
+    const { executeRecaptcha } = useGoogleReCaptcha();
+    const [recaptchaReady, setRecaptchaReady] = useState(false);
+
+    useEffect(() => {
+        if (executeRecaptcha) {
+            setRecaptchaReady(true);
+        }
+    }, [executeRecaptcha]);
+
     const form = useForm<SignupSchemaType>({
         resolver: zodResolver(getSignupSchema()),
         defaultValues: {
@@ -45,7 +58,9 @@ export default function Page() {
             accept: false,
         },
     });
+
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+
         e.preventDefault();
 
         const isValid = await form.trigger();
@@ -54,17 +69,41 @@ export default function Page() {
         setIsProcessing(true);
         setError(null);
 
+        if (!executeRecaptcha) {
+            setError("Recaptcha not ready. Please try again.");
+            setIsProcessing(false);
+            return;
+        }
+
+        let recaptchaToken;
+
+        try {
+            recaptchaToken = await executeRecaptcha("register");
+        } catch {
+            setError("Failed to generate captcha token");
+            setIsProcessing(false);
+            return;
+        }
+
+        if (!recaptchaToken) {
+            setError("Captcha token missing");
+            setIsProcessing(false);
+            return;
+        }
+
         const values = form.getValues();
 
         const payload = {
             name: values.name,
             email: values.email,
             password: values.password,
+            recaptcha_token: recaptchaToken,
         };
 
         const resultAction = await dispatch(registerUser(payload));
 
         if (registerUser.fulfilled.match(resultAction)) {
+
             const data = resultAction.payload;
 
             if (data.status) {
@@ -73,13 +112,13 @@ export default function Page() {
 
             setShowSuccess(true);
             form.reset();
+
         } else {
             setError(resultAction.payload as string);
         }
 
         setIsProcessing(false);
     };
-
 
     if (success) {
         return (
@@ -106,10 +145,12 @@ export default function Page() {
         <Suspense>
             <Form {...form}>
                 <form onSubmit={handleSubmit} className="block w-full space-y-5">
+
                     <div>
                         <h1 className="text-2xl font-semibold tracking-tight text-center ">
                             Sign Up
                         </h1>
+
                         <div className="text-sm text-muted-foreground text-center">
                             Already have an account?{' '}
                             <Link
@@ -120,6 +161,7 @@ export default function Page() {
                             </Link>
                         </div>
                     </div>
+
                     {error && (
                         <Alert variant="destructive" onClose={() => setError(null)}>
                             <AlertIcon>
@@ -169,9 +211,9 @@ export default function Page() {
                                             placeholder="Your password"
                                             type={passwordVisible ? 'text' : 'password'}
                                             {...field}
-                                            autoComplete="password"
                                         />
                                     </FormControl>
+
                                     <Button
                                         type="button"
                                         variant="ghost"
@@ -179,9 +221,6 @@ export default function Page() {
                                         size="sm"
                                         onClick={() => setPasswordVisible(!passwordVisible)}
                                         className="absolute end-0 top-1/2 -translate-y-1/2 h-7 w-7 me-1.5 bg-transparent!"
-                                        aria-label={
-                                            passwordVisible ? 'Hide password' : 'Show password'
-                                        }
                                     >
                                         {passwordVisible ? (
                                             <EyeOff className="text-muted-foreground" />
@@ -189,6 +228,7 @@ export default function Page() {
                                             <Eye className="text-muted-foreground" />
                                         )}
                                     </Button>
+
                                 </div>
                                 <FormMessage />
                             </FormItem>
@@ -201,15 +241,16 @@ export default function Page() {
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Confirm Password<span className="text-red-500">*</span></FormLabel>
+
                                 <div className="relative">
                                     <FormControl>
                                         <Input
                                             type={passwordConfirmationVisible ? 'text' : 'password'}
                                             {...field}
-                                            autoComplete="confirm-password"
                                             placeholder="Confirm your password"
                                         />
                                     </FormControl>
+
                                     <Button
                                         type="button"
                                         variant="ghost"
@@ -221,11 +262,6 @@ export default function Page() {
                                             )
                                         }
                                         className="absolute end-0 top-1/2 -translate-y-1/2 h-7 w-7 me-1.5 bg-transparent!"
-                                        aria-label={
-                                            passwordConfirmationVisible
-                                                ? 'Hide password confirmation'
-                                                : 'Show password confirmation'
-                                        }
                                     >
                                         {passwordConfirmationVisible ? (
                                             <EyeOff className="text-muted-foreground" />
@@ -233,7 +269,9 @@ export default function Page() {
                                             <Eye className="text-muted-foreground" />
                                         )}
                                     </Button>
+
                                 </div>
+
                                 <FormMessage />
                             </FormItem>
                         )}
@@ -247,17 +285,20 @@ export default function Page() {
                                 <FormItem>
                                     <FormControl>
                                         <div className="flex items-center gap-2.5">
+
                                             <Checkbox
                                                 id="accept"
                                                 checked={field.value}
                                                 onCheckedChange={(checked) => field.onChange(!!checked)}
                                             />
+
                                             <label
                                                 htmlFor="accept"
                                                 className="text-sm leading-none text-muted-foreground"
                                             >
                                                 I agree to the
                                             </label>
+
                                             <Link
                                                 href="/privacy-policy"
                                                 target="_blank"
@@ -265,6 +306,7 @@ export default function Page() {
                                             >
                                                 Privacy Policy<span className="text-red-500">*</span>
                                             </Link>
+
                                         </div>
                                     </FormControl>
                                     <FormMessage />
@@ -274,22 +316,28 @@ export default function Page() {
                     </div>
 
                     <div className="flex flex-col gap-2.5">
-                        <Button type="submit" disabled={isProcessing || loading}>
-                            {(isProcessing || loading) ? (
-                                <LoaderCircleIcon className="size-4 animate-spin" />
-                            ) : null}
-                            Sign Up
-                        </Button>
-                    </div>
 
+                        <Button type="submit" disabled={isProcessing || loading}>
+
+                            {(isProcessing || loading) && (
+                                <LoaderCircleIcon className="size-4 animate-spin" />
+                            )}
+
+                            Sign Up
+
+                        </Button>
+
+                    </div>
 
                 </form>
             </Form>
+
             <VerifyEmailModal
                 isOpen={showSuccess}
                 onClose={() => setShowSuccess(false)}
                 message={message}
             />
+
         </Suspense>
     );
 }

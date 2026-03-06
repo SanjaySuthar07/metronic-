@@ -1,5 +1,5 @@
 'use client';
-import { Suspense, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AlertCircle, ArrowLeft, LoaderCircle } from 'lucide-react';
@@ -20,9 +20,10 @@ import { useDispatch } from 'react-redux';
 import { forgetPassword } from '@/store/thunk/auth.thunk';
 import { AppDispatch } from '@/store';
 import CheckEmailModal from '../modal/CheckEmailModal';
+import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 export default function Page() {
   const dispatch = useDispatch<AppDispatch>();
-
+  const { executeRecaptcha } = useGoogleReCaptcha();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -42,13 +43,32 @@ export default function Page() {
     },
     mode: 'onSubmit',
   });
-
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setLoading(true);
     setError(null);
-
-    const resultAction = await dispatch(forgetPassword(values));
-
+    if (!executeRecaptcha) {
+      setError("Recaptcha not ready. Please try again.");
+      setLoading(false);
+      return;
+    }
+    let recaptchaToken;
+    try {
+      recaptchaToken = await executeRecaptcha("forgot_password");
+    } catch {
+      setError("Failed to generate captcha token");
+      setLoading(false);
+      return;
+    }
+    if (!recaptchaToken) {
+      setError("Captcha token missing");
+      setLoading(false);
+      return;
+    }
+    const payload = {
+      email: values.email,
+      recaptcha_token: recaptchaToken,
+    };
+    const resultAction = await dispatch(forgetPassword(payload));
     if (forgetPassword.fulfilled.match(resultAction)) {
       setEmailSent(values.email);
       setShowModal(true);
@@ -56,6 +76,7 @@ export default function Page() {
     } else {
       setError(resultAction.payload as string);
     }
+
     setLoading(false);
   };
 

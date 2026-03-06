@@ -24,8 +24,9 @@ import { loginUser } from '@/store/thunk/auth.thunk';
 import { AppDispatch, RootState } from '@/store';
 import { remember } from '@/store/slice/auth.slice';
 import VerifyOtpPage from '../modal/VerifyOtpPage';
+import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 export default function Page() {
-  const router = useRouter();
+  const { executeRecaptcha } = useGoogleReCaptcha();
   const [oppenQR, setOppenQR] = useState(false);
   const [qrCode, setQrCode] = useState<string | null>(null);
   const [userId, setUserId] = useState<number | null>(null);
@@ -43,6 +44,7 @@ export default function Page() {
       rememberMe: false,
     },
   });
+
   useEffect(() => {
     if (rememberUser) {
       form.setValue('email', rememberUser.email || '');
@@ -52,30 +54,42 @@ export default function Page() {
   }, [rememberUser, form]);
   async function onSubmit(values: SigninSchemaType) {
     setError(null);
+    if (!executeRecaptcha) {
+      setError("Recaptcha not ready. Please try again.");
+      return;
+    }
+    let recaptchaToken;
+    try {
+      recaptchaToken = await executeRecaptcha("login");
+    } catch (err) {
+      setError("Failed to generate captcha token");
+      return;
+    }
+    if (!recaptchaToken) {
+      setError("Captcha token missing");
+      return;
+    }
     const payload = {
       email: values.email,
       password: values.password,
+      recaptcha_token: recaptchaToken,
     };
     const result = await dispatch(loginUser(payload));
     if (loginUser.fulfilled.match(result)) {
       const data = result.payload;
-      // if (data?.qr_code) {
       setQrCode(data.qr_code);
       setUserId(data.user_id);
       setOppenQR(true);
       setMessage(data?.message);
-      setUserType(data?.user_type)
-      // }
-    }
-    else if (loginUser.rejected.match(result)) {
+      setUserType(data?.user_type);
+    } else if (loginUser.rejected.match(result)) {
       setError(result.payload as string);
     }
 
     if (values.rememberMe) {
-      dispatch(remember({ email: values.email, rememberMe: values.rememberMe }))
-      dispatch(remember(values))
+      dispatch(remember(values));
     } else {
-      dispatch(remember(null))
+      dispatch(remember(null));
     }
   }
 

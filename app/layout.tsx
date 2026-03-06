@@ -12,6 +12,7 @@ import { AuthProvider } from "@/providers/auth-provider";
 import { QueryProvider } from "@/providers/query-provider";
 import { Suspense } from "react";
 import { Toaster } from "@/components/ui/sonner";
+import RecaptchaProvider from "@/providers/RecaptchaProvider";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -39,7 +40,9 @@ export default function RootLayout({
                 <I18nProvider>
                   <TooltipsProvider>
                     <Provider store={store}>
-                      <Suspense>{children}</Suspense>
+                      <RecaptchaProvider>
+                        <Suspense>{children}</Suspense>
+                      </RecaptchaProvider>
                     </Provider>
                     <Toaster />
                   </TooltipsProvider>

@@ -4,6 +4,7 @@ interface RegisterPayload {
     name: string;
     email: string;
     password: string;
+    recaptcha_token: string;
 }
 
 export const registerUser = createAsyncThunk(
@@ -26,6 +27,7 @@ export const registerUser = createAsyncThunk(
 interface LoginPayload {
     email: string;
     password: string;
+    recaptcha_token: string;
 }
 
 export const loginUser = createAsyncThunk(
@@ -67,6 +69,7 @@ export const verifyMfa = createAsyncThunk(
 
 interface ForgetPasswordPayload {
     email: string;
+    recaptcha_token: string;
 }
 
 export const forgetPassword = createAsyncThunk(
@@ -90,6 +93,7 @@ interface ResetPasswordPayload {
     email: string;
     token: string;
     password: string;
+    recaptcha_token: string;
 }
 
 export const resetPassword = createAsyncThunk(

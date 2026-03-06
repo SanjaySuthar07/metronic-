@@ -1,13 +1,10 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice } from '@reduxjs/toolkit';
 import { registerUser, loginUser, verifyMfa, logoutUser, getProfile } from '../thunk/auth.thunk';
-
-
 interface AuthState {
     user: any;
     loading: boolean;
     rememberUser: any;
 }
-
 const initialState: AuthState = {
     user: null,
     loading: false,
