@@ -1,7 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { useForm } from 'react-hook-form';
@@ -26,9 +25,7 @@ import { remember } from '@/store/slice/auth.slice';
 import VerifyOtpPage from '../modal/VerifyOtpPage';
 import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 export default function Page() {
-  const router = useRouter();
   const { executeRecaptcha } = useGoogleReCaptcha();
-  const [recaptchaReady, setRecaptchaReady] = useState(false);
   const [oppenQR, setOppenQR] = useState(false);
   const [qrCode, setQrCode] = useState<string | null>(null);
   const [userId, setUserId] = useState<number | null>(null);
@@ -46,11 +43,7 @@ export default function Page() {
       rememberMe: false,
     },
   });
-  useEffect(() => {
-    if (executeRecaptcha) {
-      setRecaptchaReady(true);
-    }
-  }, [executeRecaptcha]);
+
   useEffect(() => {
     if (rememberUser) {
       form.setValue('email', rememberUser.email || '');
@@ -64,32 +57,25 @@ export default function Page() {
       setError("Recaptcha not ready. Please try again.");
       return;
     }
-
     let recaptchaToken;
-
     try {
       recaptchaToken = await executeRecaptcha("login");
     } catch (err) {
       setError("Failed to generate captcha token");
       return;
     }
-
     if (!recaptchaToken) {
       setError("Captcha token missing");
       return;
     }
-
     const payload = {
       email: values.email,
       password: values.password,
       recaptcha_token: recaptchaToken,
     };
-
     const result = await dispatch(loginUser(payload));
-
     if (loginUser.fulfilled.match(result)) {
       const data = result.payload;
-
       setQrCode(data.qr_code);
       setUserId(data.user_id);
       setOppenQR(true);

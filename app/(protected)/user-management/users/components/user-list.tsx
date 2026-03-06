@@ -36,6 +36,7 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 
 import UserInviteDialog from './user-add-dialog';
+import UserDeleteDialog from './user-delete-dialog';
 
 import {
   Select,
@@ -101,19 +102,26 @@ const DataGridToolbar = ({
           <SelectContent>
             <SelectItem value="all">All Type</SelectItem>
 
-            {roles.map((role: any) => (
-              <Fragment key={role.id}>
-                <SelectItem value={role.name} className="capitalize">
-                  {role.name}
-                </SelectItem>
-              </Fragment>
-            ))}
+            {roles.map((role: any) => {
+              // hide admin role from filter options
+              if (role.name === 'Super Admin') {
+                return null;
+              }
+              
+              return (
+                <Fragment key={role.id}>
+                  <SelectItem value={role.name} className="capitalize">
+                    {role.name}
+                  </SelectItem>
+                </Fragment>
+              );
+            })}
           </SelectContent>
         </Select>
 
       </div>
 
-      <Button className="bg-primary text-white" onClick={onAddUser}>
+      <Button className="bg-primary text-white hidden" onClick={onAddUser}>
         <Plus className="size-4 mr-1" />
         Add User
       </Button>
@@ -124,6 +132,30 @@ const DataGridToolbar = ({
 const UserList = () => {
 
   const dispatch = useDispatch<AppDispatch>();
+
+      const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+      const [deleteUserObj, setDeleteUserObj] = useState<any>(null);
+      const handleDeleteUser = (user: any) => {
+        setDeleteUserObj(user);
+        setDeleteDialogOpen(true);
+      };
+
+      const refreshUsers = () => {
+        // rerun the fetch with current filters/pagination
+        const roleFilter =
+          selectedRole && selectedRole !== 'all' ? selectedRole : '';
+
+        dispatch(
+          fetchUsers({
+            user_type: roleFilter,
+            page: pagination.pageIndex + 1,
+            per_page: pagination.pageSize,
+            search: inputValue.trim() || undefined,
+            sort: sorting?.[0]?.id,
+            dir: sorting?.[0]?.desc ? 'desc' : 'asc',
+          })
+        );
+      };
 
   const { users, loadingUsers } = useSelector(
     (state: RootState) => state.userManagement
@@ -329,7 +361,7 @@ const UserList = () => {
 
             <DropdownMenuSeparator />
 
-            <DropdownMenuItem variant="destructive">
+            <DropdownMenuItem variant="destructive" onClick={() => handleDeleteUser(row.original)}>
               Delete
             </DropdownMenuItem>
 
@@ -424,7 +456,19 @@ const UserList = () => {
         </Card>
 
       </DataGrid>
-
+{
+        deleteUserObj && (
+          <UserDeleteDialog
+            open={deleteDialogOpen}
+            closeDialog={() => setDeleteDialogOpen(false)}
+            user={deleteUserObj}
+            onDeleted={() => {
+              setDeleteDialogOpen(false);
+              refreshUsers();
+            }}
+          />
+        )
+      }
       <UserInviteDialog
         open={inviteDialogOpen}
         isEdit={isEdit}

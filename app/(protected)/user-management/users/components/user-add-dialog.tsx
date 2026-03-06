@@ -41,7 +41,11 @@ import {
 import { UserAddSchema, UserAddSchemaType } from '../forms/user-add-schema';
 
 import { useDispatch } from 'react-redux';
-import { fetchRolesDropdown } from '@/store/thunk/userManagement.thunk';
+import {
+  fetchRolesDropdown,
+  fetchUsers,
+  updateUser,
+} from '@/store/thunk/userManagement.thunk';
 
 const UserAddDialog = ({
   open,
@@ -69,21 +73,20 @@ const UserAddDialog = ({
     },
   });
 
+  // fetch list of roles for dropdown
   useEffect(() => {
-    const fetchRoles = async () => {
-      const data: any = await dispatch(fetchRolesDropdown());
+    const fetch = async () => {
+      const data: any = await dispatch(fetchRolesDropdown() as any);
       setRoles(data?.payload?.roles || []);
     };
 
-    fetchRoles();
+    fetch();
   }, [dispatch]);
 
   useEffect(() => {
-
     if (!open) return;
 
     if (isEdit && editData) {
-
       const role = roles.find(
         (r: any) => r.name === editData.user_type
       );
@@ -93,44 +96,58 @@ const UserAddDialog = ({
         email: editData.email || '',
         roleId: role?.id?.toString() || '',
       });
-
     } else {
-
       form.reset({
         name: '',
         email: '',
         roleId: '',
       });
-
     }
-
   }, [open, isEdit, editData, roles]);
-
   const handleSubmit = async (values: UserAddSchemaType) => {
-
+    console.log('submit values');
     setIsProcessing(true);
 
-    setTimeout(() => {
+    try {
+      const payload: any = {
+        ...values,
+      };
+      if (isEdit) {
+        delete payload.roleId;
+      }
+      if (isEdit && editData?.id) {
+        payload.id = editData.id;
+      }
+      const result: any = await dispatch(updateUser(payload) as any);
+      if(updateUser.fulfilled.match(result)) {
+        dispatch(fetchUsers({ page: 1, per_page: 10 }) as any);
+      }
 
-      toast.custom(
-        () => (
-          <Alert variant="mono" icon="success" close={false}>
-            <AlertIcon>
-              <RiCheckboxCircleFill />
-            </AlertIcon>
-            <AlertTitle>
-              {isEdit ? "User updated successfully" : "User added successfully"}
-            </AlertTitle>
-          </Alert>
-        ),
-        { position: 'top-center' }
-      );
-
+      if (result.error) {
+        toast.error(result.error.message || 'Failed to save user', {
+          position: 'top-center',
+        });
+      } else {
+        toast.custom(
+          () => (
+            <Alert variant="mono" icon="success" close={false}>
+              <AlertIcon>
+                <RiCheckboxCircleFill />
+              </AlertIcon>
+              <AlertTitle>
+                {isEdit ? 'User updated successfully' : 'User added successfully'}
+              </AlertTitle>
+            </Alert>
+          ),
+          { position: 'top-center' }
+        );
+        closeDialog();
+      }
+    } catch (err) {
+      console.error('save user error', err);
+    } finally {
       setIsProcessing(false);
-      closeDialog();
-
-    }, 800);
-
+    }
   };
 
   return (
@@ -188,52 +205,54 @@ const UserAddDialog = ({
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="roleId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Role</FormLabel>
+              {!isEdit && (
+                <FormField
+                  control={form.control}
+                  name="roleId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Role</FormLabel>
 
-                    <FormControl>
+                      <FormControl>
 
-                      <Select
-                        onValueChange={(value) => field.onChange(value)}
-                        value={field.value}
-                      >
+                        <Select
+                          onValueChange={(value) => field.onChange(value)}
+                          value={field.value}
+                        >
 
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select role" />
-                        </SelectTrigger>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select role" />
+                          </SelectTrigger>
 
-                        <SelectContent>
+                          <SelectContent>
 
-                          <SelectGroup>
+                            <SelectGroup>
 
-                            {roles.map((role: any) => (
+                              {roles.map((role: any) => (
 
-                              <SelectItem
-                                key={role.id}
-                                value={role.id.toString()}
-                              >
-                                {role.name}
-                              </SelectItem>
+                                <SelectItem
+                                  key={role.id}
+                                  value={role.id.toString()}
+                                >
+                                  {role.name}
+                                </SelectItem>
 
-                            ))}
+                              ))}
 
-                          </SelectGroup>
+                            </SelectGroup>
 
-                        </SelectContent>
+                          </SelectContent>
 
-                      </Select>
+                        </Select>
 
-                    </FormControl>
+                      </FormControl>
 
-                    <FormMessage />
+                      <FormMessage />
 
-                  </FormItem>
-                )}
-              />
+                    </FormItem>
+                  )}
+                />
+              )}
 
             </DialogBody>
 

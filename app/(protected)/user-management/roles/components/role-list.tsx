@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { redirect } from 'next/navigation';
 
 import {
   ColumnDef,
@@ -14,7 +13,7 @@ import {
 } from '@tanstack/react-table';
 
 import { AppDispatch, RootState } from '@/store';
-import { fetchRoles } from '@/store/thunk/userManagement.thunk';
+import { fetchRoleDetail, fetchRoles } from '@/store/thunk/userManagement.thunk';
 
 import { EllipsisVertical, Plus, Search } from 'lucide-react';
 import { getInitials } from '@/lib/helpers';
@@ -32,9 +31,6 @@ import { DataGridTable } from '@/components/ui/data-grid-table';
 import { Input } from '@/components/ui/input';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
-
-import UserInviteDialog from './user-add-dialog';
-
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,6 +38,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import RoleInviteDialog from './role-form-dialog';
+import RoleDeleteDialog from './role-delete-dialog';
 const DataGridToolbar = ({
   inputValue,
   onInputChange,
@@ -81,10 +79,18 @@ const DataGridToolbar = ({
   );
 };
 
-const RolesList = () => {
 
+const RolesList = () => {
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteRole, setDeleteRole] = useState<any>(null);
+  const handleDeleteRole = (role: any) => {
+    setDeleteRole(role);
+    setDeleteDialogOpen(true);
+  };
   const dispatch = useDispatch<AppDispatch>();
 
+  const [isEdit, setIsEdit] = useState(false);
+  const [editData, setEditData] = useState<any>(null);
   const { roles, loadingRoles } = useSelector(
     (state: RootState) => state.userManagement
   );
@@ -130,8 +136,20 @@ const RolesList = () => {
     sorting,
   ]);
 
-  const columns = useMemo<ColumnDef<any>[]>(() => [
+  const handleEditUser = async (id: number) => {
+    try {
+      const res: any = await dispatch(fetchRoleDetail({ id }));
+      if (res?.payload?.role) {
+        setEditData(res.payload.role);
+        setIsEdit(true);
+        setInviteDialogOpen(true);
+      }
 
+    } catch (error) {
+      console.error("Failed to fetch role details", error);
+    }
+  };
+  const columns = useMemo<ColumnDef<any>[]>(() => [
     {
       accessorKey: 'name',
       id: 'name',
@@ -139,9 +157,7 @@ const RolesList = () => {
 
       header: ({ column }) =>
         <DataGridColumnHeader title="Role" column={column} />,
-
       cell: ({ row }) => {
-
         const role = row.original;
         const name = role?.name || '-';
 
@@ -156,13 +172,10 @@ const RolesList = () => {
             <div className="font-medium capitalize text-sm">
               {name}
             </div>
-
           </div>
         );
       },
-
       size: 300,
-
       meta: {
         skeleton: (
           <div className="flex items-center gap-3">
@@ -183,13 +196,11 @@ const RolesList = () => {
         if (!permissions.length) return "-";
         return (
           <div className="flex items-center gap-1 flex-wrap">
-
             {permissions.slice(0, 3).map((perm: any) => (
               <Badge key={perm.id} variant="secondary">
                 {perm.name}
               </Badge>
             ))}
-
             {permissions.length > 3 && (
               <span className="text-muted-foreground text-xs ms-1">
                 {permissions.length} more
@@ -204,7 +215,6 @@ const RolesList = () => {
       },
     },
 
-
     {
       id: 'actions',
       header: 'Actions',
@@ -217,35 +227,28 @@ const RolesList = () => {
               <EllipsisVertical />
             </Button>
           </DropdownMenuTrigger>
-
           <DropdownMenuContent>
-
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleEditUser(row.original.id)}>
               Edit
             </DropdownMenuItem>
-
             <DropdownMenuItem>
               View
             </DropdownMenuItem>
-
             <DropdownMenuSeparator />
-
-            <DropdownMenuItem variant="destructive">
+            <DropdownMenuItem
+              variant="destructive"
+              onClick={() => handleDeleteRole(row.original)}
+            >
               Delete
             </DropdownMenuItem>
-
           </DropdownMenuContent>
-
         </DropdownMenu>
       ),
-
       size: 75,
-
       meta: {
         skeleton: <Skeleton className="size-5" />,
       },
     },
-
   ], []);
 
   useEffect(() => {
@@ -253,10 +256,8 @@ const RolesList = () => {
   }, [columns]);
 
   const table = useReactTable({
-
     columns,
     data: roles?.data || [],
-
     pageCount:
       roles?.total
         ? Math.ceil(roles.total / pagination.pageSize)
@@ -293,7 +294,6 @@ const RolesList = () => {
         table={table}
         recordCount={roles?.total}
         isLoading={loadingRoles}
-        onRowClick={(row) => redirect(`/roles/${row.id}`)}
         tableLayout={{
           columnsResizable: true,
           columnsPinnable: true,
@@ -307,36 +307,48 @@ const RolesList = () => {
           <DataGridToolbar
             inputValue={inputValue}
             onInputChange={setInputValue}
-            onAddUser={() => setInviteDialogOpen(true)}
+            onAddUser={() => {
+              setIsEdit(false);
+              setEditData(null);
+              setInviteDialogOpen(true);
+            }}
           />
 
           <CardTable>
-
             <ScrollArea>
-
               <DataGridTable />
-
               <ScrollBar orientation="horizontal" />
-
             </ScrollArea>
-
           </CardTable>
-
           <CardFooter>
-
             <DataGridPagination />
-
           </CardFooter>
-
         </Card>
-
       </DataGrid>
 
-      <UserInviteDialog
-        open={inviteDialogOpen}
-        closeDialog={() => setInviteDialogOpen(false)}
-      />
-
+      {deleteDialogOpen ?
+        <RoleDeleteDialog
+          open={deleteDialogOpen}
+          role={deleteRole}
+          closeDialog={() => {
+            setDeleteDialogOpen(false);
+            setDeleteRole(null);
+          }}
+        /> : ""
+      }
+      {
+        inviteDialogOpen ?
+          <RoleInviteDialog
+            open={inviteDialogOpen}
+            closeDialog={() => {
+              setInviteDialogOpen(false);
+              setIsEdit(false);
+              setEditData(null);
+            }}
+            isEdit={isEdit}
+            editData={editData}
+          /> : ""
+      }
     </>
   );
 };

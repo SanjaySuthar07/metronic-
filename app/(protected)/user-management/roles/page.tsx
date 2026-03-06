@@ -14,7 +14,7 @@ import {
   ToolbarHeading,
   ToolbarTitle,
 } from '@/components/common/toolbar';
-import UserList from './components/user-list';
+import RolesList from './components/role-list';
 
 export const metadata: Metadata = {
   title: 'Roles',
@@ -35,7 +35,7 @@ export default async function Page() {
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
-                  <BreadcrumbPage>User Management</BreadcrumbPage>
+                  <BreadcrumbPage>Users</BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
@@ -45,7 +45,7 @@ export default async function Page() {
       </Container>
 
       <Container>
-        <UserList />
+        <RolesList />
       </Container>
     </>
   );
