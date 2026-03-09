@@ -54,6 +54,9 @@ export default function VerifyOtpPage({
     ) => {
         if (e.key === 'Backspace' && !otp[index] && index > 0) {
             inputRefs.current[index - 1]?.focus();
+        } else if (e.key === 'Enter' && otp.join('').length === 6) {
+            e.preventDefault();
+            handleVerify();
         }
     };
     const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>, index: number) => {
@@ -185,7 +188,11 @@ ${error
                             )}
 
                             <Button
-                                onClick={handleVerify}
+                                type="button"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    handleVerify();
+                                }}
                                 disabled={loading || success || otp.join('').length !== 6}
                                 className="w-full h-12 text-white font-medium bg-primary"
                             >

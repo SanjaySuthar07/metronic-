@@ -1,5 +1,6 @@
 'use client';
-import { Suspense, useState, useEffect } from 'react';
+
+import { Suspense, useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AlertCircle, Check, Eye, EyeOff } from 'lucide-react';
@@ -11,6 +12,8 @@ import VerifyEmailModal from '../modal/VerifyEmailModal';
 import { useDispatch, useSelector } from 'react-redux';
 import { registerUser } from '@/store/thunk/auth.thunk';
 import { AppDispatch, RootState } from '@/store';
+import ReCAPTCHA from "react-google-recaptcha";
+
 import {
     Form,
     FormControl,
@@ -19,34 +22,25 @@ import {
     FormLabel,
     FormMessage,
 } from '@/components/ui/form';
+
 import { Input } from '@/components/ui/input';
 import { LoaderCircleIcon } from 'lucide-react';
 import { getSignupSchema, SignupSchemaType } from '../forms/signup-schema';
-import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 
 export default function Page() {
 
+    const recaptchaRef = useRef<ReCAPTCHA>(null);
+
     const [passwordVisible, setPasswordVisible] = useState(false);
-    const [passwordConfirmationVisible, setPasswordConfirmationVisible] =
-        useState(false);
+    const [passwordConfirmationVisible, setPasswordConfirmationVisible] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [success, setSuccess] = useState<boolean | null>(false);
 
     const dispatch = useDispatch<AppDispatch>();
     const { loading } = useSelector((state: RootState) => state.auth);
 
     const [showSuccess, setShowSuccess] = useState(false);
     const [message, setMessage] = useState('');
-
-    const { executeRecaptcha } = useGoogleReCaptcha();
-    const [recaptchaReady, setRecaptchaReady] = useState(false);
-
-    useEffect(() => {
-        if (executeRecaptcha) {
-            setRecaptchaReady(true);
-        }
-    }, [executeRecaptcha]);
 
     const form = useForm<SignupSchemaType>({
         resolver: zodResolver(getSignupSchema()),
@@ -59,6 +53,12 @@ export default function Page() {
         },
     });
 
+    const resetCaptcha = () => {
+        if (recaptchaRef.current) {
+            recaptchaRef.current.reset();
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 
         e.preventDefault();
@@ -69,25 +69,27 @@ export default function Page() {
         setIsProcessing(true);
         setError(null);
 
-        if (!executeRecaptcha) {
-            setError("Recaptcha not ready. Please try again.");
+        if (!recaptchaRef.current) {
+            setError("Captcha not ready");
             setIsProcessing(false);
             return;
         }
 
-        let recaptchaToken;
+        let token;
 
         try {
-            recaptchaToken = await executeRecaptcha("register");
+            token = await recaptchaRef.current.executeAsync();
         } catch {
-            setError("Failed to generate captcha token");
+            setError("Captcha failed");
             setIsProcessing(false);
+            resetCaptcha();
             return;
         }
 
-        if (!recaptchaToken) {
+        if (!token) {
             setError("Captcha token missing");
             setIsProcessing(false);
+            resetCaptcha();
             return;
         }
 
@@ -97,7 +99,7 @@ export default function Page() {
             name: values.name,
             email: values.email,
             password: values.password,
-            recaptcha_token: recaptchaToken,
+            recaptcha_token: token,
         };
 
         const resultAction = await dispatch(registerUser(payload));
@@ -117,33 +119,15 @@ export default function Page() {
             setError(resultAction.payload as string);
         }
 
+        resetCaptcha();
         setIsProcessing(false);
     };
 
-    if (success) {
-        return (
-            <Alert onClose={() => setSuccess(false)}>
-                <AlertIcon>
-                    <Check />
-                </AlertIcon>
-                <AlertTitle>
-                    You have successfully signed up! Please check your email to verify
-                    your account and then{' '}
-                    <Link
-                        href="/signin/"
-                        className="text-primary hover:text-primary-darker"
-                    >
-                        Log in
-                    </Link>
-                    .
-                </AlertTitle>
-            </Alert>
-        );
-    }
-
     return (
         <Suspense>
+
             <Form {...form}>
+
                 <form onSubmit={handleSubmit} className="block w-full space-y-5">
 
                     <div>
@@ -163,7 +147,7 @@ export default function Page() {
                     </div>
 
                     {error && (
-                        <Alert variant="destructive" onClose={() => setError(null)}>
+                        <Alert variant="destructive">
                             <AlertIcon>
                                 <AlertCircle />
                             </AlertIcon>
@@ -176,9 +160,11 @@ export default function Page() {
                         name="name"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Name<span className="text-red-500">*</span></FormLabel>
+                                <FormLabel>
+                                    Name <span className="text-red-500">*</span>
+                                </FormLabel>
                                 <FormControl>
-                                    <Input placeholder="Your Name" {...field} />
+                                    <Input placeholder="Enter your name" {...field} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -190,9 +176,11 @@ export default function Page() {
                         name="email"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Email<span className="text-red-500">*</span></FormLabel>
+                                <FormLabel>
+                                    Email <span className="text-red-500">*</span>
+                                </FormLabel>
                                 <FormControl>
-                                    <Input placeholder="Your email" {...field} />
+                                    <Input placeholder="Enter your email address" {...field} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -204,12 +192,15 @@ export default function Page() {
                         name="password"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Password<span className="text-red-500">*</span></FormLabel>
+                                <FormLabel>
+                                    Password <span className="text-red-500">*</span>
+                                </FormLabel>
+
                                 <div className="relative">
                                     <FormControl>
                                         <Input
-                                            placeholder="Your password"
                                             type={passwordVisible ? 'text' : 'password'}
+                                            placeholder="Enter your password"
                                             {...field}
                                         />
                                     </FormControl>
@@ -217,59 +208,48 @@ export default function Page() {
                                     <Button
                                         type="button"
                                         variant="ghost"
-                                        mode="icon"
                                         size="sm"
                                         onClick={() => setPasswordVisible(!passwordVisible)}
-                                        className="absolute end-0 top-1/2 -translate-y-1/2 h-7 w-7 me-1.5 bg-transparent!"
-                                    >
-                                        {passwordVisible ? (
-                                            <EyeOff className="text-muted-foreground" />
-                                        ) : (
-                                            <Eye className="text-muted-foreground" />
-                                        )}
-                                    </Button>
+                                        className="absolute right-1 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary"
 
+                                    >
+                                        {passwordVisible ? <EyeOff /> : <Eye />}
+                                    </Button>
                                 </div>
+
                                 <FormMessage />
                             </FormItem>
                         )}
                     />
-
                     <FormField
                         control={form.control}
                         name="passwordConfirmation"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Confirm Password<span className="text-red-500">*</span></FormLabel>
+                                <FormLabel>
+                                    Confirm Password <span className="text-red-500">*</span>
+                                </FormLabel>
 
                                 <div className="relative">
                                     <FormControl>
                                         <Input
                                             type={passwordConfirmationVisible ? 'text' : 'password'}
-                                            {...field}
                                             placeholder="Confirm your password"
+                                            {...field}
                                         />
                                     </FormControl>
 
                                     <Button
                                         type="button"
                                         variant="ghost"
-                                        mode="icon"
                                         size="sm"
                                         onClick={() =>
-                                            setPasswordConfirmationVisible(
-                                                !passwordConfirmationVisible,
-                                            )
+                                            setPasswordConfirmationVisible(!passwordConfirmationVisible)
                                         }
-                                        className="absolute end-0 top-1/2 -translate-y-1/2 h-7 w-7 me-1.5 bg-transparent!"
+                                        className="absolute right-1 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary"
                                     >
-                                        {passwordConfirmationVisible ? (
-                                            <EyeOff className="text-muted-foreground" />
-                                        ) : (
-                                            <Eye className="text-muted-foreground" />
-                                        )}
+                                        {passwordConfirmationVisible ? <EyeOff /> : <Eye />}
                                     </Button>
-
                                 </div>
 
                                 <FormMessage />
@@ -277,60 +257,46 @@ export default function Page() {
                         )}
                     />
 
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center gap-2">
+
                         <FormField
                             control={form.control}
                             name="accept"
                             render={({ field }) => (
-                                <FormItem>
-                                    <FormControl>
-                                        <div className="flex items-center gap-2.5">
-
-                                            <Checkbox
-                                                id="accept"
-                                                checked={field.value}
-                                                onCheckedChange={(checked) => field.onChange(!!checked)}
-                                            />
-
-                                            <label
-                                                htmlFor="accept"
-                                                className="text-sm leading-none text-muted-foreground"
-                                            >
-                                                I agree to the
-                                            </label>
-
-                                            <Link
-                                                href="/privacy-policy"
-                                                target="_blank"
-                                                className="-ms-0.5 text-sm font-semibold text-foreground hover:text-primary"
-                                            >
-                                                Privacy Policy<span className="text-red-500">*</span>
-                                            </Link>
-
-                                        </div>
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
+                                <>
+                                    <Checkbox
+                                        checked={field.value}
+                                        onCheckedChange={(checked) => field.onChange(!!checked)}
+                                    />
+                                    <label className="text-sm">
+                                        I agree to the Privacy Policy
+                                    </label>
+                                </>
                             )}
                         />
-                    </div>
-
-                    <div className="flex flex-col gap-2.5">
-
-                        <Button type="submit" disabled={isProcessing || loading}>
-
-                            {(isProcessing || loading) && (
-                                <LoaderCircleIcon className="size-4 animate-spin" />
-                            )}
-
-                            Sign Up
-
-                        </Button>
 
                     </div>
+
+                    <Button type="submit" disabled={isProcessing || loading} className="w-full">
+
+                        {(isProcessing || loading) && (
+                            <LoaderCircleIcon className="animate-spin mr-2" />
+                        )}
+
+                        Sign Up
+
+                    </Button>
 
                 </form>
+
             </Form>
+
+
+            <ReCAPTCHA
+                ref={recaptchaRef}
+                sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY as string}
+                size="invisible"
+            />
 
             <VerifyEmailModal
                 isOpen={showSuccess}

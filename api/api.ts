@@ -19,13 +19,18 @@ api.interceptors.request.use((config) => {
 
 api.interceptors.response.use((response) => response, async (error) => {
     const originalRequest = error.config;
-    if (error.response?.status === 401 && !originalRequest?._retry) {
+    const authEndpoints = ['/login', '/verify-Mfa', '/register', '/forgot-password', '/reset-password'];
+    const isAuthRequest = authEndpoints.some(url => error.config.url?.includes(url));
+
+    if (error.response?.status === 401 && !originalRequest?._retry && !isAuthRequest) {
         originalRequest._retry = true;
         try {
             const refresh_token = localStorage.getItem('refresh_token');
             if (!refresh_token) {
                 localStorage.removeItem('token');
-                window.location.href = '/signin';
+                if (window.location.pathname !== '/signin') {
+                    window.location.href = '/signin';
+                }
                 return Promise.reject(error);
             }
             const response = await axios.post(
@@ -44,7 +49,7 @@ api.interceptors.response.use((response) => response, async (error) => {
             return api(originalRequest);
         } catch (error) {
             store.dispatch(removeData());
-            // window.location.href = '/signin';
+            window.location.href = '/signin';
             return Promise.reject(error);
         }
     }

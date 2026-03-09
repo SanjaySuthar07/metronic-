@@ -1,5 +1,6 @@
 'use client';
-import { useEffect, useState } from 'react';
+
+import { useEffect, useState, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AlertCircle, Check, Eye, EyeOff } from 'lucide-react';
@@ -24,19 +25,18 @@ import Link from 'next/link';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/store';
 import { resetPassword } from '@/store/thunk/auth.thunk';
-import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
+import ReCAPTCHA from "react-google-recaptcha";
 
 export default function Page() {
 
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
-  const { executeRecaptcha } = useGoogleReCaptcha();
+  const recaptchaRef = useRef<ReCAPTCHA>(null);
 
   const searchParams = useSearchParams();
   const token = searchParams?.get('token') || null;
   const email = searchParams?.get('email') || null;
 
-  const [verifyingToken, setVerifyingToken] = useState(false);
   const [isValidToken, setIsValidToken] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -62,6 +62,12 @@ export default function Page() {
     setIsValidToken(true);
   }, [token, email]);
 
+  const resetCaptcha = () => {
+    if (recaptchaRef.current) {
+      recaptchaRef.current.reset();
+    }
+  };
+
   async function onSubmit(values: ChangePasswordSchemaType) {
 
     if (!token || !email) {
@@ -69,8 +75,8 @@ export default function Page() {
       return;
     }
 
-    if (!executeRecaptcha) {
-      setError("Recaptcha not ready. Please try again.");
+    if (!recaptchaRef.current) {
+      setError("Captcha not ready.");
       return;
     }
 
@@ -79,11 +85,12 @@ export default function Page() {
       setIsProcessing(true);
       setError(null);
 
-      const recaptchaToken = await executeRecaptcha("reset_password");
+      const captchaToken = await recaptchaRef.current.executeAsync();
 
-      if (!recaptchaToken) {
+      if (!captchaToken) {
         setError("Captcha token missing");
         setIsProcessing(false);
+        resetCaptcha();
         return;
       }
 
@@ -92,7 +99,7 @@ export default function Page() {
           email,
           token,
           password: values.newPassword,
-          recaptcha_token: recaptchaToken,
+          recaptcha_token: captchaToken,
         })
       );
 
@@ -122,12 +129,14 @@ export default function Page() {
     } finally {
 
       setIsProcessing(false);
+      resetCaptcha();   // ← auto captcha reset
 
     }
   }
 
   return (
     <Form {...form}>
+
       <form
         onSubmit={form.handleSubmit(onSubmit)}
         className="block w-full space-y-4"
@@ -151,7 +160,7 @@ export default function Page() {
               <AlertTitle>{error}</AlertTitle>
             </Alert>
             <Button asChild>
-              <Link href="/signin" className="text-primary">
+              <Link href="/signin">
                 Go back to Login
               </Link>
             </Button>
@@ -176,7 +185,7 @@ export default function Page() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    New Password<span className="text-red-500">*</span>
+                    New Password <span className="text-red-500">*</span>
                   </FormLabel>
 
                   <div className="relative">
@@ -185,22 +194,18 @@ export default function Page() {
                       <Input
                         type={passwordVisible ? 'text' : 'password'}
                         placeholder="Enter new password"
+                        className="pr-10"
                         {...field}
                       />
                     </FormControl>
-
-                    <Button
+                   <Button
                       type="button"
                       variant="ghost"
-                      mode="icon"
+                      size="sm"
                       onClick={() => setPasswordVisible(!passwordVisible)}
-                      className="absolute end-0 top-1/2 -translate-y-1/2 h-7 w-7 me-1.5 bg-transparent!"
+                      className="absolute right-1 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary"
                     >
-                      {passwordVisible ? (
-                        <EyeOff className="text-muted-foreground" />
-                      ) : (
-                        <Eye className="text-muted-foreground" />
-                      )}
+                      {passwordVisible ? <EyeOff size={18} /> : <Eye size={18} />}
                     </Button>
 
                   </div>
@@ -215,9 +220,8 @@ export default function Page() {
               name="confirmPassword"
               render={({ field }) => (
                 <FormItem>
-
                   <FormLabel>
-                    Confirm New Password<span className="text-red-500">*</span>
+                    Confirm New Password <span className="text-red-500">*</span>
                   </FormLabel>
 
                   <div className="relative">
@@ -225,7 +229,8 @@ export default function Page() {
                     <FormControl>
                       <Input
                         type={passwordConfirmationVisible ? 'text' : 'password'}
-                        placeholder="Confirm new password"
+                        placeholder="Confirm your new password"
+                        className="pr-10"
                         {...field}
                       />
                     </FormControl>
@@ -233,43 +238,40 @@ export default function Page() {
                     <Button
                       type="button"
                       variant="ghost"
-                      mode="icon"
+                      size="sm"
                       onClick={() =>
-                        setPasswordConfirmationVisible(
-                          !passwordConfirmationVisible,
-                        )
+                        setPasswordConfirmationVisible(!passwordConfirmationVisible)
                       }
-                      className="absolute end-0 top-1/2 -translate-y-1/2 h-7 w-7 me-1.5 bg-transparent!"
+                      className="absolute right-1 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary"
                     >
-                      {passwordConfirmationVisible ? (
-                        <EyeOff className="text-muted-foreground" />
-                      ) : (
-                        <Eye className="text-muted-foreground" />
-                      )}
+                      {passwordConfirmationVisible ? <EyeOff size={18} /> : <Eye size={18} />}
                     </Button>
 
                   </div>
 
                   <FormMessage />
-
                 </FormItem>
               )}
             />
-
             <Button type="submit" disabled={isProcessing} className="w-full">
-
               {isProcessing && (
-                <LoaderCircleIcon className="size-4 animate-spin" />
+                <LoaderCircleIcon className="animate-spin mr-2" />
               )}
-
               Reset Password
-
             </Button>
-
           </>
         )}
 
       </form>
+
+      {/* invisible captcha */}
+
+      <ReCAPTCHA
+        ref={recaptchaRef}
+        sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY as string}
+        size="invisible"
+      />
+
     </Form>
   );
 }
