@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { fetchUsers, fetchRoles } from "../thunk/userManagement.thunk";
+import { fetchUsers, fetchRoles, fetchPermissions } from "../thunk/userManagement.thunk";
 
 interface UserManagementState {
   users: {
@@ -16,7 +16,14 @@ interface UserManagementState {
   };
   loadingUsers: boolean;
   loadingRoles: boolean;
+  loadingPermissions: boolean;
   error: string | null;
+  permissions: {
+    data: any[];
+    total: number;
+    currentPage: number;
+    perPage: number;  
+  };
 }
 
 const initialState: UserManagementState = {
@@ -36,7 +43,15 @@ const initialState: UserManagementState = {
 
   loadingUsers: false,
   loadingRoles: false,
+  loadingPermissions: false,
   error: null,
+
+  permissions: {
+    data: [],
+    total: 0,
+    currentPage: 1,
+    perPage: 10,
+  },
 };
 
 const userManagementSlice = createSlice({
@@ -69,6 +84,19 @@ const userManagementSlice = createSlice({
         state.roles.total = action.payload.roles.total;
         state.roles.currentPage = action.payload.roles.current_page;
         state.roles.perPage = action.payload.roles.per_page;
+      })
+
+      .addCase(fetchPermissions.pending, (state) => {
+        state.loadingPermissions = true;
+      })
+
+      .addCase(fetchPermissions.fulfilled, (state, action) => {
+        state.loadingPermissions = false;
+
+        state.permissions.data = action.payload.permissions.data;
+        state.permissions.total = action.payload.permissions.total;
+        state.permissions.currentPage = action.payload.permissions.current_page;
+        state.permissions.perPage = action.payload.permissions.per_page;
       })
   },
 });

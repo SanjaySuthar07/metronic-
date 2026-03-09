@@ -206,5 +206,90 @@ export const fetchPermissionsDropdown = createAsyncThunk(
   }
 );
 
+export const fetchPermissions = createAsyncThunk(
+  "permissions/fetchPermissions",
+  async (payload: FetchUsersPayload | undefined, { rejectWithValue }) => {
+    try {
+      const response = await api.get("/permissions", {
+        params: {
+          page: payload?.page,
+          limit: payload?.per_page,
+          search: payload?.search,
+          sort: payload?.sort,
+          dir: payload?.dir,
+        },
+      });
 
+      return response.data;
+    } catch (error: any) {
+      const message =
+        error.response?.data?.message || "Failed to fetch permissions";
+      return rejectWithValue(message);
+    }
+  }
+);
 
+export const updatePermissions = createAsyncThunk(
+  "permissions/updatePermissions",
+  async (payload: any, { rejectWithValue }) => {
+    try {
+      const response = await api.put(`/permissions/${payload.id}`, {
+        name: payload.name
+      });
+      return response.data;
+    } catch (error: any) {
+      const message =
+        error.response?.data?.message || "Failed to update permissions";
+      return rejectWithValue(message);
+    }
+  }
+);
+
+interface FetchPermissionsDetail {
+  id?: any;
+}
+export const fetchPermissionsDetail = createAsyncThunk(
+  "permissions/fetchPermissionsDetail",
+  async (payload: FetchPermissionsDetail, { rejectWithValue }) => {
+    try {
+      const response = await api.get(`/permissions/${payload?.id}`);
+      return response.data;
+    } catch (error: any) {
+      const message =
+        error.response?.data?.message || "Failed to fetch permissions";
+      return rejectWithValue(message);
+    }
+  }
+);
+
+export const createPermissions = createAsyncThunk(
+  "permissions/createPermissions",
+  async (payload: { name: string; permissions: number[] }, { rejectWithValue }) => {
+    try {
+      const response = await api.post("/permissions", {
+        name: payload.name
+      });
+
+      return response.data;
+    } catch (error: any) {
+      const message =
+        error.response?.data?.message || "Failed to create permission";
+      return rejectWithValue(message);
+    }
+  }
+);
+
+export const deletePermissions = createAsyncThunk(
+  "permission/deletePermission",
+  async (payload: { id: any }, { rejectWithValue }) => {
+    try {
+      // DELETE request using RESTful endpoint with user ID in path
+      const response = await api.delete(`/permissions/${payload.id}`);
+      return response.data;
+    } catch (error: any) {
+      const message =
+        error.response?.data?.message || "Failed to delete user";
+      return rejectWithValue(message);
+    }
+  }
+);
