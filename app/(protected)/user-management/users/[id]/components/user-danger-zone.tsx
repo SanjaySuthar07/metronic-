@@ -4,20 +4,26 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { User } from '@/app/models/user';
-import UserDeleteDialog from './user-delete-dialog';
-import UserRestoreDialog from './user-restore-dialog';
+import UserDeleteDialog from '../../components/user-delete-dialog';
+import { useSelector } from 'react-redux';
+import { useRouter } from 'next/navigation';
 
 const UserDangerZone = ({
   user,
   isLoading,
 }: {
-  user: User;
+  user: any
   isLoading: boolean;
 }) => {
-  const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteUserObj, setDeleteUserObj] = useState<any>(null);
   const [isRestoreDialogOpen, setRestoreDialogOpen] = useState(false);
-
+  const { userDetail } = useSelector((s) => s.userManagement)
+  const router = useRouter()
+  const handleDeleteUser = (user: any) => {
+    setDeleteUserObj(user);
+    setDeleteDialogOpen(true);
+  };
   // Render skeleton when loading
   const Loading = () => (
     <div className="space-y-3">
@@ -46,16 +52,19 @@ const UserDangerZone = ({
           <Button
             variant="destructive"
             onClick={() => setDeleteDialogOpen(true)}
-            disabled={user.role?.isProtected}
           >
             Delete user
           </Button>
         </CardContent>
       </Card>
       <UserDeleteDialog
-        open={isDeleteDialogOpen}
+        open={deleteDialogOpen}
         closeDialog={() => setDeleteDialogOpen(false)}
-        user={user}
+        user={userDetail}
+        onDeleted={() => {
+          setDeleteDialogOpen(false);
+          router.push("/user-management/users/")
+        }}
       />
     </div>
   );
@@ -84,14 +93,11 @@ const UserDangerZone = ({
     </div>
   );
 
-  // Render loading if still fetching or if user is null.
-  return isLoading || !user ? (
-    <Loading />
-  ) : user.isTrashed ? (
-    <RestoreContent />
-  ) : (
-    <DeleteContent />
-  );
+  return (
+    <>
+      <DeleteContent></DeleteContent>
+    </>
+  )
 };
 
 export default UserDangerZone;

@@ -473,6 +473,7 @@ const UserList = () => {
         isEdit={isEdit}
         editData={editData}
         closeDialog={() => setInviteDialogOpen(false)}
+        isProfile={false}
       />
 
     </>

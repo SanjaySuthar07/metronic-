@@ -6,8 +6,7 @@ import { Badge, BadgeDot, BadgeProps } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { getUserStatusProps } from '../../constants/status';
-import UserProfileEditDialog from './user-profile-edit-dialog';
+import UserInviteDialog from '../../components/user-add-dialog';
 
 const UserProfile = ({
   user,
@@ -16,8 +15,9 @@ const UserProfile = ({
   user: User;
   isLoading: boolean;
 }) => {
-  const [isEditDialogOpen, setEditDialogOpen] = useState(false);
-
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+  const [isEdit, setIsEdit] = useState(false);
+  const [editData, setEditData] = useState<any>(null);
   const Loading = () => (
     <Card>
       <CardContent>
@@ -77,23 +77,28 @@ const UserProfile = ({
   );
 
   const Content = () => {
-    // const statusPros = getUserStatusProps(user.status as UserStatus);
-    // const statusVariant = statusPros.variant as keyof BadgeProps['variant'];
+
+    const role = user?.roles?.[0]?.name || '-';
 
     return (
       <Card>
         <CardContent>
+
           <dl className="grid grid-cols-[auto_1fr] gap-3 text-sm mb-5 [&_dt]:text-muted-foreground">
-            <div className="grid grid-cols-subgrid col-span-2 items-baseline">
-              <dt className="flex md:w-64">Full name:</dt>
-              <dd>{user.name || 'Not available'}</dd>
+
+            <div className="grid grid-cols-subgrid capitalize col-span-2 items-baseline">
+              <dt className="flex md:w-64 ">Full name:</dt>
+              <dd>{user?.name || 'Not available'}</dd>
             </div>
-            <div className="grid grid-cols-subgrid col-span-2 items-baseline">
-              <dt>Email address:</dt>
+
+            <div className="grid  grid-cols-subgrid col-span-2 items-baseline">
+              <dt className='capitalize'>Email address:</dt>
               <dd className="flex items-center gap-2.5">
-                <span>{user.email}</span>
-                {user.emailVerifiedAt ? (
-                  <Badge variant="secondary" appearance="light">
+
+                <span>{user?.email}</span>
+
+                {user?.email_verified_at ? (
+                  <Badge variant="success" appearance="light">
                     Verified
                   </Badge>
                 ) : (
@@ -101,52 +106,47 @@ const UserProfile = ({
                     Not verified
                   </Badge>
                 )}
+
               </dd>
             </div>
+
             <div className="grid grid-cols-subgrid col-span-2 items-baseline">
               <dt>Role:</dt>
+
               <dd>
-                <span className="inline-flex items-center gap-1">
-                  {user.role?.name}
-                  {user.role?.isProtected && (
-                    <Badge variant="outline">System</Badge>
-                  )}
+                <span className="inline-flex items-center gap-1 capitalize">
+                  <Badge variant="secondary" className="capitalize">
+                    {user?.user_type}
+                  </Badge>
                 </span>
               </dd>
+
             </div>
+
             <div className="grid grid-cols-subgrid col-span-2 items-baseline">
-              <dt>Status:</dt>
+              <dt>Joined:</dt>
+
               <dd>
-                <div className="inline-flex gap-2.5">
-                  <Badge  appearance="ghost">
-                    <BadgeDot />
-                    {/* {statusPros.label} */}
-                    label
-                  </Badge>
-                  {user.isTrashed && (
-                    <Badge variant="destructive" appearance="light">
-                      Trashed
-                    </Badge>
-                  )}
-                </div>
+                {user?.created_at
+                  ? formatDateTime(new Date(user.created_at))
+                  : '-'}
               </dd>
+
             </div>
-            <div className="grid grid-cols-subgrid col-span-2 items-baseline">
-              <dt>Last Sign In:</dt>
-              <dd>
-                {user.lastSignInAt
-                  ? formatDateTime(new Date(user.lastSignInAt))
-                  : 'Never'}
-              </dd>
-            </div>
+
           </dl>
+
           <Button
             variant="outline"
-            disabled={user.role?.isProtected}
-            onClick={() => setEditDialogOpen(true)}
+            onClick={() => {
+              setEditData(user);
+              setIsEdit(true);
+              setInviteDialogOpen(true);
+            }}
           >
             Edit user details
           </Button>
+
         </CardContent>
       </Card>
     );
@@ -155,11 +155,12 @@ const UserProfile = ({
   return (
     <>
       <Content />
-
-      <UserProfileEditDialog
-        open={isEditDialogOpen}
-        closeDialog={() => setEditDialogOpen(false)}
-        user={user}
+      <UserInviteDialog
+        open={inviteDialogOpen}
+        isEdit={isEdit}
+        editData={editData}
+        closeDialog={() => setInviteDialogOpen(false)}
+        isProfile={true}
       />
     </>
   );

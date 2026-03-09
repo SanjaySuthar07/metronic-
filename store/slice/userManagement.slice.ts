@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { fetchUsers, fetchRoles, fetchPermissions } from "../thunk/userManagement.thunk";
+import { fetchUsers, fetchRoles, fetchPermissions, fetchUserDetail } from "../thunk/userManagement.thunk";
 
 interface UserManagementState {
   users: {
@@ -14,15 +14,17 @@ interface UserManagementState {
     currentPage: number;
     perPage: number;
   };
+  userDetail: any | null;
   loadingUsers: boolean;
   loadingRoles: boolean;
-  loadingPermissions: boolean;
+  loadingUserDetail: boolean;
+  loadingPermissions: boolean
   error: string | null;
   permissions: {
     data: any[];
     total: number;
     currentPage: number;
-    perPage: number;  
+    perPage: number;
   };
 }
 
@@ -41,8 +43,12 @@ const initialState: UserManagementState = {
     perPage: 10,
   },
 
+  userDetail: null,
+
   loadingUsers: false,
   loadingRoles: false,
+  loadingUserDetail: false,
+
   loadingPermissions: false,
   error: null,
 
@@ -71,6 +77,18 @@ const userManagementSlice = createSlice({
         state.users.total = action.payload.users.total;
         state.users.currentPage = action.payload.users.current_page;
         state.users.perPage = action.payload.users.per_page;
+      })
+      .addCase(fetchUserDetail.pending, (state) => {
+        state.loadingUserDetail = true;
+      })
+      .addCase(fetchUserDetail.fulfilled, (state, action) => {
+        state.loadingUserDetail = false;
+        state.userDetail = action.payload.user;
+      })
+
+      .addCase(fetchUserDetail.rejected, (state, action) => {
+        state.loadingUserDetail = false;
+        state.error = action.payload as string;
       })
 
       .addCase(fetchRoles.pending, (state) => {
@@ -102,3 +120,5 @@ const userManagementSlice = createSlice({
 });
 
 export default userManagementSlice.reducer;
+
+

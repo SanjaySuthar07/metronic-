@@ -58,7 +58,7 @@ const UserHero = ({ user, isLoading }: UserProfileProps) => {
           )}
         </Avatar>
         <div className="space-y-px">
-          <div className="font-medium text-base">{user.name}</div>
+          <div className="font-medium text-base capitalize">{user.name}</div>
           <div className="text-muted-foreground text-sm">{user.email}</div>
           <div>
             <TooltipProvider>

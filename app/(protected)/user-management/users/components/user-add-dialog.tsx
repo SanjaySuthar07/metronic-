@@ -43,6 +43,7 @@ import { UserAddSchema, UserAddSchemaType } from '../forms/user-add-schema';
 import { useDispatch } from 'react-redux';
 import {
   fetchRolesDropdown,
+  fetchUserDetail,
   fetchUsers,
   updateUser,
 } from '@/store/thunk/userManagement.thunk';
@@ -52,11 +53,13 @@ const UserAddDialog = ({
   closeDialog,
   isEdit,
   editData,
+  isProfile
 }: {
   open: boolean;
   closeDialog: () => void;
   isEdit: boolean;
   editData: any;
+  isProfile: boolean
 }) => {
 
   const dispatch = useDispatch();
@@ -119,8 +122,13 @@ const UserAddDialog = ({
         payload.id = editData.id;
       }
       const result: any = await dispatch(updateUser(payload) as any);
-      if(updateUser.fulfilled.match(result)) {
-        dispatch(fetchUsers({ page: 1, per_page: 10 }) as any);
+      if (updateUser.fulfilled.match(result)) {
+        if (isProfile) {
+          console.log(editData?.id)
+          dispatch(fetchUserDetail(editData));
+        } else {
+          dispatch(fetchUsers({ page: 1, per_page: 10 }) as any);
+        }
       }
 
       if (result.error) {

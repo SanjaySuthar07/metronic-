@@ -1,6 +1,6 @@
 'use client';
 
-import React, { use, useMemo, useState } from 'react';
+import React, { use, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Activity, MoveLeft, UserPen } from 'lucide-react';
@@ -26,6 +26,9 @@ import {
 } from '@/components/common/toolbar';
 
 import UserHero from './components/user-hero';
+import { useDispatch, useSelector } from "react-redux";
+import { fetchUserDetail } from "@/store/thunk/userManagement.thunk";
+import { AppDispatch } from "@/store";
 
 type NavRoutes = Record<
   string,
@@ -43,20 +46,20 @@ export default function UserLayout({
   params: Promise<{ id: string }>;
   children: React.ReactNode;
 }) {
-
   const { id } = use(params);
   const router = useRouter();
-
   const [activeTab, setActiveTab] = useState<string>('general');
 
+  const dispatch = useDispatch<AppDispatch>();
   // Dummy user data
-  const user = {
-    id,
-    name: 'John Doe',
-    email: 'john@example.com',
-    role: 'Admin',
-  };
-
+  useEffect(() => {
+    if (id) {
+      dispatch(fetchUserDetail({ id }));
+    }
+  }, [id, dispatch]);
+  const { userDetail, loadingUserDetail } = useSelector(
+    (state: any) => state.userManagement
+  );
   const navRoutes = useMemo<NavRoutes>(
     () => ({
       general: {
@@ -118,7 +121,7 @@ export default function UserLayout({
       </Toolbar>
 
       {/* Dummy User Hero */}
-      <UserHero user={user} />
+      <UserHero user={userDetail} />
 
       <Tabs value={activeTab}>
         <TabsList variant="line" className="mb-5">
