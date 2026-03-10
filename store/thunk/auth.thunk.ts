@@ -40,7 +40,7 @@ export const loginUser = createAsyncThunk(
             const message =
                 error.response?.data?.errors
                     ? Object.values(error.response.data.errors).flat().join(" ")
-                    : error.response?.data?.message || "Login failed";
+                    : error.response?.data?.message || "Network Problem";
 
             return rejectWithValue(message);
         }

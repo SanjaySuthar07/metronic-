@@ -1,5 +1,4 @@
 'use client';
-
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -8,7 +7,11 @@ import { useForm } from 'react-hook-form';
 import { Alert, AlertIcon, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import ReCAPTCHA from "react-google-recaptcha";
+import dynamic from "next/dynamic";
+const ReCAPTCHA = dynamic(
+  () => import("react-google-recaptcha"),
+  { ssr: false }
+);
 
 import {
   Form,
@@ -121,6 +124,10 @@ export default function Page() {
       dispatch(remember(null));
     }
   }
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   return (
     <Form {...form}>
       <form
@@ -237,18 +244,14 @@ export default function Page() {
           Continue
 
         </Button>
-
       </form>
-
-      {/* Invisible captcha */}
-
-      <ReCAPTCHA
-        ref={recaptchaRef}
-        sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY as string}
-        size="invisible"
-      />
-
-      {/* OTP Modal */}
+      {mounted && process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY && (
+        <ReCAPTCHA
+          ref={recaptchaRef}
+          sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}
+          size="invisible"
+        />
+      )}
 
       <VerifyOtpPage
         oppenQR={oppenQR}

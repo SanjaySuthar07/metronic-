@@ -25,7 +25,12 @@ import Link from 'next/link';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/store';
 import { resetPassword } from '@/store/thunk/auth.thunk';
-import ReCAPTCHA from "react-google-recaptcha";
+import dynamic from "next/dynamic";
+const ReCAPTCHA = dynamic(
+  () => import("react-google-recaptcha"),
+  { ssr: false }
+);
+
 
 export default function Page() {
 
@@ -45,6 +50,11 @@ export default function Page() {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [passwordConfirmationVisible, setPasswordConfirmationVisible] =
     useState(false);
+
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const form = useForm<ChangePasswordSchemaType>({
     resolver: zodResolver(getChangePasswordSchema()),
@@ -198,7 +208,7 @@ export default function Page() {
                         {...field}
                       />
                     </FormControl>
-                   <Button
+                    <Button
                       type="button"
                       variant="ghost"
                       size="sm"
@@ -266,11 +276,13 @@ export default function Page() {
 
       {/* invisible captcha */}
 
-      <ReCAPTCHA
-        ref={recaptchaRef}
-        sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY as string}
-        size="invisible"
-      />
+      {mounted && process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY && (
+        <ReCAPTCHA
+          ref={recaptchaRef}
+          sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}
+          size="invisible"
+        />
+      )}
 
     </Form>
   );

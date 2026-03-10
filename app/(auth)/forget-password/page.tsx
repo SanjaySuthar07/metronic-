@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useRef, useState } from 'react';
+import { Suspense, useRef, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AlertCircle, ArrowLeft, LoaderCircle } from 'lucide-react';
@@ -21,7 +21,12 @@ import { useDispatch } from 'react-redux';
 import { forgetPassword } from '@/store/thunk/auth.thunk';
 import { AppDispatch } from '@/store';
 import CheckEmailModal from '../modal/CheckEmailModal';
-import ReCAPTCHA from "react-google-recaptcha";
+import dynamic from "next/dynamic";
+const ReCAPTCHA = dynamic(
+  () => import("react-google-recaptcha"),
+  { ssr: false }
+);
+
 
 export default function Page() {
 
@@ -32,6 +37,11 @@ export default function Page() {
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [emailSent, setEmailSent] = useState('');
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const formSchema = z.object({
     email: z
@@ -189,20 +199,17 @@ export default function Page() {
               <ArrowLeft className="size-3.5 mr-1" />
               Back
             </Link>
-
           </Button>
-
         </form>
-
       </Form>
 
-      {/* invisible captcha */}
-
-      <ReCAPTCHA
-        ref={recaptchaRef}
-        sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY as string}
-        size="invisible"
-      />
+      {mounted && process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY && (
+        <ReCAPTCHA
+          ref={recaptchaRef}
+          sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}
+          size="invisible"
+        />
+      )}
 
       <CheckEmailModal
         isOpen={showModal}

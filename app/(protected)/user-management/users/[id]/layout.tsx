@@ -2,8 +2,8 @@
 
 import React, { use, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { Activity, MoveLeft, UserPen } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
+import { Activity, MoveLeft, UserPen ,HatGlasses} from 'lucide-react';
 
 import {
   Breadcrumb,
@@ -48,7 +48,11 @@ export default function UserLayout({
 }) {
   const { id } = use(params);
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<string>('general');
+  const pathname = usePathname();
+  const activeTab = useMemo(() => {
+    if (pathname.includes('/agent')) return 'logs';
+    return 'general';
+  }, [pathname]);
 
   const dispatch = useDispatch<AppDispatch>();
   // Dummy user data
@@ -68,9 +72,9 @@ export default function UserLayout({
         path: `/user-management/users/${id}`,
       },
       logs: {
-        title: 'Activity Logs',
-        icon: Activity,
-        path: `/user-management/users/${id}/logs`,
+        title: 'Agent',
+        icon: HatGlasses,
+        path: `/user-management/users/${id}/agent`,
       },
     }),
     [id],
@@ -120,7 +124,6 @@ export default function UserLayout({
         </ToolbarActions>
       </Toolbar>
 
-      {/* Dummy User Hero */}
       <UserHero user={userDetail} />
 
       <Tabs value={activeTab}>
@@ -130,7 +133,7 @@ export default function UserLayout({
               <TabsTrigger
                 key={key}
                 value={key}
-                onClick={() => handleTabClick(key, path)}
+                onClick={() => router.push(path)}
               >
                 <Icon />
                 <span>{title}</span>
@@ -139,7 +142,6 @@ export default function UserLayout({
           )}
         </TabsList>
       </Tabs>
-
       {children}
     </Container>
   );

@@ -12,7 +12,12 @@ import VerifyEmailModal from '../modal/VerifyEmailModal';
 import { useDispatch, useSelector } from 'react-redux';
 import { registerUser } from '@/store/thunk/auth.thunk';
 import { AppDispatch, RootState } from '@/store';
-import ReCAPTCHA from "react-google-recaptcha";
+import dynamic from "next/dynamic";
+const ReCAPTCHA = dynamic(
+    () => import("react-google-recaptcha"),
+    { ssr: false }
+);
+
 
 import {
     Form,
@@ -41,6 +46,11 @@ export default function Page() {
 
     const [showSuccess, setShowSuccess] = useState(false);
     const [message, setMessage] = useState('');
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     const form = useForm<SignupSchemaType>({
         resolver: zodResolver(getSignupSchema()),
@@ -274,34 +284,28 @@ export default function Page() {
                                 </>
                             )}
                         />
-
                     </div>
-
                     <Button type="submit" disabled={isProcessing || loading} className="w-full">
-
                         {(isProcessing || loading) && (
                             <LoaderCircleIcon className="animate-spin mr-2" />
                         )}
-
                         Sign Up
-
                     </Button>
-
                 </form>
-
             </Form>
 
-
-            <ReCAPTCHA
-                ref={recaptchaRef}
-                sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY as string}
-                size="invisible"
-            />
+            {mounted && process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY && (
+                <ReCAPTCHA
+                    ref={recaptchaRef}
+                    sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}
+                    size="invisible"
+                />
+            )}
 
             <VerifyEmailModal
                 isOpen={showSuccess}
                 onClose={() => setShowSuccess(false)}
-                message={message}
+                email={form.getValues('email')}
             />
 
         </Suspense>
