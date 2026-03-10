@@ -57,11 +57,13 @@ const RoleInviteDialog = ({
   closeDialog,
   isEdit,
   editData,
+  tenant_id
 }: {
   open: boolean;
   closeDialog: () => void;
   isEdit: boolean;
   editData: any;
+  tenant_id: any
 }) => {
   const dispatch = useDispatch();
   const queryClient = useQueryClient();
@@ -129,6 +131,7 @@ const RoleInviteDialog = ({
       id: editData?.id,
       name: values.name,
       permissions: selectedPermissions,
+      tenant_id: tenant_id
     };
 
     let res: any;
@@ -136,11 +139,19 @@ const RoleInviteDialog = ({
     if (isEdit) {
       res = await dispatch(updateRoles(payload));
     } else {
-      res = await dispatch(createRole({ name: values.name, permissions: selectedPermissions, }));
+      res = await dispatch(createRole(payload));
     }
+
     if (res?.meta?.requestStatus === "fulfilled") {
-      await dispatch(fetchRoles({ page: 1, per_page: 10 }));
+
+      await dispatch(fetchRoles({
+        page: 1,
+        per_page: 10,
+        tenant_id: tenant_id
+      }));
+
       closeDialog();
+
       toast.success(
         isEdit
           ? "Roles Update Successfully"

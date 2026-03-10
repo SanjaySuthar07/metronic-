@@ -229,7 +229,7 @@ const RolesList = () => {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
-            <DropdownMenuItem  onClick={() => handleEditUser(row.original.id, "edit")}>
+            <DropdownMenuItem onClick={() => handleEditUser(row.original.id, "edit")}>
               Edit
             </DropdownMenuItem>
             <DropdownMenuSeparator />

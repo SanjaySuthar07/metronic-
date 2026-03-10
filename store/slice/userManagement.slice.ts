@@ -42,13 +42,10 @@ const initialState: UserManagementState = {
     currentPage: 1,
     perPage: 10,
   },
-
   userDetail: null,
-
   loadingUsers: false,
   loadingRoles: false,
   loadingUserDetail: false,
-
   loadingPermissions: false,
   error: null,
 
@@ -83,7 +80,9 @@ const userManagementSlice = createSlice({
       })
       .addCase(fetchUserDetail.fulfilled, (state, action) => {
         state.loadingUserDetail = false;
-        state.userDetail = action.payload.user;
+        if (action.payload.user.tenant != null) {
+          state.userDetail = action.payload.user;
+        }
       })
 
       .addCase(fetchUserDetail.rejected, (state, action) => {

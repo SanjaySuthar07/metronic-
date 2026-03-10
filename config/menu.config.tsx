@@ -53,7 +53,6 @@ import {
   Zap,
 } from 'lucide-react';
 import { type MenuConfig } from './types';
-
 export const MENU_SIDEBAR: MenuConfig = [
   { title: 'Dashboard', icon: LayoutGrid, path: '/dashboard' },
   {
@@ -103,7 +102,6 @@ export const MENU_SIDEBAR: MenuConfig = [
       { title: 'Empty Dashboard', path: '/store-client/order-receipt' },
     ],
   },
- 
 ];
 
 export const MENU_SIDEBAR_CUSTOM: MenuConfig = [

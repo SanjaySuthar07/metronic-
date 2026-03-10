@@ -1,9 +1,9 @@
 'use client';
 
-import React, { use, useEffect, useMemo, useState } from 'react';
+import React, { use, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Activity, MoveLeft, UserPen ,HatGlasses} from 'lucide-react';
+import { MoveLeft, UserPen, LucideUserKey, HatGlassesIcon, User } from 'lucide-react';
 
 import {
   Breadcrumb,
@@ -50,20 +50,20 @@ export default function UserLayout({
   const router = useRouter();
   const pathname = usePathname();
   const activeTab = useMemo(() => {
-    if (pathname.includes('/agent')) return 'logs';
+    if (pathname.includes('/agent')) return 'agent';
+    else if (pathname.includes('/permissions')) return 'permissions';
+    else if (pathname.includes('/roles')) return 'roles';
     return 'general';
   }, [pathname]);
 
   const dispatch = useDispatch<AppDispatch>();
-  // Dummy user data
+
   useEffect(() => {
     if (id) {
-      dispatch(fetchUserDetail({ id }));
+      dispatch(fetchUserDetail({ id, tenant_id: null }));
     }
   }, [id, dispatch]);
-  const { userDetail, loadingUserDetail } = useSelector(
-    (state: any) => state.userManagement
-  );
+  const { userDetail } = useSelector((state: any) => state.userManagement);
   const navRoutes = useMemo<NavRoutes>(
     () => ({
       general: {
@@ -71,26 +71,30 @@ export default function UserLayout({
         icon: UserPen,
         path: `/user-management/users/${id}`,
       },
-      logs: {
+      roles: {
+        title: 'roles',
+        icon: User,
+        path: `/user-management/users/${id}/roles`,
+      },
+      permissions: {
+        title: 'Permissions',
+        icon: LucideUserKey,
+        path: `/user-management/users/${id}/permissions`,
+      },
+      agent: {
         title: 'Agent',
-        icon: HatGlasses,
+        icon: HatGlassesIcon,
         path: `/user-management/users/${id}/agent`,
       },
     }),
     [id],
   );
 
-  const handleTabClick = (key: string, path: string) => {
-    setActiveTab(key);
-    router.push(path);
-  };
-
   return (
     <Container>
       <Toolbar>
         <ToolbarHeading>
           <ToolbarTitle>User</ToolbarTitle>
-
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>

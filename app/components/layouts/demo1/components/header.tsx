@@ -14,6 +14,7 @@ import {
   Menu,
   MessageCircleMore,
   Search,
+  Settings,
   SquareChevronRight,
 } from 'lucide-react';
 import { getInitials, toAbsoluteUrl } from '@/lib/helpers';
@@ -34,6 +35,7 @@ import { MegaMenu } from './mega-menu';
 import { MegaMenuMobile } from './mega-menu-mobile';
 import { SidebarMenu } from './sidebar-menu';
 import { useSelector } from 'react-redux';
+import { SettingSheet } from '@/app/components/partials/topbar/setting-sheet';
 
 export function Header() {
   const [isSidebarSheetOpen, setIsSidebarSheetOpen] = useState(false);
@@ -127,6 +129,18 @@ export function Header() {
         <div className="flex items-center gap-3">
 
           <>
+            <SettingSheet
+              trigger={
+                <Button
+                  variant="ghost"
+                  mode="icon"
+                  shape="circle"
+                  className="size-9 hover:bg-primary/10 hover:[&_svg]:text-primary"
+                >
+                  <Settings className="size-4.5!" />
+                </Button>
+              }
+            />
             <NotificationsSheet
               trigger={
                 <Button

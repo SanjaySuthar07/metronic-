@@ -7,6 +7,7 @@ interface FetchUsersPayload {
   search?: string;
   sort?: string;
   dir?: "asc" | "desc";
+  id: any
 }
 
 // ----------------------------
@@ -24,6 +25,7 @@ export const fetchUsers = createAsyncThunk(
           search: payload?.search,
           sort: payload?.sort,
           dir: payload?.dir,
+          tenant_id: payload?.id
         },
       });
 
@@ -37,14 +39,17 @@ export const fetchUsers = createAsyncThunk(
 );
 interface FetchUserDetail {
   id?: any;
+  tenant_id?: any
 }
+
 export const fetchUserDetail = createAsyncThunk(
   "users/fetchUserDetail",
   async (payload: FetchUserDetail, { rejectWithValue }) => {
     try {
       const response = await api.get("/user-details", {
         params: {
-          id: payload?.id
+          id: payload?.id,
+          tenant_id: payload?.tenant_id
         },
       });
       return response.data;
@@ -73,10 +78,13 @@ export const updateUser = createAsyncThunk(
 
 export const deleteUser = createAsyncThunk(
   "users/deleteUser",
-  async (payload: { id: any }, { rejectWithValue }) => {
+  async (payload: { id: any, tenant_id: any }, { rejectWithValue }) => {
     try {
-      // DELETE request using RESTful endpoint with user ID in path
-      const response = await api.delete(`/user/${payload.id}`);
+      const response = await api.delete(`/user/${payload.id}`, {
+        params: {
+          tenant_id: payload?.tenant_id
+        }
+      });
       return response.data;
     } catch (error: any) {
       const message =
@@ -91,11 +99,11 @@ export const deleteUser = createAsyncThunk(
 // ----------------------------
 export const fetchRoles = createAsyncThunk(
   "users/fetchRoles",
-  async (payload: FetchUsersPayload, { rejectWithValue }) => {
+  async (payload: any, { rejectWithValue }) => {
     try {
       const response = await api.get("/roles", {
         params: {
-          id: payload?.id,
+          tenant_id: payload?.tenant_id,
         },
       });
       return response.data;
@@ -107,15 +115,16 @@ export const fetchRoles = createAsyncThunk(
   }
 );
 
-interface FetchRoleDetail {
-  id?: any;
-}
 export const fetchRoleDetail = createAsyncThunk(
   "users/fetchRoleDetail",
-  async (payload: FetchRoleDetail, { rejectWithValue }) => {
+  async (payload: any, { rejectWithValue }) => {
     try {
 
-      const response = await api.get(`/roles/${payload.id}`);
+      const response = await api.get(`/roles/${payload.id}`, {
+        params: {
+          tenant_id: payload?.tenant_id
+        }
+      });
 
       return response.data;
 
@@ -154,7 +163,8 @@ export const updateRoles = createAsyncThunk(
     try {
       const response = await api.put(`/roles/${payload.id}`, {
         name: payload.name,
-        permissions: payload.permissions
+        permissions: payload.permissions,
+        tenant_id: payload.tenant_id
       });
       return response.data;
     } catch (error: any) {
@@ -167,11 +177,12 @@ export const updateRoles = createAsyncThunk(
 
 export const createRole = createAsyncThunk(
   "roles/createRole",
-  async (payload: { name: string; permissions: number[] }, { rejectWithValue }) => {
+  async (payload: { name: string; permissions: number[], tenant_id: any }, { rejectWithValue }) => {
     try {
       const response = await api.post("/roles", {
         name: payload.name,
         permissions: payload.permissions,
+        tenant_id: payload.tenant_id
       });
 
       return response.data;
@@ -217,6 +228,7 @@ export const fetchPermissions = createAsyncThunk(
           search: payload?.search,
           sort: payload?.sort,
           dir: payload?.dir,
+          tenant_id: payload?.id
         },
       });
 
@@ -228,13 +240,16 @@ export const fetchPermissions = createAsyncThunk(
     }
   }
 );
-
 export const updatePermissions = createAsyncThunk(
   "permissions/updatePermissions",
-  async (payload: any, { rejectWithValue }) => {
+  async (
+    payload: { id: number; name: string; tenant_id: number },
+    { rejectWithValue }
+  ) => {
     try {
       const response = await api.put(`/permissions/${payload.id}`, {
-        name: payload.name
+        name: payload.name,
+        tenant_id: payload.tenant_id
       });
       return response.data;
     } catch (error: any) {
@@ -244,15 +259,19 @@ export const updatePermissions = createAsyncThunk(
     }
   }
 );
-
 interface FetchPermissionsDetail {
   id?: any;
+  tenant_id?: nay
 }
 export const fetchPermissionsDetail = createAsyncThunk(
   "permissions/fetchPermissionsDetail",
   async (payload: FetchPermissionsDetail, { rejectWithValue }) => {
     try {
-      const response = await api.get(`/permissions/${payload?.id}`);
+      const response = await api.get(`/permissions/${payload?.id}`, {
+        params: {
+          tenant_id: payload?.tenant_id
+        },
+      });
       return response.data;
     } catch (error: any) {
       const message =
@@ -264,10 +283,11 @@ export const fetchPermissionsDetail = createAsyncThunk(
 
 export const createPermissions = createAsyncThunk(
   "permissions/createPermissions",
-  async (payload: { name: string; permissions: number[] }, { rejectWithValue }) => {
+  async (payload: { name: string; tenant_id: number }, { rejectWithValue }) => {
     try {
       const response = await api.post("/permissions", {
-        name: payload.name
+        name: payload.name,
+        tenant_id: payload?.tenant_id
       });
 
       return response.data;
@@ -281,10 +301,13 @@ export const createPermissions = createAsyncThunk(
 
 export const deletePermissions = createAsyncThunk(
   "permission/deletePermission",
-  async (payload: { id: any }, { rejectWithValue }) => {
+  async (payload: { id: any, tenant_id: any }, { rejectWithValue }) => {
     try {
-      // DELETE request using RESTful endpoint with user ID in path
-      const response = await api.delete(`/permissions/${payload.id}`);
+      const response = await api.delete(`/permissions/${payload.id}`, {
+        params: {
+          tenant_id: payload.tenant_id
+        }
+      });
       return response.data;
     } catch (error: any) {
       const message =

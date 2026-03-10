@@ -1,8 +1,6 @@
 'use client';
-
 import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
-
 import {
   Dialog,
   DialogContent,
@@ -20,11 +18,13 @@ import { X } from 'lucide-react';
 const RoleViewDialog = ({
   open,
   closeDialog,
+  tenant_id,
   editData,
 }: {
   open: boolean;
   closeDialog: () => void;
   editData: any;
+  tenant_id: any;
 }) => {
   const dispatch = useDispatch();
 
@@ -37,7 +37,6 @@ const RoleViewDialog = ({
       const res: any = await dispatch(fetchPermissionsDropdown());
       setPermissionList(res?.payload?.permissions || []);
     };
-
     getPermissions();
   }, [dispatch]);
 

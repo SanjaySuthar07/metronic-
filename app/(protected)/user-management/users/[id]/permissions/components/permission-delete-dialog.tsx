@@ -22,6 +22,7 @@ interface PermissionDeleteDialogProps {
   closeDialog: () => void;
   permission: any;
   onDeleted?: () => void;
+  tenant_id: any
 }
 
 const PermissionDeleteDialog = ({
@@ -29,6 +30,7 @@ const PermissionDeleteDialog = ({
   closeDialog,
   permission,
   onDeleted,
+  tenant_id,
 }: PermissionDeleteDialogProps) => {
   const dispatch = useDispatch<AppDispatch>();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -37,7 +39,7 @@ const PermissionDeleteDialog = ({
     if (!permission?.id) return;
     setIsProcessing(true);
     try {
-      const res: any = await dispatch(deletePermissions({ id: permission.id }) as any);
+      const res: any = await dispatch(deletePermissions({ id: permission.id, tenant_id }) as any);
       if (res.error) {
         toast.error(res.error.message || 'Failed to delete permission', {
           position: 'top-center',
@@ -57,7 +59,7 @@ const PermissionDeleteDialog = ({
         if (onDeleted) {
           onDeleted();
         } else {
-          dispatch(fetchPermissions({ page: 1, per_page: 10 }) as any);
+          dispatch(fetchPermissions({ page: 1, per_page: 10, id: tenant_id }) as any);
         }
         closeDialog();
       }

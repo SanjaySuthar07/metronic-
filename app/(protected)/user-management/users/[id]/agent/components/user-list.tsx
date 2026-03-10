@@ -13,8 +13,9 @@ import {
 
 import { AppDispatch, RootState } from '@/store';
 import {
-  fetchPermissionsDetail,
-  fetchPermissions,
+  fetchRolesDropdown,
+  fetchUserDetail,
+  fetchUsers,
 } from '@/store/thunk/userManagement.thunk';
 
 import { EllipsisVertical, Plus, Search } from 'lucide-react';
@@ -34,7 +35,16 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 
-import PermissionDeleteDialog from './permission-delete-dialog';
+import UserInviteDialog from './user-add-dialog';
+import UserDeleteDialog from './user-delete-dialog';
+
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 import {
   DropdownMenu,
@@ -43,28 +53,28 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import PermissionAddDialog from './permission-add-dialog';
-
+import { useRouter } from 'next/navigation';
 const DataGridToolbar = ({
   inputValue,
   onInputChange,
-  onAddPermission,
+  onAddUser,
   selectedRole,
   onRoleChange,
 }: {
   inputValue: string;
   onInputChange: (value: string) => void;
-  onAddPermission: () => void;
+  onAddUser: () => void;
   selectedRole: string;
   onRoleChange: (value: string) => void;
 }) => {
   const dispatch = useDispatch<AppDispatch>();
   const [roles, setRoles] = useState<any[]>([]);
 
+  const { userDetail } = useSelector((s) => s.userManagement)
   useEffect(() => {
     const fetch = async () => {
-      // const data = await dispatch(fetchRolesDropdown());
-      // setRoles(data?.payload?.roles || []);
+      const data = await dispatch(fetchRolesDropdown());
+      setRoles(data?.payload?.roles || []);
     };
     fetch();
   }, [dispatch]);
@@ -72,12 +82,10 @@ const DataGridToolbar = ({
   return (
     <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-
         <div className="relative">
           <Search className="size-4 text-muted-foreground absolute start-3 top-1/2 -translate-y-1/2" />
-
           <Input
-            placeholder="Search permissions..."
+            placeholder="Search users"
             value={inputValue}
             onChange={(e) => onInputChange(e.target.value)}
             className="ps-9 w-full sm:w-64"
@@ -92,53 +100,64 @@ const DataGridToolbar = ({
           <SelectContent>
             <SelectItem value="all">All Type</SelectItem>
 
-            {roles.map((role: any) => (
-              <Fragment key={role.id}>
-                <SelectItem value={role.name} className="capitalize">
-                  {role.name}
-                </SelectItem>
-              </Fragment>
-            ))}
+            {roles.map((role: any) => {
+              // hide admin role from filter options
+              if (role.name === 'Super Admin') {
+                return null;
+              }
+
+              return (
+                <Fragment key={role.id}>
+                  <SelectItem value={role.name} className="capitalize">
+                    {role.name}
+                  </SelectItem>
+                </Fragment>
+              );
+            })}
           </SelectContent>
         </Select> */}
 
       </div>
 
-      <Button className="bg-primary text-white" onClick={onAddPermission}>
+      <Button className="bg-primary text-white hidden" onClick={onAddUser}>
         <Plus className="size-4 mr-1" />
-        Add Permission
+        Add User
       </Button>
     </CardHeader>
   );
 };
 
-const PermissionList = () => {
+const UserList = () => {
+  const { userDetail } = useSelector((state: any) => state.userManagement);
+  console.log("this is first", userDetail?.tenant?.id)
   const dispatch = useDispatch<AppDispatch>();
-
+  const router = useRouter()
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [deletePermissionObj, setDeletePermissionObj] = useState<any>(null);
+  const [deleteUserObj, setDeleteUserObj] = useState<any>(null);
   const handleDeleteUser = (user: any) => {
-    setDeletePermissionObj(user);
+    setDeleteUserObj(user);
     setDeleteDialogOpen(true);
   };
 
   const refreshUsers = () => {
-      // rerun the fetch with current filters/pagination
-      const roleFilter =
-        selectedRole && selectedRole !== 'all' ? selectedRole : '';
-  
-      dispatch(
-        fetchPermissions({
-          page: pagination.pageIndex + 1,
-          per_page: pagination.pageSize,
-          search: inputValue.trim() || undefined,
-          sort: sorting?.[0]?.id,
-          dir: sorting?.[0]?.desc ? 'desc' : 'asc',
-        })
-      );
-    };
+    if (!userDetail?.tenant?.id) return;
+    const roleFilter =
+      selectedRole && selectedRole !== 'all' ? selectedRole : '';
 
-  const { permissions, loadingPermissions } = useSelector(
+    dispatch(
+      fetchUsers({
+        user_type: roleFilter,
+        page: pagination.pageIndex + 1,
+        per_page: pagination.pageSize,
+        search: inputValue.trim() || undefined,
+        sort: sorting?.[0]?.id,
+        dir: sorting?.[0]?.desc ? 'desc' : 'asc',
+        id: userDetail?.tenant?.id
+      })
+    );
+  };
+
+  const { users, loadingUsers } = useSelector(
     (state: RootState) => state.userManagement
   );
 
@@ -153,9 +172,7 @@ const PermissionList = () => {
     pageIndex: 0,
     pageSize: 10,
   });
-
   const [sorting, setSorting] = useState<SortingState>([]);
-
   const [columnOrder, setColumnOrder] = useState<string[]>([]);
   const [columnPinning, setColumnPinning] = useState<any>({
     left: [],
@@ -169,6 +186,7 @@ const PermissionList = () => {
   }, [inputValue, selectedRole]);
 
   useEffect(() => {
+    if (!userDetail?.tenant?.id) return;
 
     const sortField = sorting?.[0]?.id;
     const sortDirection = sorting?.[0]?.desc ? 'desc' : 'asc';
@@ -179,12 +197,14 @@ const PermissionList = () => {
         : '';
 
     dispatch(
-      fetchPermissions({
+      fetchUsers({
+        user_type: roleFilter,
         page: pagination.pageIndex + 1,
         per_page: pagination.pageSize,
         search: inputValue.trim() || undefined,
         sort: sortField,
         dir: sortField ? sortDirection : undefined,
+        id: userDetail?.tenant?.id
       })
     );
 
@@ -195,18 +215,20 @@ const PermissionList = () => {
     inputValue,
     selectedRole,
     sorting,
+    userDetail?.tenant?.id
   ]);
 
-  const handleEditPermissions = async (id: number) => {
+  const handleEditUser = async (id: number) => {
     try {
-      const res: any = await dispatch(fetchPermissionsDetail({ id }));
-      if (res?.payload?.permission) {
-        setEditData(res.payload.permission);
+      console.log("click edit", userDetail?.tenant?.id)
+      const res: any = await dispatch(fetchUserDetail({ id, tenant_id: userDetail?.tenant?.id }));
+      if (res?.payload?.user) {
+        setEditData(res.payload.user);
         setIsEdit(true);
         setInviteDialogOpen(true);
       }
     } catch (error) {
-      console.error("Failed to fetch permission details", error);
+      console.error("Failed to fetch user details", error);
     }
   };
   const columns = useMemo<ColumnDef<any>[]>(() => [
@@ -217,31 +239,33 @@ const PermissionList = () => {
       enableSorting: true,
 
       header: ({ column }) =>
-        <DataGridColumnHeader title="Permission" column={column} />,
+        <DataGridColumnHeader title="User" column={column} />,
 
       cell: ({ row }) => {
 
-        const permission = row.original;
-        const name = permission?.name || '-';
+        const user = row.original;
+        const name = user?.name || '-';
+        const email = user?.email || '-';
 
         return (
           <div className="flex items-center gap-3">
 
             <Avatar className="size-9">
               <AvatarFallback>
-                {getInitials(name !== '-' ? name : 'N/A')}
+                {getInitials(name !== '-' ? name : email)}
               </AvatarFallback>
             </Avatar>
 
             <div className="space-y-0.5">
               <div className="font-medium text-sm capitalize">{name}</div>
+              <div className="text-muted-foreground text-xs">{email}</div>
             </div>
 
           </div>
         );
       },
 
-      size: 300,
+      size: 160,
 
       meta: {
         skeleton: (
@@ -256,13 +280,39 @@ const PermissionList = () => {
       },
     },
 
+    // {
+    //   accessorKey: 'user_type',
+    //   id: 'user_type',
+    //   enableSorting: true,
+
+    //   header: ({ column }) =>
+    //     <DataGridColumnHeader title="User Type" column={column} />,
+
+    //   cell: ({ row }) => {
+
+    //     const type = row.original?.user_type;
+
+    //     return type ? (
+    //       <Badge variant="secondary" className="capitalize">
+    //         {type}
+    //       </Badge>
+    //     ) : '-';
+    //   },
+
+    //   size: 160,
+
+    //   meta: {
+    //     skeleton: <Skeleton className="h-7 w-24" />,
+    //   },
+    // },
+
     {
       accessorKey: 'created_at',
       id: 'created_at',
       enableSorting: true,
 
       header: ({ column }) =>
-        <DataGridColumnHeader title="Created At" column={column} />,
+        <DataGridColumnHeader title="Joined" column={column} />,
 
       cell: ({ row }) => {
 
@@ -300,23 +350,21 @@ const PermissionList = () => {
             >
               <EllipsisVertical />
             </Button>
-
           </DropdownMenuTrigger>
-
           <DropdownMenuContent align="end">
-
             <DropdownMenuItem
-              onClick={() => handleEditPermissions(row.original.id)}
+              onClick={() => handleEditUser(row.original.id)}
             >
               Edit
             </DropdownMenuItem>
-
             <DropdownMenuSeparator />
-
+            <DropdownMenuItem onClick={() => router.push(`/user-management/users/${row.original.id}`)}>
+              View
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
             <DropdownMenuItem variant="destructive" onClick={() => handleDeleteUser(row.original)}>
               Delete
             </DropdownMenuItem>
-
           </DropdownMenuContent>
 
         </DropdownMenu>
@@ -336,11 +384,11 @@ const PermissionList = () => {
   const table = useReactTable({
 
     columns,
-    data: permissions?.data || [],
+    data: users?.data || [],
 
     pageCount:
-      permissions?.total
-        ? Math.ceil(permissions.total / pagination.pageSize)
+      users?.total
+        ? Math.ceil(users.total / pagination.pageSize)
         : -1,
 
     manualPagination: true,
@@ -371,8 +419,8 @@ const PermissionList = () => {
 
       <DataGrid
         table={table}
-        recordCount={permissions?.total}
-        isLoading={loadingPermissions}
+        recordCount={users?.total}
+        isLoading={loadingUsers}
         tableLayout={{
           columnsResizable: true,
           columnsPinnable: true,
@@ -386,7 +434,7 @@ const PermissionList = () => {
           <DataGridToolbar
             inputValue={inputValue}
             onInputChange={setInputValue}
-            onAddPermission={() => {
+            onAddUser={() => {
               setInviteDialogOpen(true);
               setIsEdit(false);
             }}
@@ -408,13 +456,13 @@ const PermissionList = () => {
         </Card>
 
       </DataGrid>
-      
       {
-        deletePermissionObj && (
-          <PermissionDeleteDialog
+        deleteUserObj && (
+          <UserDeleteDialog
             open={deleteDialogOpen}
             closeDialog={() => setDeleteDialogOpen(false)}
-            permission={deletePermissionObj}
+            user={deleteUserObj}
+            tenant_id={userDetail?.tenant?.id}
             onDeleted={() => {
               setDeleteDialogOpen(false);
               refreshUsers();
@@ -422,16 +470,17 @@ const PermissionList = () => {
           />
         )
       }
-
-      <PermissionAddDialog
+      <UserInviteDialog
         open={inviteDialogOpen}
         isEdit={isEdit}
         editData={editData}
         closeDialog={() => setInviteDialogOpen(false)}
+        isProfile={false}
+        tenant_id={userDetail?.tenant?.id}
       />
 
     </>
   );
 };
 
-export default PermissionList;
+export default UserList;

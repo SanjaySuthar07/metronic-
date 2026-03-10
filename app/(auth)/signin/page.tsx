@@ -71,13 +71,9 @@ export default function Page() {
   };
 
   async function onSubmit(values: SigninSchemaType) {
-
     setError(null);
-
     if (!recaptchaRef.current) return;
-
     let token;
-
     try {
       token = await recaptchaRef.current.executeAsync();
     } catch {
@@ -99,11 +95,8 @@ export default function Page() {
     };
 
     const result = await dispatch(loginUser(payload));
-
     if (loginUser.fulfilled.match(result)) {
-
       const data = result.payload;
-
       setQrCode(data.qr_code);
       setUserId(data.user_id);
       setOppenQR(true);
@@ -111,13 +104,9 @@ export default function Page() {
       setUserType(data?.user_type);
 
     } else {
-
       setError(result.payload as string);
-
     }
-
     resetCaptcha();
-
     if (values.rememberMe) {
       dispatch(remember(values));
     } else {

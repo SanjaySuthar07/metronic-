@@ -1,6 +1,5 @@
 'use client';
-
-import { Fragment, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   ColumnDef,
@@ -21,7 +20,6 @@ import { EllipsisVertical, Plus, Search } from 'lucide-react';
 import { formatDate, getInitials } from '@/lib/helpers';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardFooter, CardHeader, CardTable } from '@/components/ui/card';
 
@@ -49,8 +47,6 @@ const DataGridToolbar = ({
   inputValue,
   onInputChange,
   onAddPermission,
-  selectedRole,
-  onRoleChange,
 }: {
   inputValue: string;
   onInputChange: (value: string) => void;
@@ -114,7 +110,6 @@ const DataGridToolbar = ({
 
 const PermissionList = () => {
   const dispatch = useDispatch<AppDispatch>();
-
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletePermissionObj, setDeletePermissionObj] = useState<any>(null);
   const handleDeleteUser = (user: any) => {
@@ -122,19 +117,18 @@ const PermissionList = () => {
     setDeleteDialogOpen(true);
   };
 
+  const { userDetail } = useSelector((s) => s.userManagement)
   const refreshUsers = () => {
-    // rerun the fetch with current filters/pagination
+    if (!userDetail?.tenant?.id) return;
     const roleFilter =
       selectedRole && selectedRole !== 'all' ? selectedRole : '';
-
     dispatch(
       fetchPermissions({
         page: pagination.pageIndex + 1,
         per_page: pagination.pageSize,
         search: inputValue.trim() || undefined,
         sort: sorting?.[0]?.id,
-        dir: sorting?.[0]?.desc ? 'desc' : 'asc',
-        id: null
+        id: userDetail?.tenant?.id
       })
     );
   };
@@ -170,7 +164,7 @@ const PermissionList = () => {
   }, [inputValue, selectedRole]);
 
   useEffect(() => {
-
+    if (!userDetail?.tenant?.id) return;
     const sortField = sorting?.[0]?.id;
     const sortDirection = sorting?.[0]?.desc ? 'desc' : 'asc';
 
@@ -186,7 +180,7 @@ const PermissionList = () => {
         search: inputValue.trim() || undefined,
         sort: sortField,
         dir: sortField ? sortDirection : undefined,
-        id: null
+        id: userDetail?.tenant?.id
       })
     );
 
@@ -197,13 +191,14 @@ const PermissionList = () => {
     inputValue,
     selectedRole,
     sorting,
+    userDetail?.tenant?.id
   ]);
 
   const handleEditPermissions = async (id: number) => {
     try {
-      const res: any = await dispatch(fetchPermissionsDetail({ id }));
+      const res: any = await dispatch(fetchPermissionsDetail({ id, tenant_id: userDetail?.tenant?.id }));
       if (res?.payload?.permission) {
-        setEditData(res.payload.permission);
+        setEditData({ data: res.payload.permission, tenant_id: userDetail?.tenant?.id });
         setIsEdit(true);
         setInviteDialogOpen(true);
       }
@@ -211,8 +206,8 @@ const PermissionList = () => {
       console.error("Failed to fetch permission details", error);
     }
   };
-  
   const columns = useMemo<ColumnDef<any>[]>(() => [
+
     {
       accessorKey: 'name',
       id: 'name',
@@ -236,7 +231,7 @@ const PermissionList = () => {
             </Avatar>
 
             <div className="space-y-0.5">
-              <div className="font-medium text-sm">{name}</div>
+              <div className="font-medium text-sm capitalize">{name}</div>
             </div>
 
           </div>
@@ -374,7 +369,7 @@ const PermissionList = () => {
       <DataGrid
         table={table}
         recordCount={permissions?.total}
-        isLoading={loadingPermissions}
+        isLoading={loadingPermissions || !userDetail?.tenant?.id}
         tableLayout={{
           columnsResizable: true,
           columnsPinnable: true,
@@ -406,9 +401,7 @@ const PermissionList = () => {
           <CardFooter>
             <DataGridPagination />
           </CardFooter>
-
         </Card>
-
       </DataGrid>
 
       {
@@ -416,6 +409,7 @@ const PermissionList = () => {
           <PermissionDeleteDialog
             open={deleteDialogOpen}
             closeDialog={() => setDeleteDialogOpen(false)}
+            tenant_id={userDetail?.tenant?.id}
             permission={deletePermissionObj}
             onDeleted={() => {
               setDeleteDialogOpen(false);
@@ -429,6 +423,7 @@ const PermissionList = () => {
         open={inviteDialogOpen}
         isEdit={isEdit}
         editData={editData}
+        tenant_id={userDetail?.tenant?.id}
         closeDialog={() => setInviteDialogOpen(false)}
       />
 

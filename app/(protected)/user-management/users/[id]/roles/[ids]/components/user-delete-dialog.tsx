@@ -28,6 +28,7 @@ import { Input } from '@/components/ui/input';
 import { LoaderCircleIcon } from 'lucide-react';
 import { User } from '@/app/models/user';
 
+// Validation schema for email confirmation
 const EmailConfirmationSchema = (userEmail: string) =>
   z.object({
     confirmEmail: z
@@ -43,19 +44,20 @@ type EmailConfirmationSchemaType = z.infer<
   ReturnType<typeof EmailConfirmationSchema>
 >;
 
-interface UserRestoreDialogProps {
+interface UserDeleteDialogProps {
   open: boolean;
   closeDialog: () => void;
   user: User;
 }
 
-const UserRestoreDialog = ({
+const UserDeleteDialog = ({
   open,
   closeDialog,
   user,
-}: UserRestoreDialogProps) => {
+}: UserDeleteDialogProps) => {
   const queryClient = useQueryClient();
 
+  // Set up the form using react-hook-form and zod validation
   const form = useForm<EmailConfirmationSchemaType>({
     resolver: zodResolver(EmailConfirmationSchema(user.email)),
     defaultValues: {
@@ -64,14 +66,12 @@ const UserRestoreDialog = ({
     mode: 'onChange',
   });
 
+  // Define the mutation for deleting the user
   const mutation = useMutation({
     mutationFn: async () => {
-      const response = await apiFetch(
-        `/api/user-management/users/${user.id}/restore`,
-        {
-          method: 'PATCH',
-        },
-      );
+      const response = await apiFetch(`/api/user-management/users/${user.id}`, {
+        method: 'DELETE',
+      });
 
       if (!response.ok) {
         const { message } = await response.json();
@@ -81,7 +81,8 @@ const UserRestoreDialog = ({
       return response.json();
     },
     onSuccess: () => {
-      const message = 'User restored successfully.';
+      const message = 'User deleted successfully.';
+
       toast.custom(
         () => (
           <Alert variant="mono" icon="success">
@@ -95,7 +96,11 @@ const UserRestoreDialog = ({
           position: 'top-center',
         },
       );
+
+      // Update user data
       queryClient.invalidateQueries({ queryKey: ['user-user'] });
+
+      //router.push('/user-management/users/');
       closeDialog();
     },
     onError: (error: Error) => {
@@ -124,13 +129,14 @@ const UserRestoreDialog = ({
     <Dialog open={open} onOpenChange={closeDialog}>
       <DialogContent showCloseButton={false}>
         <DialogHeader>
-          <DialogTitle>Confirm Restore</DialogTitle>
+          <DialogTitle>Confirm Delete</DialogTitle>
         </DialogHeader>
         <div>
           <p className="text-sm text-accent-foreground mb-2.5">
-            Restoring user{' '}
+            Deleting user{' '}
             <strong className="text-foreground">{user.email}</strong> will
-            reactivate the account and all related data.
+            permanently remove the account and all related data. This action
+            cannot be undone.
           </p>
 
           <Form {...form}>
@@ -169,7 +175,7 @@ const UserRestoreDialog = ({
                   {mutation.status === 'pending' && (
                     <LoaderCircleIcon className="animate-spin" />
                   )}
-                  Restore user account
+                  Delete user account
                 </Button>
               </DialogFooter>
             </form>
@@ -180,4 +186,4 @@ const UserRestoreDialog = ({
   );
 };
 
-export default UserRestoreDialog;
+export default UserDeleteDialog;

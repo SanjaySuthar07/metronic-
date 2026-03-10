@@ -5,16 +5,6 @@ import UserProfile from './components/user-profile';
 import { useSelector } from 'react-redux';
 
 export default function Page() {
-  const searchParams = useSearchParams();
-  const id = searchParams?.get('id') || null;
-  const user = {
-    id: 1,
-    name: 'John Doe',
-    email: 'john@example.com',
-    role: 'Admin',
-  };
-
-  const isLoading = false;
   const { userDetail, loadingUserDetail } = useSelector(
     (state: any) => state.userManagement
   );
