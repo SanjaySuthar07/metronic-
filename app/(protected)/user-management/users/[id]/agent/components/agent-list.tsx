@@ -35,17 +35,6 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 
-import UserInviteDialog from './user-add-dialog';
-import UserDeleteDialog from './user-delete-dialog';
-
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -54,6 +43,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useRouter } from 'next/navigation';
+import AgentAddDialog from './agent-add-dialog';
+import AgentDeleteDialog from './agent-delete-dialog';
 const DataGridToolbar = ({
   inputValue,
   onInputChange,
@@ -127,9 +118,8 @@ const DataGridToolbar = ({
   );
 };
 
-const UserList = () => {
+const AgentList = () => {
   const { userDetail } = useSelector((state: any) => state.userManagement);
-  console.log("this is first", userDetail?.tenant?.id)
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter()
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -220,7 +210,6 @@ const UserList = () => {
 
   const handleEditUser = async (id: number) => {
     try {
-      console.log("click edit", userDetail?.tenant?.id)
       const res: any = await dispatch(fetchUserDetail({ id, tenant_id: userDetail?.tenant?.id }));
       if (res?.payload?.user) {
         setEditData(res.payload.user);
@@ -458,7 +447,7 @@ const UserList = () => {
       </DataGrid>
       {
         deleteUserObj && (
-          <UserDeleteDialog
+          <AgentDeleteDialog
             open={deleteDialogOpen}
             closeDialog={() => setDeleteDialogOpen(false)}
             user={deleteUserObj}
@@ -470,7 +459,7 @@ const UserList = () => {
           />
         )
       }
-      <UserInviteDialog
+      <AgentAddDialog
         open={inviteDialogOpen}
         isEdit={isEdit}
         editData={editData}
@@ -483,4 +472,4 @@ const UserList = () => {
   );
 };
 
-export default UserList;
+export default AgentList;

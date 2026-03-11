@@ -36,7 +36,6 @@ export default function AccountDetails() {
   });
 
   async function onSubmit(values: ProfileSchemaType) {
-    console.log(values);
     toast.success('Profile updated (UI only)');
   }
 

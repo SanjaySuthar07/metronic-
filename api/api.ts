@@ -20,7 +20,9 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use((response) => response, async (error) => {
     const originalRequest = error.config;
     const authEndpoints = ['/login', '/verify-Mfa', '/register', '/forgot-password', '/reset-password'];
-    const isAuthRequest = authEndpoints.some(url => error.config.url?.includes(url));
+    const isAuthRequest = authEndpoints.some(
+        (url) => originalRequest?.url?.includes(url)
+    );
 
     if (error.response?.status === 401 && !originalRequest?._retry && !isAuthRequest) {
         originalRequest._retry = true;
@@ -57,4 +59,3 @@ api.interceptors.response.use((response) => response, async (error) => {
 }
 );
 export default api;
-

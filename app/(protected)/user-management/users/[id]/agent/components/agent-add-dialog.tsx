@@ -48,7 +48,7 @@ import {
   updateUser,
 } from '@/store/thunk/userManagement.thunk';
 
-const UserAddDialog = ({
+const AgentAddDialog = ({
   open,
   closeDialog,
   isEdit,
@@ -117,9 +117,7 @@ const UserAddDialog = ({
       };
       const result: any = await dispatch(updateUser(payload) as any);
       if (updateUser.fulfilled.match(result)) {
-        console.log("user show n", Number(tenant_id))
         await dispatch(fetchUsers({ user_type: "", page: 1, per_page: 10, id: tenant_id }) as any);
-        console.log("user show n", tenant_id)
       }
 
       if (result.error) {
@@ -230,4 +228,4 @@ const UserAddDialog = ({
   );
 };
 
-export default UserAddDialog;
+export default AgentAddDialog;

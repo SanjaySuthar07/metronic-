@@ -35,7 +35,6 @@ const initialState: UserManagementState = {
     currentPage: 1,
     perPage: 10,
   },
-
   roles: {
     data: [],
     total: 0,
@@ -48,7 +47,6 @@ const initialState: UserManagementState = {
   loadingUserDetail: false,
   loadingPermissions: false,
   error: null,
-
   permissions: {
     data: [],
     total: 0,

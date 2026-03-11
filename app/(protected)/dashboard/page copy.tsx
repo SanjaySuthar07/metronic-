@@ -23,7 +23,6 @@ type IChannelStatsItems = Array<IChannelStatsItem>;
 function Dashboard() {
     const dispatch = useDispatch();
     const { count } = useSelector((s) => s.dashboard)
-    console.log(count)
     useEffect(() => {
         dispatch(getProfile());
         dispatch(getDashboard());

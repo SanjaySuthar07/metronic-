@@ -1,8 +1,6 @@
 'use client';
-
 import { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-
 import {
   ColumnDef,
   getCoreRowModel,
@@ -11,7 +9,6 @@ import {
   SortingState,
   useReactTable,
 } from '@tanstack/react-table';
-
 import { AppDispatch, RootState } from '@/store';
 import { fetchRoleDetail, fetchRoles } from '@/store/thunk/userManagement.thunk';
 
@@ -39,7 +36,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import RoleInviteDialog from './role-form-dialog';
-import RoleDeleteDialog from './role-delete-dialog';
 import RoleViewDialog from './role-view-dialog';
 const DataGridToolbar = ({
   inputValue,
@@ -53,22 +49,16 @@ const DataGridToolbar = ({
 
   return (
     <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-
         <div className="relative">
-
           <Search className="size-4 text-muted-foreground absolute start-3 top-1/2 -translate-y-1/2" />
-
           <Input
             placeholder="Search roles"
             value={inputValue}
             onChange={(e) => onInputChange(e.target.value)}
             className="ps-9 w-full sm:w-64"
           />
-
         </div>
-
       </div>
 
       <Button className="bg-primary text-white" onClick={onAddUser}>
@@ -80,7 +70,6 @@ const DataGridToolbar = ({
   );
 };
 
-
 const RolesList = () => {
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const dispatch = useDispatch<AppDispatch>();
@@ -91,27 +80,20 @@ const RolesList = () => {
   );
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [inputValue, setInputValue] = useState('');
-
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
   });
-
   const [sorting, setSorting] = useState<SortingState>([]);
-
   const [columnOrder, setColumnOrder] = useState<string[]>([]);
   const [columnPinning, setColumnPinning] = useState<any>({
     left: [],
     right: [],
   });
-
   const [columnVisibility, setColumnVisibility] = useState({});
-
   useEffect(() => {
-
     const sortField = sorting?.[0]?.id;
     const sortDirection = sorting?.[0]?.desc ? 'desc' : 'asc';
-
     dispatch(
       fetchRoles({
         page: pagination.pageIndex + 1,
@@ -119,7 +101,7 @@ const RolesList = () => {
         search: inputValue || undefined,
         sort: sortField,
         dir: sortField ? sortDirection : undefined,
-        id: userDetail?.tenant?.id
+        tenant_id: userDetail?.tenant?.id
       })
     );
 
@@ -131,7 +113,6 @@ const RolesList = () => {
     sorting,
     userDetail?.tenant?.id
   ]);
-
   const handleEditUser = async (id: number, type: any) => {
     try {
       const res: any = await dispatch(fetchRoleDetail({ id, tenant_id: userDetail?.tenant?.id }));
@@ -185,7 +166,6 @@ const RolesList = () => {
         ),
       },
     },
-
     {
       id: 'Permissions',
       header: 'Permissions',
@@ -203,7 +183,7 @@ const RolesList = () => {
             ))}
             {permissions.length > 3 && (
               <span className="text-muted-foreground text-xs ms-1">
-                {permissions.length} more
+                {permissions.length - 3} more
               </span>
             )}
           </div>

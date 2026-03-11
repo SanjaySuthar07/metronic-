@@ -1,0 +1,74 @@
+import { createSlice } from "@reduxjs/toolkit";
+
+interface inviteState {
+    "s": ""
+}
+
+const initialState: inviteState = {
+    "s": ""
+};
+
+const inviteSlice = createSlice({
+    name: "invite",
+    initialState,
+    reducers: {},
+    //   extraReducers: (builder) => {
+    //     builder
+    //       .addCase(fetchUsers.pending, (state) => {
+    //         state.loadingUsers = true;
+    //       })
+
+    //       .addCase(fetchUsers.fulfilled, (state, action) => {
+    //         state.loadingUsers = false;
+
+    //         state.users.data = action.payload.users.data;
+    //         state.users.total = action.payload.users.total;
+    //         state.users.currentPage = action.payload.users.current_page;
+    //         state.users.perPage = action.payload.users.per_page;
+    //       })
+    //       .addCase(fetchUserDetail.pending, (state) => {
+    //         state.loadingUserDetail = true;
+    //       })
+    //       .addCase(fetchUserDetail.fulfilled, (state, action) => {
+    //         state.loadingUserDetail = false;
+    //         if (action.payload.user.tenant != null) {
+    //           state.userDetail = action.payload.user;
+    //         }
+    //       })
+
+    //       .addCase(fetchUserDetail.rejected, (state, action) => {
+    //         state.loadingUserDetail = false;
+    //         state.error = action.payload as string;
+    //       })
+
+    //       .addCase(fetchRoles.pending, (state) => {
+    //         state.loadingRoles = true;
+    //       })
+
+    //       .addCase(fetchRoles.fulfilled, (state, action) => {
+    //         state.loadingRoles = false;
+
+    //         state.roles.data = action.payload.roles.data;
+    //         state.roles.total = action.payload.roles.total;
+    //         state.roles.currentPage = action.payload.roles.current_page;
+    //         state.roles.perPage = action.payload.roles.per_page;
+    //       })
+
+    //       .addCase(fetchPermissions.pending, (state) => {
+    //         state.loadingPermissions = true;
+    //       })
+
+    //       .addCase(fetchPermissions.fulfilled, (state, action) => {
+    //         state.loadingPermissions = false;
+
+    //         state.permissions.data = action.payload.permissions.data;
+    //         state.permissions.total = action.payload.permissions.total;
+    //         state.permissions.currentPage = action.payload.permissions.current_page;
+    //         state.permissions.perPage = action.payload.permissions.per_page;
+    //       })
+    //   },
+});
+
+export default inviteSlice.reducer;
+
+

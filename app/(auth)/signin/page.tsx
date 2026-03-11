@@ -34,7 +34,7 @@ import VerifyOtpPage from '../modal/VerifyOtpPage';
 
 export default function Page() {
 
-  const recaptchaRef = useRef<ReCAPTCHA>(null);
+  const recaptchaRef = useRef<any>(null);
 
   const dispatch = useDispatch<AppDispatch>();
   const { loading, rememberUser } = useSelector((state: RootState) => state.auth);
@@ -155,7 +155,11 @@ export default function Page() {
                 Email <span className="text-red-500">*</span>
               </FormLabel>
               <FormControl>
-                <Input placeholder="Enter your email address" {...field} />
+                <Input
+                  placeholder="Enter your email address"
+                  autoComplete="email"
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -178,6 +182,7 @@ export default function Page() {
                   <Input
                     type={passwordVisible ? 'text' : 'password'}
                     placeholder="Enter your password"
+                    autoComplete="current-password"
                     className="pr-10"
                     {...field}
                   />

@@ -66,8 +66,6 @@ const RoleInviteDialog = ({
   tenant_id: any
 }) => {
   const dispatch = useDispatch();
-  const queryClient = useQueryClient();
-
   const [permissionList, setPermissionList] = useState<any[]>([]);
   const [selectedPermissions, setSelectedPermissions] = useState<number[]>([]);
   const [isProcess, setIsProcess] = useState(false)
@@ -81,10 +79,9 @@ const RoleInviteDialog = ({
 
   useEffect(() => {
     const getPermissions = async () => {
-      const res: any = await dispatch(fetchPermissionsDropdown());
+      const res: any = await dispatch(fetchPermissionsDropdown({ tenant_id }));
       setPermissionList(res?.payload?.permissions || []);
     };
-
     getPermissions();
   }, [dispatch]);
 
@@ -113,7 +110,6 @@ const RoleInviteDialog = ({
     form.setValue('permissions', selectedPermissions, {
       shouldDirty: true,
     });
-
     form.trigger('permissions');
   }, [selectedPermissions, form]);
 
@@ -126,32 +122,20 @@ const RoleInviteDialog = ({
   };
   const handleSubmit = async (values: RoleSchemaType) => {
     setIsProcess(true);
-
     const payload = {
       id: editData?.id,
-      name: values.name,
-      permissions: selectedPermissions,
-      tenant_id: tenant_id
     };
 
     let res: any;
-
     if (isEdit) {
-      res = await dispatch(updateRoles(payload));
+      res = await dispatch(updateRoles({ id: editData?.id, name: values.name, permissions: selectedPermissions, tenant_id: tenant_id }));
     } else {
-      res = await dispatch(createRole(payload));
+      res = await dispatch(createRole({ name: values.name, permissions: selectedPermissions, tenant_id: tenant_id }));
     }
 
     if (res?.meta?.requestStatus === "fulfilled") {
-
-      await dispatch(fetchRoles({
-        page: 1,
-        per_page: 10,
-        tenant_id: tenant_id
-      }));
-
+      await dispatch(fetchRoles({ page: 1, per_page: 10, tenant_id: tenant_id }));
       closeDialog();
-
       toast.success(
         isEdit
           ? "Roles Update Successfully"
@@ -166,7 +150,6 @@ const RoleInviteDialog = ({
         }
       );
     }
-
     setIsProcess(false);
   };
   const {
@@ -180,7 +163,6 @@ const RoleInviteDialog = ({
             {isEdit ? 'Edit Role' : 'Add Role'}
           </DialogTitle>
           <DialogDescription>
-
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -194,14 +176,12 @@ const RoleInviteDialog = ({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Role Name</FormLabel>
-
                   <FormControl>
                     <Input
                       placeholder="Enter role name"
                       {...field}
                     />
                   </FormControl>
-
                   <FormMessage />
                 </FormItem>
               )}
@@ -342,3 +322,5 @@ const RoleInviteDialog = ({
 };
 
 export default RoleInviteDialog;
+// 1 // 11*7000
+// 77000

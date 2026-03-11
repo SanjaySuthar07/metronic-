@@ -87,7 +87,6 @@ type PermissionAddSchemaType = z.infer<typeof PermissionAddSchema>;
     }
   }, [open, isEdit, editData, form]);
   const handleSubmit = async (values: PermissionsAddSchemaType) => {
-      console.log('submit values');
       setIsProcessing(true);
   
       try {

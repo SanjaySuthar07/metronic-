@@ -8,7 +8,6 @@ export default function Page() {
   const { userDetail, loadingUserDetail } = useSelector(
     (state: any) => state.userManagement
   );
-  console.log(userDetail)
   return (
     <div className="space-y-10">
       <UserProfile user={userDetail} isLoading={loadingUserDetail} />

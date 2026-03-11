@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { LoaderCircleIcon, X } from 'lucide-react';
 import { useForm } from 'react-hook-form';
-import { useQueryClient } from '@tanstack/react-query';
 import { useDispatch } from 'react-redux';
 
 import {
@@ -48,8 +47,14 @@ import {
 
 import { ScrollArea } from '@/components/ui/scroll-area';
 
-import { RoleSchema, RoleSchemaType } from '../forms/role-schema';
-import { createRole, fetchPermissionsDropdown, fetchRoles, updateRoles } from '@/store/thunk/userManagement.thunk';
+import {
+  createRole,
+  fetchPermissionsDropdown,
+  fetchRoles,
+  updateRoles,
+} from '@/store/thunk/userManagement.thunk';
+
+import { RoleSchemaType } from '../forms/role-schema';
 import { toast } from 'sonner';
 
 const RoleInviteDialog = ({
@@ -64,11 +69,10 @@ const RoleInviteDialog = ({
   editData: any;
 }) => {
   const dispatch = useDispatch();
-  const queryClient = useQueryClient();
-
   const [permissionList, setPermissionList] = useState<any[]>([]);
   const [selectedPermissions, setSelectedPermissions] = useState<number[]>([]);
-  const [isProcess, setIsProcess] = useState(false)
+  const [isProcess, setIsProcess] = useState(false);
+
   const form = useForm<RoleSchemaType>({
     defaultValues: {
       name: '',
@@ -76,16 +80,16 @@ const RoleInviteDialog = ({
     },
     mode: 'onSubmit',
   });
-
   useEffect(() => {
+    if (!open) return;
     const getPermissions = async () => {
+      console.log("permissions api called");
       const res: any = await dispatch(fetchPermissionsDropdown());
       setPermissionList(res?.payload?.permissions || []);
     };
 
     getPermissions();
-  }, [dispatch]);
-
+  }, [open, dispatch]);
   useEffect(() => {
     if (!open) {
       form.reset();
@@ -93,8 +97,9 @@ const RoleInviteDialog = ({
     }
   }, [open, form]);
 
+  // set edit data AFTER permissionList loaded
   useEffect(() => {
-    if (open && editData) {
+    if (open && editData && permissionList.length > 0) {
       const permissionIds =
         editData?.permissions?.map((p: any) => p.id) ?? [];
 
@@ -105,8 +110,9 @@ const RoleInviteDialog = ({
 
       setSelectedPermissions(permissionIds);
     }
-  }, [open, editData, form]);
+  }, [open, editData, permissionList]);
 
+  // sync permissions with form
   useEffect(() => {
     form.setValue('permissions', selectedPermissions, {
       shouldDirty: true,
@@ -122,6 +128,7 @@ const RoleInviteDialog = ({
         : [...prev, permissionId]
     );
   };
+
   const handleSubmit = async (values: RoleSchemaType) => {
     setIsProcess(true);
 
@@ -136,21 +143,29 @@ const RoleInviteDialog = ({
     if (isEdit) {
       res = await dispatch(updateRoles(payload));
     } else {
-      res = await dispatch(createRole({ name: values.name, permissions: selectedPermissions, }));
+      res = await dispatch(
+        createRole({
+          name: values.name,
+          permissions: selectedPermissions,
+        })
+      );
     }
-    if (res?.meta?.requestStatus === "fulfilled") {
+
+    if (res?.meta?.requestStatus === 'fulfilled') {
       await dispatch(fetchRoles({ page: 1, per_page: 10 }));
+
       closeDialog();
+
       toast.success(
         isEdit
-          ? "Roles Update Successfully"
-          : "Role Created Successfully",
+          ? 'Roles Update Successfully'
+          : 'Role Created Successfully',
         {
-          position: "top-center",
+          position: 'top-center',
           style: {
-            background: "#16a34a",
-            color: "#fff",
-            border: "none",
+            background: '#16a34a',
+            color: '#fff',
+            border: 'none',
           },
         }
       );
@@ -158,9 +173,11 @@ const RoleInviteDialog = ({
 
     setIsProcess(false);
   };
+
   const {
-    formState: { isDirty }
+    formState: { isDirty },
   } = form;
+
   return (
     <Dialog open={open} onOpenChange={closeDialog}>
       <DialogContent showCloseButton={false}>
@@ -168,10 +185,9 @@ const RoleInviteDialog = ({
           <DialogTitle>
             {isEdit ? 'Edit Role' : 'Add Role'}
           </DialogTitle>
-          <DialogDescription>
-
-          </DialogDescription>
+          <DialogDescription></DialogDescription>
         </DialogHeader>
+
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(handleSubmit)}
@@ -202,18 +218,23 @@ const RoleInviteDialog = ({
               render={() => (
                 <FormItem>
                   <FormLabel>Permissions</FormLabel>
+
                   <div className="flex flex-wrap gap-1.5 text-sm text-muted-foreground border border-input rounded-md px-3 py-3 max-h-52 overflow-y-auto">
                     {selectedPermissions.length > 0 ? (
                       selectedPermissions.map((permissionId) => {
                         const permission = permissionList.find(
                           (p: any) => p.id === permissionId
                         );
+
+                        if (!permission) return null;
+
                         return (
                           <Badge
                             key={permissionId}
                             variant="secondary"
                           >
-                            {permission?.name}
+                            {permission.name}
+
                             <BadgeButton
                               onClick={() =>
                                 togglePermissionSelection(
@@ -296,6 +317,7 @@ const RoleInviteDialog = ({
                 </FormItem>
               )}
             />
+
             <DialogFooter>
               <Button
                 type="button"
@@ -310,16 +332,19 @@ const RoleInviteDialog = ({
                 disabled={
                   isProcess ||
                   (isEdit
-                    ? !isDirty && selectedPermissions.length === (editData?.permissions?.length || 0)
-                    : !form.watch("name") || selectedPermissions.length === 0)
+                    ? !isDirty &&
+                    selectedPermissions.length ===
+                    (editData?.permissions?.length || 0)
+                    : !form.watch('name') ||
+                    selectedPermissions.length === 0)
                 }
               >
                 {isProcess ? (
                   <LoaderCircleIcon className="animate-spin" />
                 ) : isEdit ? (
-                  "Update Role"
+                  'Update Role'
                 ) : (
-                  "Create Role"
+                  'Create Role'
                 )}
               </Button>
             </DialogFooter>

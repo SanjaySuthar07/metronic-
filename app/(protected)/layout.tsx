@@ -15,9 +15,7 @@ export default function Layout({ children }: { children: ReactNode }) {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const isMobile = useIsMobile();
-
   const [loadingAuth, setLoadingAuth] = useState(true);
-
   useEffect(() => {
     const checkAuth = async () => {
       const token = localStorage.getItem("token");

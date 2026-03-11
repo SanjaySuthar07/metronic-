@@ -25,7 +25,7 @@ interface UserDeleteDialogProps {
   tenant_id: any;
 }
 
-const UserDeleteDialog = ({
+const AgentDeleteDialog = ({
   open,
   closeDialog,
   user,
@@ -98,4 +98,4 @@ const UserDeleteDialog = ({
   );
 };
 
-export default UserDeleteDialog;
+export default AgentDeleteDialog;

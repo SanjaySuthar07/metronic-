@@ -10,12 +10,15 @@ import { Button } from '@/components/ui/button';
 
 import {
   Sheet,
+  SheetBody,
+  SheetClose,
   SheetContent,
-  SheetFooter,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
+
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 import {
   Form,
@@ -28,11 +31,9 @@ import {
 
 import { Input } from '@/components/ui/input';
 
-import { Container } from '@/components/common/container';
-
 const LoginSchema = z.object({
-  key: z.string().min(3, "key is required"),
-  value: z.string().min(3, "Value is required"),
+  key: z.string().min(3, 'Key is required'),
+  value: z.string().min(3, 'Value is required'),
 });
 
 type LoginSchemaType = z.infer<typeof LoginSchema>;
@@ -52,92 +53,105 @@ export function SettingSheet({ trigger }: { trigger: ReactNode }) {
   } = form;
 
   const handleSubmit = async (values: LoginSchemaType) => {
-    console.log("Form Data", values);
+    console.log('Form Data', values);
   };
 
   return (
-    <Sheet>
-      <SheetTrigger asChild>{trigger}</SheetTrigger>
+    <Sheet
+      onOpenChange={(open) => {
+        if (!open) {
+          form.reset({
+            key: '',
+            value: '',
+          });
+        }
+      }}
+    >
+      <SheetTrigger asChild>
+        {trigger}
+      </SheetTrigger>
 
-      <SheetContent
-        side="right"
-        className="
-  p-0 gap-0
-  sm:w-[400px] h-[290px]
-  sm:max-w-none
-  top-1/2
-  right-1/2
-  translate-x-1/2
-  -translate-y-1/2
-  h-auto
-  rounded-lg
-data-[state=open]:animate-out
-data-[state=closed]:animate-out
-data-[state=open]:slide-out-from-right 
-data-[state=closed]:slide-out-to-right">
-        <SheetHeader className="mb-0">
-          <SheetTitle className="p-3">
+      <SheetContent className="p-0 gap-0 sm:w-[500px] sm:max-w-none inset-5 start-auto h-auto rounded-lg [&_[data-slot=sheet-close]]:top-4.5 [&_[data-slot=sheet-close]]:end-5">
+
+        <SheetHeader>
+          <SheetTitle className="p-4">
             Settings
           </SheetTitle>
         </SheetHeader>
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(handleSubmit)}
-            className="space-y-6 p-5"
-          >
-            <FormField
-              control={form.control}
-              name="key"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Key<span className='text-red-500'>*</span></FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Enter Key"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="value"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Value<span className='text-red-500'>*</span> </FormLabel>
-                  <FormControl>
-                    <Input
-                      type="text"
-                      placeholder="Enter Value"
-                      {...field}
-                    />
-                  </FormControl>
 
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <SheetFooter className=" grid grid-cols-2 gap-2.5">
-              <Button variant="outline">Cancel</Button>
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <LoaderCircleIcon className="animate-spin" />
-                ) : (
-                  "Submit"
-                )}
-              </Button>
-            </SheetFooter>
-          </form>
-        </Form>
+        <SheetBody className="p-0">
+
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleSubmit)}>
+
+              <ScrollArea className="h-[calc(100vh-10.5rem)] p-6">
+                <div className="space-y-6">
+                  <FormField
+                    control={form.control}
+                    name="key"
+                    render={({ field }) => (
+                      <FormItem >
+                        <FormLabel>
+                          Key <span className="text-red-500">*</span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter Key" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="value"
+                    render={({ field }) => (
+                      <FormItem >
+                        <FormLabel>
+                          Value <span className="text-red-500">*</span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter Value" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                </div>
+
+                <div className="flex justify-end gap-3 pt-8">
+
+                  <SheetClose asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => form.reset()}
+                    >
+                      Cancel
+                    </Button>
+                  </SheetClose>
+
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting && (
+                      <LoaderCircleIcon className="animate-spin mr-2" />
+                    )}
+                    Submit
+                  </Button>
+
+                </div>
+
+              </ScrollArea>
+
+            </form>
+          </Form>
+
+        </SheetBody>
 
       </SheetContent>
-
     </Sheet>
   );
 }

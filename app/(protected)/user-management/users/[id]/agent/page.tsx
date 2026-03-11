@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import UserList from './components/user-list';
+import AgentList from './components/agent-list';
 export const metadata: Metadata = {
   title: 'Users',
   description: 'Manage users.',
@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 export default async function Page() {
   return (
     <>
-      <UserList />
+      <AgentList />
     </>
   );
 }

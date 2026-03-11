@@ -108,7 +108,6 @@ const UserAddDialog = ({
     }
   }, [open, isEdit, editData, roles]);
   const handleSubmit = async (values: UserAddSchemaType) => {
-    console.log('submit values');
     setIsProcessing(true);
 
     try {
@@ -124,7 +123,6 @@ const UserAddDialog = ({
       const result: any = await dispatch(updateUser(payload) as any);
       if (updateUser.fulfilled.match(result)) {
         if (isProfile) {
-          console.log(editData?.id)
           dispatch(fetchUserDetail(editData));
         } else {
           dispatch(fetchUsers({ page: 1, per_page: 10 }) as any);

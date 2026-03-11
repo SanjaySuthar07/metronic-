@@ -74,33 +74,9 @@ export const MENU_SIDEBAR: MenuConfig = [
     ],
   },
   {
-    title: 'Inveter',
+    title: 'Invite',
     icon: Users,
-    children: [
-      // {
-      //   title: 'Checkout',
-      //   children: [
-      //     {
-      //       title: 'Order Summary',
-      //       path: '/store-client/checkout/order-summary',
-      //     },
-      //     {
-      //       title: 'Shipping Info',
-      //       path: '/store-client/checkout/shipping-info',
-      //     },
-      //     {
-      //       title: 'Payment Method',
-      //       path: '/store-client/checkout/payment-method',
-      //     },
-      //     {
-      //       title: 'Order Placed',
-      //       path: '/store-client/checkout/order-placed',
-      //     },
-      //   ],
-      // },
-      { title: 'Dark Side ', path: '/store-client/my-orders' },
-      { title: 'Empty Dashboard', path: '/store-client/order-receipt' },
-    ],
+    path: '/invite'
   },
 ];
 

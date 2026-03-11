@@ -135,11 +135,8 @@ export default function Page() {
 
     return (
         <Suspense>
-
             <Form {...form}>
-
                 <form onSubmit={handleSubmit} className="block w-full space-y-5">
-
                     <div>
                         <h1 className="text-2xl font-semibold tracking-tight text-center ">
                             Sign Up
@@ -155,7 +152,6 @@ export default function Page() {
                             </Link>
                         </div>
                     </div>
-
                     {error && (
                         <Alert variant="destructive">
                             <AlertIcon>
@@ -164,7 +160,6 @@ export default function Page() {
                             <AlertTitle>{error}</AlertTitle>
                         </Alert>
                     )}
-
                     <FormField
                         control={form.control}
                         name="name"
@@ -180,7 +175,6 @@ export default function Page() {
                             </FormItem>
                         )}
                     />
-
                     <FormField
                         control={form.control}
                         name="email"

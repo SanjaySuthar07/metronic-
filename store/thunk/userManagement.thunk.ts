@@ -103,6 +103,12 @@ export const fetchRoles = createAsyncThunk(
     try {
       const response = await api.get("/roles", {
         params: {
+          user_type: payload?.user_type,
+          page: payload?.page,
+          limit: payload?.per_page,
+          search: payload?.search,
+          sort: payload?.sort,
+          dir: payload?.dir,
           tenant_id: payload?.tenant_id,
         },
       });
@@ -119,7 +125,6 @@ export const fetchRoleDetail = createAsyncThunk(
   "users/fetchRoleDetail",
   async (payload: any, { rejectWithValue }) => {
     try {
-
       const response = await api.get(`/roles/${payload.id}`, {
         params: {
           tenant_id: payload?.tenant_id
@@ -184,7 +189,6 @@ export const createRole = createAsyncThunk(
         permissions: payload.permissions,
         tenant_id: payload.tenant_id
       });
-
       return response.data;
     } catch (error: any) {
       const message =
@@ -201,11 +205,12 @@ export const createRole = createAsyncThunk(
 
 export const fetchPermissionsDropdown = createAsyncThunk(
   "users/fetchPermissionsDropdown",
-  async (_, { rejectWithValue }) => {
+  async (payload: any, { rejectWithValue }) => {
     try {
       const response = await api.get("/permissions", {
         params: {
-          select: true
+          select: true,
+          ...(payload?.tenant_id && { tenant_id: payload.tenant_id })
         },
       });
       return response.data;

@@ -137,6 +137,7 @@ const RolesList = () => {
     try {
       const res: any = await dispatch(fetchRoleDetail({ id }));
       if (res?.payload?.role) {
+        
         setEditData(res.payload.role);
         setIsEdit(true);
         if (type == "edit") {
@@ -204,7 +205,7 @@ const RolesList = () => {
             ))}
             {permissions.length > 3 && (
               <span className="text-muted-foreground text-xs ms-1">
-                {permissions.length} more
+                {permissions.length - 3} more
               </span>
             )}
           </div>
