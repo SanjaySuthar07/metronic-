@@ -125,7 +125,6 @@ export function Header() {
           !mobileMode && <MegaMenu />
         )}
 
-        {/* HeaderTopbar */}
         <div className="flex items-center gap-3">
 
           <>
