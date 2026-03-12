@@ -77,7 +77,7 @@ const userManagementSlice = createSlice({
       })
       .addCase(fetchUserDetail.fulfilled, (state, action) => {
         state.loadingUserDetail = false;
-        if (action.payload.user.tenant != null) {
+        if (action.payload.user.tenant_id != null) {
           state.userDetail = action.payload.user;
         }
       })
