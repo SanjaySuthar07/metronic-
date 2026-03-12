@@ -1,7 +1,7 @@
 'use client';
 
-import { ReactNode } from 'react';
-import { useForm } from 'react-hook-form';
+import { ReactNode, useEffect } from 'react';
+import { useForm, useFieldArray } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { LoaderCircleIcon } from 'lucide-react';
@@ -30,40 +30,94 @@ import {
 } from '@/components/ui/form';
 
 import { Input } from '@/components/ui/input';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchSettings, updateSettings } from '@/store/thunk/setting.thunk';
+import { AppDispatch } from '@/store';
+import { toast } from 'sonner';
 
-const LoginSchema = z.object({
-  key: z.string().min(3, 'Key is required'),
-  value: z.string().min(3, 'Value is required'),
+const SettingsSchema = z.object({
+  settings: z.array(
+    z.object({
+      origId: z.number().optional(),
+      key: z.string(),
+      value: z.string().min(1, 'Value is required'),
+    })
+  ),
 });
 
-type LoginSchemaType = z.infer<typeof LoginSchema>;
+type SettingsSchemaType = z.infer<typeof SettingsSchema>;
 
 export function SettingSheet({ trigger }: { trigger: ReactNode }) {
+  const dispatch = useDispatch<AppDispatch>();
+  const { setting } = useSelector((s: any) => s.settings);
 
-  const form = useForm<LoginSchemaType>({
-    resolver: zodResolver(LoginSchema),
+  const form = useForm<SettingsSchemaType>({
+    resolver: zodResolver(SettingsSchema),
     defaultValues: {
-      key: '',
-      value: '',
+      settings: [],
     },
+  });
+
+  const { fields } = useFieldArray({
+    control: form.control,
+    name: 'settings',
   });
 
   const {
     formState: { isSubmitting },
   } = form;
 
-  const handleSubmit = async (values: LoginSchemaType) => {
-    console.log('Form Data', values);
+  const handleSubmit = async (values: SettingsSchemaType) => {
+    const payload = {
+      settings: values.settings.map((s) => ({
+        id: s.origId,
+        key: s.key,
+        value: s.value,
+      })),
+    };
+    const res = await dispatch(updateSettings(payload));
+    // show toast from response or generic message
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const payloadRes: any = (res as any)?.payload;
+    if (payloadRes?.message) {
+      toast.success(payloadRes.message);
+    } else {
+      toast.success('Settings updated');
+    }
+    // refresh list
+    dispatch(fetchSettings());
   };
 
+  useEffect(() => {
+    dispatch(fetchSettings());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (setting && Array.isArray(setting)) {
+      form.reset({
+        settings: setting.map((s: any) => ({
+          origId: s.id,
+          key: s.key,
+          value: s.value,
+        })),
+      });
+    }
+  }, [setting]);
+
+  const humanizeKey = (k?: string) => {
+    if (!k) return '';
+    return k
+      .toString()
+      .replace(/_/g, ' ')
+      .split(' ')
+      .map((w) => (w.length ? w[0].toUpperCase() + w.slice(1) : w))
+      .join(' ');
+  };
   return (
     <Sheet
       onOpenChange={(open) => {
         if (!open) {
-          form.reset({
-            key: '',
-            value: '',
-          });
+          form.reset({ settings: setting?.map((s: any) => ({ origId: s.id, key: s.key, value: s.value })) ?? [] });
         }
       }}
     >
@@ -83,40 +137,33 @@ export function SettingSheet({ trigger }: { trigger: ReactNode }) {
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit)}>
+        <ScrollArea className="h-[calc(100vh-10.5rem)] p-6">
 
-              <ScrollArea className="h-[calc(100vh-10.5rem)] p-6">
                 <div className="space-y-6">
-                  <FormField
-                    control={form.control}
-                    name="key"
-                    render={({ field }) => (
-                      <FormItem >
-                        <FormLabel>
-                          Key <span className="text-red-500">*</span>
-                        </FormLabel>
-                        <FormControl>
-                          <Input placeholder="Enter Key" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="value"
-                    render={({ field }) => (
-                      <FormItem >
-                        <FormLabel>
-                          Value <span className="text-red-500">*</span>
-                        </FormLabel>
-                        <FormControl>
-                          <Input placeholder="Enter Value" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  {fields.map((field, index) => (
+                    <div key={field.id}>
+                      <input
+                        type="hidden"
+                        {...form.register(`settings.${index}.origId` as const)}
+                        value={field.origId}
+                      />
+                      <FormField
+                        control={form.control}
+                        name={`settings.${index}.value` as const}
+                        render={({ field: f }) => (
+                          <FormItem>
+                            <FormLabel>
+                              {humanizeKey(field.key)} <span className="text-red-500">*</span>
+                            </FormLabel>
+                            <FormControl>
+                              <Input placeholder="Enter Value" {...f} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  ))}
 
                 </div>
 
