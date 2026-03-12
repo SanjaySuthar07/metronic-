@@ -67,7 +67,6 @@ const userManagementSlice = createSlice({
 
       .addCase(fetchUsers.fulfilled, (state, action) => {
         state.loadingUsers = false;
-
         state.users.data = action.payload.users.data;
         state.users.total = action.payload.users.total;
         state.users.currentPage = action.payload.users.current_page;
@@ -94,11 +93,10 @@ const userManagementSlice = createSlice({
 
       .addCase(fetchRoles.fulfilled, (state, action) => {
         state.loadingRoles = false;
-
-        state.roles.data = action.payload.roles.data;
-        state.roles.total = action.payload.roles.total;
-        state.roles.currentPage = action.payload.roles.current_page;
-        state.roles.perPage = action.payload.roles.per_page;
+        state.roles.data = action?.payload?.roles?.data;
+        state.roles.total = action?.payload?.roles?.total;
+        state.roles.currentPage = action?.payload?.roles?.current_page;
+        state.roles.perPage = action?.payload?.roles?.per_page;
       })
 
       .addCase(fetchPermissions.pending, (state) => {

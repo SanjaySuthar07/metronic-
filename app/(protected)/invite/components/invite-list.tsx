@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 import {
   ColumnDef,
   getCoreRowModel,
@@ -45,11 +45,19 @@ import {
 import { useRouter } from 'next/navigation';
 import InviteAddDialog from './invite-add-dialog';
 import InviteDeleteDialog from './role-delete-dialog';
+import { useDispatch } from 'react-redux';
+import { fetchInvitation } from '@/store/thunk/invite.thunk';
 
 const roles = [
   { id: 1, name: 'Admin' },
   { id: 2, name: 'Agent' },
   { id: 3, name: 'Agency' },
+];
+
+const status = [
+  { id: 1, name: 'Accepted' },
+  { id: 2, name: 'Pending' },
+  { id: 3, name: 'Rejected' },
 ];
 
 const initialUsers = [
@@ -97,7 +105,6 @@ const DataGridToolbar = ({
             className="ps-9 w-full sm:w-64"
           />
         </div>
-
         <Select value={selectedRole} onValueChange={onRoleChange}>
           <SelectTrigger className="w-full sm:w-40">
             <SelectValue placeholder="All types" />
@@ -109,6 +116,20 @@ const DataGridToolbar = ({
             {roles.map((role) => (
               <Fragment key={role.id}>
                 <SelectItem value={role.name}>{role.name}</SelectItem>
+              </Fragment>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select value={selectedRole} onValueChange={onRoleChange}>
+          <SelectTrigger className="w-full sm:w-40">
+            <SelectValue placeholder="All types" />
+          </SelectTrigger>
+
+          <SelectContent>
+            <SelectItem value="all">All Status</SelectItem>
+            {status.map((status) => (
+              <Fragment key={status.id}>
+                <SelectItem value={status.name}>{status.name}</SelectItem>
               </Fragment>
             ))}
           </SelectContent>
@@ -126,7 +147,7 @@ const DataGridToolbar = ({
 const InviteList = () => {
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-
+  const dispatch = useDispatch()
   const [isEdit, setIsEdit] = useState(false)
   const [editData, setEditData] = useState<any>(null)
 
@@ -187,7 +208,6 @@ const InviteList = () => {
     }
   }
   const columns = useMemo<ColumnDef<any>[]>(() => [
-
     {
       accessorKey: 'name',
       id: 'name',
@@ -284,12 +304,9 @@ const InviteList = () => {
   ], []);
 
   const table = useReactTable({
-
     columns,
     data: filteredUsers,
-
     pageCount: Math.ceil(filteredUsers.length / pagination.pageSize),
-
     state: {
       pagination,
       sorting,
@@ -302,12 +319,21 @@ const InviteList = () => {
     getSortedRowModel: getSortedRowModel(),
   });
 
+  useEffect(() => {
+    dispatch(fetchInvitation({
+      user_type: "agent",
+      status: "",
+      page: 1,
+      limit: 10,
+      search: "",
+      sort: "",
+      dir: ""
+    }))
+  }, [])
   return (
 
     <DataGrid table={table} recordCount={filteredUsers.length}>
-
       <Card>
-
         <DataGridToolbar
           inputValue={inputValue}
           onInputChange={setInputValue}

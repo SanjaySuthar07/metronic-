@@ -1,12 +1,10 @@
 'use client';
-
 import { useEffect, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { RiCheckboxCircleFill } from '@remixicon/react';
 import { Eye, EyeOff, LoaderCircleIcon } from 'lucide-react';
-
 import { Alert, AlertIcon, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 
@@ -38,119 +36,58 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-
-import { UserAddSchema, UserAddSchemaType } from '../forms/invite-add-schema';
-
-const roles = [
-  { id: 1, name: 'Admin' },
-  { id: 2, name: 'Agent' },
-  { id: 3, name: 'Agency' },
+import { InviteAddSchema, InviteAddSchemaType } from '../forms/invite-add-schema';
+import { useDispatch } from 'react-redux';
+import { fetchAgency } from '@/store/thunk/invite.thunk';
+const type = [
+  { id: "1", name: 'Admin' },
+  { id: "2", name: 'Agent' },
 ];
-
-const InviteAddDialog = ({
-  open,
-  closeDialog,
-  isEdit,
-  editData,
-  onSave,
-}: {
-  open: boolean;
-  closeDialog: () => void;
-  isEdit: boolean;
-  editData: any;
-  onSave: (data: any) => void;
-}) => {
+const InviteAddDialog = ({ open, closeDialog, isEdit, editData, onSave, }: any) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
-
-  const form = useForm<UserAddSchemaType>({
-    resolver: zodResolver(UserAddSchema),
+  const [isAgencyDropDownOpen, setIsAgencyDropDownOpen] = useState(false)
+  const [agency, setAgency] = useState([])
+  const dispatch = useDispatch()
+  const form = useForm<InviteAddSchemaType>({
+    resolver: zodResolver(InviteAddSchema),
     defaultValues: {
+      typeID: "",
+      agencyID: "",
       name: '',
       email: '',
-      roleId: '',
+      password: '',
+      confirmPassword: "",
     },
   });
-
   useEffect(() => {
-
     if (!open) return;
-
-    if (isEdit && editData) {
-
-      const role = roles.find(
-        (r) => r.name === editData.user_type
-      );
-
-      form.reset({
-        name: editData.name || '',
-        email: editData.email || '',
-        password: "",
-        roleId: role?.id || '',
-      });
-
-    } else {
-
-      form.reset({
-        name: '',
-        email: '',
-        roleId: '',
-      });
-
+    form.reset({
+      typeID: "",
+      agencyID: "",
+      name: '',
+      email: '',
+      password: '',
+      confirmPassword: "",
+    });
+  }, [open]);
+  useEffect(() => {
+    const getAgency = async () => {
+      const agency = await dispatch(fetchAgency())
+      setAgency(agency?.payload?.agency)
     }
-
-  }, [open, isEdit, editData]);
-
-  const handleSubmit = async (values: UserAddSchemaType) => {
-    setIsProcessing(true);
-    try {
-      await new Promise((res) => setTimeout(res, 500));
-      const role = roles.find((r) => r.id === values.roleId);
-      const payload = {
-        id: isEdit ? editData.id : Date.now(),
-        name: values.name,
-        email: values.email,
-        user_type: role?.name || '',
-        created_at: isEdit ? editData.created_at : new Date().toISOString(),
-      };
-
-      onSave(payload);
-
-      toast.custom(
-        () => (
-          <Alert variant="mono" icon="success">
-            <AlertIcon>
-              <RiCheckboxCircleFill />
-            </AlertIcon>
-            <AlertTitle>
-              {isEdit
-                ? 'User updated successfully'
-                : 'User added successfully'}
-            </AlertTitle>
-          </Alert>
-        ),
-        { position: 'top-center' }
-      );
-
-      closeDialog();
-
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsProcessing(false);
-    }
-
+    getAgency()
+  }, [])
+  const handleSubmit = async (values: InviteAddSchemaType) => {
+    console.log(values)
   };
-
   return (
-
     <Dialog
       open={open}
       onOpenChange={(value) => {
         if (!value) closeDialog();
       }}
     >
-
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
@@ -162,18 +99,93 @@ const InviteAddDialog = ({
             <DialogBody className="pt-2.5 space-y-6">
               <FormField
                 control={form.control}
-                name="name"
+                name="typeID"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Name<span className="text-red-500">*</span></FormLabel>
+                    <FormLabel>Type<span className="text-red-500">*</span></FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter name" {...field} />
+                      <Select
+                        onValueChange={(value) => {
+                          field.onChange(value)
+                          if (Number(value) == 2) {
+                            setIsAgencyDropDownOpen(true)
+                          } else {
+                            form.setValue("agencyID", "")
+                            setIsAgencyDropDownOpen(false)
+                          }
+                        }}
+                        value={field.value}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select Type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            {type.map((type) => (
+                              <SelectItem
+                                key={type.id}
+                                value={type.id}
+                              >
+                                {type.name}
+                              </SelectItem>
+                            ))}
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+              {isAgencyDropDownOpen ?
+                < FormField
+                  control={form.control}
+                  name="agencyID"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Agency<span className="text-red-500">*</span></FormLabel>
+                      <FormControl>
+                        <Select
+                          onValueChange={(value) => field.onChange(value)}
+                          value={field.value}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select Agency" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectGroup>
+                              {agency.map((agency) => (
+                                <SelectItem
+                                  key={agency.id}
+                                  value={agency.id}
+                                >
+                                  {agency.agency_name}
+                                </SelectItem>
 
+                              ))}
+
+                            </SelectGroup>
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                /> : ""
+              }
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Name<span className="text-red-500">*</span></FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter Your Name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <FormField
                 control={form.control}
                 name="email"
@@ -183,7 +195,7 @@ const InviteAddDialog = ({
                     <FormControl>
                       <Input
                         disabled={isEdit}
-                        placeholder="Enter email"
+                        placeholder="Enter Your Email"
                         {...field}
                       />
                     </FormControl>
@@ -191,7 +203,6 @@ const InviteAddDialog = ({
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={form.control}
                 name="password"
@@ -201,13 +212,46 @@ const InviteAddDialog = ({
                     <FormLabel>
                       Password <span className="text-red-500">*</span>
                     </FormLabel>
+                    <div className="relative">
+                      <FormControl>
+                        <Input
+                          type={passwordVisible ? 'text' : 'password'}
+                          placeholder="Enter your password"
+                          autoComplete="current-password"
+                          className="pr-10"
+                          {...field}
+                        />
+                      </FormControl>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setPasswordVisible(!passwordVisible)}
+                        className="absolute right-1 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary"
+                      >
+                        {passwordVisible ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </Button>
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+
+                    <FormLabel>
+                      Confirm Password <span className="text-red-500">*</span>
+                    </FormLabel>
 
                     <div className="relative">
 
                       <FormControl>
                         <Input
                           type={passwordVisible ? 'text' : 'password'}
-                          placeholder="Enter your password"
+                          placeholder="Confirm Your  Password"
                           autoComplete="current-password"
                           className="pr-10"
                           {...field}
@@ -229,45 +273,7 @@ const InviteAddDialog = ({
                   </FormItem>
 
                 )}
-
               />
-
-
-              <FormField
-                control={form.control}
-                name="roleId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Type<span className="text-red-500">*</span></FormLabel>
-                    <FormControl>
-                      <Select
-                        onValueChange={(value) => field.onChange(value)}
-                        value={field.value}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select Type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectGroup>
-                            {roles.map((role) => (
-                              <SelectItem
-                                key={role.id}
-                                value={role.id}
-                              >
-                                {role.name}
-                              </SelectItem>
-
-                            ))}
-
-                          </SelectGroup>
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
             </DialogBody>
             <DialogFooter>
               <Button
@@ -284,7 +290,7 @@ const InviteAddDialog = ({
                 {isProcessing && (
                   <LoaderCircleIcon className="animate-spin mr-2" />
                 )}
-                Invite user
+                Submit
               </Button>
             </DialogFooter>
           </form>

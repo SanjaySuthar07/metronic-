@@ -137,7 +137,7 @@ const RolesList = () => {
     try {
       const res: any = await dispatch(fetchRoleDetail({ id }));
       if (res?.payload?.role) {
-        
+
         setEditData(res.payload.role);
         setIsEdit(true);
         if (type == "edit") {
