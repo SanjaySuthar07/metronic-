@@ -40,8 +40,9 @@ import { InviteAddSchema, InviteAddSchemaType } from '../forms/invite-add-schema
 import { useDispatch } from 'react-redux';
 import { fetchAgency } from '@/store/thunk/invite.thunk';
 const type = [
-  { id: "1", name: 'Admin' },
-  { id: "2", name: 'Agent' },
+  { id: "admin", name: 'Admin' },
+  { id: "agency", name: 'Agency' },
+  { id: "agent", name: 'Agent' },
 ];
 const InviteAddDialog = ({ open, closeDialog, isEdit, editData, onSave, }: any) => {
   const [isProcessing, setIsProcessing] = useState(false);
@@ -107,7 +108,7 @@ const InviteAddDialog = ({ open, closeDialog, isEdit, editData, onSave, }: any) 
                       <Select
                         onValueChange={(value) => {
                           field.onChange(value)
-                          if (Number(value) == 2) {
+                          if (value == "agent") {
                             setIsAgencyDropDownOpen(true)
                           } else {
                             form.setValue("agencyID", "")

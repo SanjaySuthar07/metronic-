@@ -28,7 +28,7 @@ export const InviteAddSchema = z
   })
   .refine(
     (data) => {
-      if (data.typeID === "2" && !data.agencyID) {
+      if (data.typeID === "agent" && !data.agencyID) {
         return false;
       }
       return true;
