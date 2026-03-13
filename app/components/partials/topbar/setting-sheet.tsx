@@ -1,25 +1,26 @@
 'use client';
- 
+
 import { ReactNode, useEffect } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { LoaderCircleIcon } from 'lucide-react';
- 
+
 import { Button } from '@/components/ui/button';
- 
+
 import {
   Sheet,
   SheetBody,
   SheetClose,
   SheetContent,
+  SheetFooter,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
- 
+
 import { ScrollArea } from '@/components/ui/scroll-area';
- 
+
 import {
   Form,
   FormControl,
@@ -28,13 +29,13 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
- 
+
 import { Input } from '@/components/ui/input';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchSettings, updateSettings } from '@/store/thunk/setting.thunk';
 import { AppDispatch } from '@/store';
 import { toast } from 'sonner';
- 
+
 const SettingsSchema = z.object({
   settings: z.array(
     z.object({
@@ -44,29 +45,29 @@ const SettingsSchema = z.object({
     })
   ),
 });
- 
+
 type SettingsSchemaType = z.infer<typeof SettingsSchema>;
- 
+
 export function SettingSheet({ trigger }: { trigger: ReactNode }) {
   const dispatch = useDispatch<AppDispatch>();
   const { setting } = useSelector((s: any) => s.settings);
- 
+
   const form = useForm<SettingsSchemaType>({
     resolver: zodResolver(SettingsSchema),
     defaultValues: {
       settings: [],
     },
   });
- 
+
   const { fields } = useFieldArray({
     control: form.control,
     name: 'settings',
   });
- 
+
   const {
     formState: { isSubmitting },
   } = form;
- 
+
   const handleSubmit = async (values: SettingsSchemaType) => {
     const payload = {
       settings: values.settings.map((s) => ({
@@ -87,8 +88,8 @@ export function SettingSheet({ trigger }: { trigger: ReactNode }) {
     // refresh list
     dispatch(fetchSettings());
   };
- 
- 
+
+
   useEffect(() => {
     if (setting && Array.isArray(setting)) {
       form.reset({
@@ -100,7 +101,7 @@ export function SettingSheet({ trigger }: { trigger: ReactNode }) {
       });
     }
   }, [setting]);
- 
+
   const humanizeKey = (k?: string) => {
     if (!k) return '';
     return k
@@ -123,21 +124,21 @@ export function SettingSheet({ trigger }: { trigger: ReactNode }) {
       <SheetTrigger asChild>
         {trigger}
       </SheetTrigger>
- 
+
       <SheetContent className="p-0 gap-0 sm:w-[500px] sm:max-w-none inset-5 start-auto h-auto rounded-lg [&_[data-slot=sheet-close]]:top-4.5 [&_[data-slot=sheet-close]]:end-5">
- 
+
         <SheetHeader>
           <SheetTitle className="p-4">
             Settings
           </SheetTitle>
         </SheetHeader>
- 
+
         <SheetBody className="p-0">
- 
+
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit)}>
-        <ScrollArea className="h-[calc(100vh-10.5rem)] p-6">
- 
+              <ScrollArea className="h-[calc(100vh-10.5rem)] p-6">
+
                 <div className="space-y-6">
                   {fields.map((field, index) => (
                     <div key={field.id}>
@@ -163,12 +164,13 @@ export function SettingSheet({ trigger }: { trigger: ReactNode }) {
                       />
                     </div>
                   ))}
- 
+
                 </div>
- 
-                <div className="flex justify-end gap-3 pt-8">
- 
-                  <SheetClose asChild>
+
+
+              </ScrollArea>
+                <SheetFooter className="border-t border-border p-5 grid grid-cols-2 gap-2.5">
+                    <SheetClose asChild>
                     <Button
                       type="button"
                       variant="outline"
@@ -177,7 +179,7 @@ export function SettingSheet({ trigger }: { trigger: ReactNode }) {
                       Cancel
                     </Button>
                   </SheetClose>
- 
+
                   <Button
                     type="submit"
                     disabled={isSubmitting}
@@ -187,18 +189,14 @@ export function SettingSheet({ trigger }: { trigger: ReactNode }) {
                     )}
                     Submit
                   </Button>
- 
-                </div>
- 
-              </ScrollArea>
- 
+                </SheetFooter>
+
             </form>
           </Form>
- 
+
         </SheetBody>
- 
+
       </SheetContent>
     </Sheet>
   );
 }
- 
