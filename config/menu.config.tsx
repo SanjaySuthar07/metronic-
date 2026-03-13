@@ -62,7 +62,7 @@ export const MENU_SIDEBAR: any = [
       {
         title: 'Users',
         path: '/user-management/users',
-        permission: ['agent-access'],
+        permission: ['agent-access', 'agency-access'],
       },
       {
         title: 'Roles',

@@ -44,7 +44,6 @@ import { toast } from 'sonner'
 
 const type = [
   { id: 'admin', name: 'Admin' },
-  { id: 'agency', name: 'Agency' },
   { id: 'agent', name: 'Agent' },
 ]
 
@@ -53,15 +52,16 @@ const InviteAddDialog = ({
   closeDialog,
   isEdit,
   editData,
+  onSuccess
 }: any) => {
 
   const dispatch = useDispatch()
 
-  const [isProcessing, setIsProcessing] = useState(false)
   const [passwordVisible, setPasswordVisible] = useState(false)
   const [isAgencyDropDownOpen, setIsAgencyDropDownOpen] = useState(false)
   const [agency, setAgency] = useState<any[]>([])
   const [isSubmit, setIsSubmit] = useState(false)
+
   const form = useForm<InviteAddSchemaType>({
     resolver: zodResolver(InviteAddSchema),
     defaultValues: {
@@ -74,7 +74,6 @@ const InviteAddDialog = ({
     },
   })
 
-  // reset form
   useEffect(() => {
     if (open) {
       form.reset({
@@ -89,7 +88,6 @@ const InviteAddDialog = ({
     }
   }, [open])
 
-  // fetch agency
   useEffect(() => {
     const getAgency = async () => {
       const res: any = await dispatch(fetchAgency())
@@ -100,7 +98,9 @@ const InviteAddDialog = ({
   }, [dispatch])
 
   const handleSubmit = async (values: InviteAddSchemaType) => {
+
     setIsSubmit(true)
+
     const payload = {
       name: values.name,
       email: values.email,
@@ -108,16 +108,22 @@ const InviteAddDialog = ({
       user_type: values.user_type,
       tenant_id: values.tenant_id,
     }
-    console.log('SUBMIT DATA', payload)
+
     const res: any = await dispatch(createInviteUser(payload))
+
     if (createInviteUser.fulfilled.match(res)) {
+
       toast.success("User invited successfully")
+
+      onSuccess?.()   // ⭐ LIST REFRESH
+
       closeDialog()
+
     } else {
       toast.error(res.payload)
     }
+
     setIsSubmit(false)
-    closeDialog()
   }
 
   return (
@@ -131,14 +137,10 @@ const InviteAddDialog = ({
 
         <DialogHeader>
           <DialogTitle>Invite</DialogTitle>
-
-          <DialogDescription>
-          </DialogDescription>
-
+          <DialogDescription />
         </DialogHeader>
 
         <Form {...form}>
-
           <form onSubmit={form.handleSubmit(handleSubmit)}>
 
             <DialogBody className="pt-2.5 space-y-6">
@@ -176,6 +178,7 @@ const InviteAddDialog = ({
                         </SelectTrigger>
 
                         <SelectContent>
+
                           <SelectGroup>
 
                             {type.map((item) => (
@@ -188,6 +191,7 @@ const InviteAddDialog = ({
                             ))}
 
                           </SelectGroup>
+
                         </SelectContent>
 
                       </Select>
@@ -199,7 +203,6 @@ const InviteAddDialog = ({
                   </FormItem>
                 )}
               />
-
 
               {isAgencyDropDownOpen && (
 
@@ -280,7 +283,6 @@ const InviteAddDialog = ({
                 )}
               />
 
-
               <FormField
                 control={form.control}
                 name="email"
@@ -308,7 +310,6 @@ const InviteAddDialog = ({
 
                 )}
               />
-
 
               <FormField
                 control={form.control}
@@ -371,36 +372,15 @@ const InviteAddDialog = ({
                       <span className="text-red-500">*</span>
                     </FormLabel>
 
-                    <div className="relative">
+                    <FormControl>
 
-                      <FormControl>
+                      <Input
+                        type={passwordVisible ? 'text' : 'password'}
+                        placeholder="Confirm Password"
+                        {...field}
+                      />
 
-                        <Input
-                          type={passwordVisible ? 'text' : 'password'}
-                          placeholder="Confirm Password"
-                          className="pr-10"
-                          {...field}
-                        />
-
-                      </FormControl>
-
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() =>
-                          setPasswordVisible(!passwordVisible)
-                        }
-                        className="absolute right-1 top-1/2 -translate-y-1/2"
-                      >
-                        {passwordVisible ? (
-                          <EyeOff size={18} />
-                        ) : (
-                          <Eye size={18} />
-                        )}
-                      </Button>
-
-                    </div>
+                    </FormControl>
 
                     <FormMessage />
 
@@ -408,8 +388,11 @@ const InviteAddDialog = ({
 
                 )}
               />
+
             </DialogBody>
+
             <DialogFooter>
+
               <Button
                 type="button"
                 variant="outline"
@@ -418,10 +401,7 @@ const InviteAddDialog = ({
                 Cancel
               </Button>
 
-              <Button
-                type="submit"
-                disabled={isProcessing}
-              >
+              <Button type="submit">
 
                 {isSubmit && (
                   <LoaderCircleIcon className="animate-spin mr-2" />
@@ -430,9 +410,12 @@ const InviteAddDialog = ({
                 Submit
 
               </Button>
+
             </DialogFooter>
+
           </form>
         </Form>
+
       </DialogContent>
     </Dialog>
   )

@@ -3,7 +3,7 @@
 import React, { use, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { MoveLeft, UserPen, LucideUserKey, HatGlassesIcon, User } from 'lucide-react';
+import { MoveLeft, UserPen } from 'lucide-react';
 
 import {
   Breadcrumb,
@@ -24,11 +24,10 @@ import {
   ToolbarHeading,
   ToolbarTitle,
 } from '@/components/common/toolbar';
-
-import UserHero from './components/user-hero';
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "@/store";
 import { fetchInvitationDetail } from '@/store/thunk/invite.thunk';
+import InviteUserHero from './components/invite-user-hero';
 
 type NavRoutes = Record<
   string,
@@ -39,7 +38,7 @@ type NavRoutes = Record<
   }
 >;
 
-export default function UserLayout({
+export default function InviteUserLayout({
   params,
   children,
 }: {
@@ -63,28 +62,13 @@ export default function UserLayout({
       dispatch(fetchInvitationDetail({ id }));
     }
   }, [id, dispatch]);
-  const { userDetail } = useSelector((state: any) => state.userManagement);
+  const { inviteDetail } = useSelector((state: any) => state.invite);
   const navRoutes = useMemo<NavRoutes>(
     () => ({
       general: {
         title: 'Profile',
         icon: UserPen,
-        path: `/user-management/users/${id}`,
-      },
-      roles: {
-        title: 'roles',
-        icon: User,
-        path: `/user-management/users/${id}/roles`,
-      },
-      permissions: {
-        title: 'Permissions',
-        icon: LucideUserKey,
-        path: `/user-management/users/${id}/permissions`,
-      },
-      agent: {
-        title: 'Agent',
-        icon: HatGlassesIcon,
-        path: `/user-management/users/${id}/agent`,
+        path: `/invite/${id}`,
       },
     }),
     [id],
@@ -104,14 +88,14 @@ export default function UserLayout({
               <BreadcrumbSeparator />
 
               <BreadcrumbItem>
-                <BreadcrumbPage>User Management</BreadcrumbPage>
+                <BreadcrumbPage>Invite</BreadcrumbPage>
               </BreadcrumbItem>
 
               <BreadcrumbSeparator />
 
               <BreadcrumbItem>
                 <BreadcrumbLink href="/user-management/users">
-                  Users
+
                 </BreadcrumbLink>
               </BreadcrumbItem>
             </BreadcrumbList>
@@ -120,15 +104,15 @@ export default function UserLayout({
 
         <ToolbarActions>
           <Button asChild variant="outline">
-            <Link href="/user-management/users">
+            <Link href="/invite">
               <MoveLeft />
-              Back to users
+              Back to Invite
             </Link>
           </Button>
         </ToolbarActions>
       </Toolbar>
 
-      <UserHero user={userDetail} />
+      <InviteUserHero inviteUser={inviteDetail} />
 
       <Tabs value={activeTab}>
         <TabsList variant="line" className="mb-5">

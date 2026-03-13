@@ -41,6 +41,7 @@ import {
 import RoleInviteDialog from './role-form-dialog';
 import RoleDeleteDialog from './role-delete-dialog';
 import RoleViewDialog from './role-view-dialog';
+import { hasPermission } from '@/lib/permissions';
 const DataGridToolbar = ({
   inputValue,
   onInputChange,
@@ -50,6 +51,7 @@ const DataGridToolbar = ({
   onInputChange: (value: string) => void;
   onAddUser: () => void;
 }) => {
+  const { user } = useSelector((s) => s.auth)
 
   return (
     <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -71,10 +73,17 @@ const DataGridToolbar = ({
 
       </div>
 
-      <Button className="bg-primary text-white" onClick={onAddUser}>
-        <Plus className="size-4 mr-1" />
-        Add Role
-      </Button>
+
+      {
+        hasPermission(user, ["tenant-role-create"]) ? (
+          <>
+            <Button className="bg-primary text-white" onClick={onAddUser}>
+              <Plus className="size-4 mr-1" />
+              Add Role
+            </Button>
+          </>
+        ) : ""
+      }
 
     </CardHeader>
   );
@@ -233,13 +242,25 @@ const RolesList = () => {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
-            <DropdownMenuItem onClick={() => handleEditUser(row.original.id, "edit")}>
-              Edit
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => handleEditUser(row.original.id, "view")}>
-              View
-            </DropdownMenuItem>
+            {
+              hasPermission(user, ["tenant-role-edit"]) ? (
+                <>
+                  <DropdownMenuItem onClick={() => handleEditUser(row.original.id, "edit")}>
+                    Edit
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                </>
+              ) : ""
+            }
+            {
+              hasPermission(user, ["tenant-role-show"]) ? (
+                <>
+                  <DropdownMenuItem onClick={() => handleEditUser(row.original.id, "view")}>
+                    View
+                  </DropdownMenuItem>
+                </>
+              ) : ""
+            }
           </DropdownMenuContent>
         </DropdownMenu>
       ),

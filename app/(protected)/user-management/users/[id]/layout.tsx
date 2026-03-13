@@ -26,9 +26,12 @@ import {
 } from '@/components/common/toolbar';
 
 import UserHero from './components/user-hero';
+
 import { useDispatch, useSelector } from "react-redux";
 import { fetchUserDetail } from "@/store/thunk/userManagement.thunk";
 import { AppDispatch } from "@/store";
+
+import { hasPermission } from '@/lib/permissions';
 
 type NavRoutes = Record<
   string,
@@ -36,6 +39,7 @@ type NavRoutes = Record<
     title: string;
     icon: React.FC<React.SVGProps<SVGSVGElement>>;
     path: string;
+    permission?: string;
   }
 >;
 
@@ -46,24 +50,29 @@ export default function UserLayout({
   params: Promise<{ id: string }>;
   children: React.ReactNode;
 }) {
+
   const { id } = use(params);
   const router = useRouter();
   const pathname = usePathname();
-  const activeTab = useMemo(() => {
-    if (pathname.includes('/agent')) return 'agent';
-    else if (pathname.includes('/permissions')) return 'permissions';
-    else if (pathname.includes('/roles')) return 'roles';
-    return 'general';
-  }, [pathname]);
 
   const dispatch = useDispatch<AppDispatch>();
+
+  const { userDetail } = useSelector((state: any) => state.userManagement);
+  const { user } = useSelector((state: any) => state.auth);
+
+  const activeTab = useMemo(() => {
+    if (pathname.includes('/agent')) return 'agent';
+    if (pathname.includes('/permissions')) return 'permissions';
+    if (pathname.includes('/roles')) return 'roles';
+    return 'general';
+  }, [pathname]);
 
   useEffect(() => {
     if (id) {
       dispatch(fetchUserDetail({ id, tenant_id: null }));
     }
   }, [id, dispatch]);
-  const { userDetail } = useSelector((state: any) => state.userManagement);
+
   const navRoutes = useMemo<NavRoutes>(
     () => ({
       general: {
@@ -71,32 +80,41 @@ export default function UserLayout({
         icon: UserPen,
         path: `/user-management/users/${id}`,
       },
+
       roles: {
-        title: 'roles',
+        title: 'Roles',
         icon: User,
         path: `/user-management/users/${id}/roles`,
       },
+
       permissions: {
         title: 'Permissions',
         icon: LucideUserKey,
         path: `/user-management/users/${id}/permissions`,
       },
+
       agent: {
         title: 'Agent',
         icon: HatGlassesIcon,
         path: `/user-management/users/${id}/agent`,
+        permission: "agent-view"
       },
+
     }),
     [id],
   );
 
   return (
     <Container>
+
       <Toolbar>
         <ToolbarHeading>
+
           <ToolbarTitle>User</ToolbarTitle>
+
           <Breadcrumb>
             <BreadcrumbList>
+
               <BreadcrumbItem>
                 <BreadcrumbLink href="/">Home</BreadcrumbLink>
               </BreadcrumbItem>
@@ -114,39 +132,65 @@ export default function UserLayout({
                   Users
                 </BreadcrumbLink>
               </BreadcrumbItem>
+
             </BreadcrumbList>
           </Breadcrumb>
+
         </ToolbarHeading>
 
         <ToolbarActions>
+
           <Button asChild variant="outline">
             <Link href="/user-management/users">
               <MoveLeft />
               Back to users
             </Link>
           </Button>
+
         </ToolbarActions>
       </Toolbar>
 
       <UserHero user={userDetail} />
 
       <Tabs value={activeTab}>
+
         <TabsList variant="line" className="mb-5">
-          {Object.entries(navRoutes).map(
-            ([key, { title, icon: Icon, path }]) => (
+
+          {Object.entries(navRoutes)
+
+            .filter(([key, route]) => {
+
+              // admin user ko sirf profile tab
+              if (user?.user_type === "admin" && key !== "general") {
+                return false;
+              }
+
+              // permission check
+              return hasPermission(user, route.permission);
+
+            })
+
+            .map(([key, { title, icon: Icon, path }]) => (
+
               <TabsTrigger
                 key={key}
                 value={key}
                 onClick={() => router.push(path)}
               >
+
                 <Icon />
                 <span>{title}</span>
+
               </TabsTrigger>
-            ),
-          )}
+
+            ))}
+
         </TabsList>
+
       </Tabs>
+
       {children}
+
     </Container>
   );
 }

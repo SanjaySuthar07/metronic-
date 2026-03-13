@@ -8,7 +8,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/store';
 
-import { AlertCircle, LoaderCircle } from 'lucide-react';
+import { AlertCircle, Eye, EyeOff, LoaderCircle } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -44,6 +44,9 @@ export default function Page() {
   const searchParams = useSearchParams();
   const encryptedData = searchParams.get('data');
   const router = useRouter();
+  const [password, setPassword] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState(false);
+
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -89,16 +92,10 @@ export default function Page() {
         password: values.password,
         password_confirmation: values.confirm_password,
       };
-
       const res = await dispatch(acceptInvitation(payload)).unwrap();
-
       toast.success(res.message || 'Account created successfully');
-
       form.reset();
-
-      setTimeout(() => {
-        router.push('/login');
-      }, 1500);
+      router.push('/signin');
     } catch (err: any) {
       toast.error(err || 'Something went wrong');
     } finally {
@@ -153,15 +150,24 @@ export default function Page() {
                 <FormLabel>
                   Password <span className="text-red-500">*</span>
                 </FormLabel>
-
-                <FormControl>
-                  <Input
-                    type="password"
-                    placeholder="Enter your password"
-                    {...field}
-                  />
-                </FormControl>
-
+                <div className="relative">
+                  <FormControl>
+                    <Input
+                      type={password ? 'text' : 'password'}
+                      placeholder="Enter your password"
+                      {...field}
+                    />
+                  </FormControl>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setPassword(!password)}
+                    className="absolute right-1 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary"
+                  >
+                    {password ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </Button>
+                </div>
                 <FormMessage />
               </FormItem>
             )}
@@ -176,15 +182,25 @@ export default function Page() {
                 <FormLabel>
                   Confirm Password <span className="text-red-500">*</span>
                 </FormLabel>
+                <div className="relative">
 
-                <FormControl>
-                  <Input
-                    type="password"
-                    placeholder="Enter confirm password"
-                    {...field}
-                  />
-                </FormControl>
-
+                  <FormControl>
+                    <Input
+                      type={confirmPassword ? 'text' : 'password'}
+                      placeholder="Enter confirm password"
+                      {...field}
+                    />
+                  </FormControl>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setConfirmPassword(!confirmPassword)}
+                    className="absolute right-1 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary"
+                  >
+                    {confirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </Button>
+                </div>
                 <FormMessage />
               </FormItem>
             )}

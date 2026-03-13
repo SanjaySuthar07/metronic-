@@ -103,3 +103,23 @@ export const fetchInvitationDetail = createAsyncThunk(
         }
     }
 );
+
+export const resendInvitation = createAsyncThunk(
+    "invite/resendInvitation",
+    async (
+        payload: { email: string; user_type: string },
+        { rejectWithValue }
+    ) => {
+        try {
+            const response = await api.post("/resend-invite", payload);
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.errors
+                    ? Object.values(error.response.data.errors).flat().join(" ")
+                    : error.response?.data?.message || "Network Problem";
+
+            return rejectWithValue(message);
+        }
+    }
+);

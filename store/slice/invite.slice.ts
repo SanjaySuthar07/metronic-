@@ -55,11 +55,7 @@ const inviteSlice = createSlice({
 
     builder.addCase(fetchInvitationDetail.fulfilled, (state, action) => {
       state.loadingInvite = false;
-      console.log("inviteDetail", action?.payload)
-      // state.invite.data = action?.payload?.data?.data || [];
-      // state.invite.total = action?.payload?.data?.total || 0;
-      // state.invite.currentPage = action?.payload?.data?.current_page || 1;
-      // state.invite.perPage = action?.payload?.data?.per_page || 10;
+      state.inviteDetail = action?.payload?.data?.data?.[0] || {};
     });
 
     builder.addCase(fetchInvitationDetail.rejected, (state) => {

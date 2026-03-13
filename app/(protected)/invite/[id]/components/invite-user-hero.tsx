@@ -13,14 +13,14 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { User } from '@/app/models/user';
 
-interface UserProfileProps {
-  user: User;
+
+interface InviteUserProfileProps {
+  inviteUser: any;
   isLoading: boolean;
 }
 
-const UserHero = ({ user, isLoading }: UserProfileProps) => {
+const InviteUserHero = ({ inviteUser, isLoading }: InviteUserProfileProps) => {
   const Loading = () => {
     return (
       <div className="flex items-center gap-5 mb-5">
@@ -39,7 +39,7 @@ const UserHero = ({ user, isLoading }: UserProfileProps) => {
     const [showCopied, setShowCopied] = useState(false);
 
     const handleUserIdCopy = () => {
-      copyToClipboard(user.id);
+      copyToClipboard(inviteUser.id);
       setShowCopied(true);
       setTimeout(() => {
         setShowCopied(false);
@@ -49,17 +49,17 @@ const UserHero = ({ user, isLoading }: UserProfileProps) => {
     return (
       <div className="flex items-center gap-5 mb-5">
         <Avatar className="h-14 w-14">
-          {user.avatar ? (
-            <AvatarImage src={user.avatar} alt={user.name || ''} />
+          {inviteUser.avatar ? (
+            <AvatarImage src={inviteUser.avatar} alt={inviteUser.name || ''} />
           ) : (
             <AvatarFallback className="text-xl">
-              {getInitials(user.name || user.email)}
+              {getInitials(inviteUser.name || inviteUser.email)}
             </AvatarFallback>
           )}
         </Avatar>
         <div className="space-y-px">
-          <div className="font-medium text-base capitalize">{user.name}</div>
-          <div className="text-muted-foreground text-sm">{user.email}</div>
+          <div className="font-medium text-base capitalize">{inviteUser.name}</div>
+          <div className="text-muted-foreground text-sm">{inviteUser.email}</div>
           <div>
             <TooltipProvider>
               <Tooltip delayDuration={50}>
@@ -69,7 +69,7 @@ const UserHero = ({ user, isLoading }: UserProfileProps) => {
                     className="gap-1.5 px-2 py-0.5"
                     onClick={handleUserIdCopy}
                   >
-                    <span>User ID: {user.id}</span>
+                    <span>User ID: {inviteUser.id}</span>
                     {showCopied && <Check className="text-success size-3" />}
                   </Badge>
                 </TooltipTrigger>
@@ -84,7 +84,7 @@ const UserHero = ({ user, isLoading }: UserProfileProps) => {
     );
   };
 
-  return isLoading || !user ? <Loading /> : <Content />;
+  return isLoading || !inviteUser ? <Loading /> : <Content />;
 };
 
-export default UserHero;
+export default InviteUserHero;

@@ -1,17 +1,12 @@
 'use client';
-import { useSearchParams } from 'next/navigation';
-import UserDangerZone from './components/user-danger-zone';
-import UserProfile from './components/user-profile';
+import InviteUserProfile from './components/invite-user-profile';
 import { useSelector } from 'react-redux';
 
 export default function Page() {
-  const { userDetail, loadingUserDetail } = useSelector(
-    (state: any) => state.userManagement
-  );
+  const { inviteDetail, loadingInvite } = useSelector((state: any) => state.invite);
   return (
     <div className="space-y-10">
-      <UserProfile user={userDetail} isLoading={loadingUserDetail} />
-      <UserDangerZone user={userDetail} isLoading={loadingUserDetail} />
+      <InviteUserProfile user={inviteDetail} isLoading={loadingInvite} />
     </div>
   );
 }

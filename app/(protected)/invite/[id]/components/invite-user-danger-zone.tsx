@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import UserDeleteDialog from '../../components/user-delete-dialog';
+// import UserDeleteDialog from '../../components/user-delete-dialog';
 import { useSelector } from 'react-redux';
 import { useRouter } from 'next/navigation';
 
@@ -57,7 +57,7 @@ const UserDangerZone = ({
           </Button>
         </CardContent>
       </Card>
-      <UserDeleteDialog
+      {/* <UserDeleteDialog
         open={deleteDialogOpen}
         closeDialog={() => setDeleteDialogOpen(false)}
         user={userDetail}
@@ -65,7 +65,7 @@ const UserDangerZone = ({
           setDeleteDialogOpen(false);
           router.push("/user-management/users/")
         }}
-      />
+      /> */}
     </div>
   );
 

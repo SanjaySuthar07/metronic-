@@ -6,9 +6,9 @@ import { Badge, BadgeDot, BadgeProps } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import UserInviteDialog from '../../components/user-add-dialog';
+// import UserInviteDialog from '../../components/user-add-dialog';
 
-const UserProfile = ({
+const InviteUserProfile = ({
   user,
   isLoading,
 }: {
@@ -155,15 +155,15 @@ const UserProfile = ({
   return (
     <>
       <Content />
-      <UserInviteDialog
+      {/* <UserInviteDialog
         open={inviteDialogOpen}
         isEdit={isEdit}
         editData={editData}
         closeDialog={() => setInviteDialogOpen(false)}
         isProfile={true}
-      />
+      /> */}
     </>
   );
 };
 
-export default UserProfile;
+export default InviteUserProfile;

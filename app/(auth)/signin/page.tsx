@@ -46,6 +46,8 @@ export default function Page() {
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [userType, setUserType] = useState<string | null>(null);
+  const [tenant_id, setTenant_id] = useState<string | null>(null);
+  
 
   const form = useForm<SigninSchemaType>({
     resolver: zodResolver(getSigninSchema()),
@@ -111,6 +113,7 @@ export default function Page() {
       setOppenQR(true);
       setMessage(data?.message);
       setUserType(data?.user_type);
+      setTenant_id(data?.tenant_id)
     } else {
       setError(result.payload as string);
     }
@@ -259,6 +262,7 @@ export default function Page() {
         onClose={() => setOppenQR(false)}
         qrCode={qrCode}
         userId={userId}
+        tenant_id={tenant_id}
         message={message}
         userType={userType}
       />

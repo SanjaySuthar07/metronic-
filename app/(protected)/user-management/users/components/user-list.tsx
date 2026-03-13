@@ -80,23 +80,21 @@ const DataGridToolbar = ({
       const data = await dispatch(fetchRolesDropdown());
       setRoles(data?.payload?.roles || []);
     };
-    fetch();
+    if (user.user_type != "agency" && user.user_type != "admin") {
+      fetch();
+    }
   }, [dispatch]);
 
   return (
     <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-
-        <div className="relative">
-          <Search className="size-4 text-muted-foreground absolute start-3 top-1/2 -translate-y-1/2" />
-
-          <Input
-            placeholder="Search users"
-            value={inputValue}
-            onChange={(e) => onInputChange(e.target.value)}
-            className="ps-9 w-full sm:w-64"
-          />
-        </div>
+        <Search className="size-4 text-muted-foreground absolute start-3 top-1/2 -translate-y-1/2" />
+        <Input
+          placeholder="Search users"
+          value={inputValue}
+          onChange={(e) => onInputChange(e.target.value)}
+          className="ps-9 w-full sm:w-64"
+        />
         {(user?.user_type === "admin" || user?.user_type === "super_admin") && (
           <Select value={selectedRole} onValueChange={onRoleChange}>
             <SelectTrigger className="w-full sm:w-40">
@@ -104,7 +102,7 @@ const DataGridToolbar = ({
             </SelectTrigger>
 
             <SelectContent>
-              <SelectItem value="all">All Type</SelectItem>
+              {/* <SelectItem value="all">All Type</SelectItem> */}
 
               {roles.map((role: any) => {
                 if (role.name === "Super Admin") {
@@ -122,18 +120,14 @@ const DataGridToolbar = ({
             </SelectContent>
           </Select>
         )}
-
       </div>
 
-      <Button className="bg-primary text-white hidden" onClick={onAddUser}>
-        <Plus className="size-4 mr-1" />
-        Add User
-      </Button>
     </CardHeader>
   );
 };
 
 const UserList = () => {
+
   const dispatch = useDispatch<AppDispatch>();
   const { user } = useSelector((s) => s.auth)
   const router = useRouter()
@@ -145,6 +139,7 @@ const UserList = () => {
   };
 
   const refreshUsers = () => {
+
     const roleFilter =
       selectedRole && selectedRole !== 'all' ? selectedRole : '';
     console.log("user")
@@ -235,6 +230,25 @@ const UserList = () => {
       console.error("Failed to fetch user details", error);
     }
   };
+  useEffect(() => {
+
+    if (user?.user_type === "agency") {
+
+      setColumnVisibility((prev: any) => ({
+        ...prev,
+        user_type: false
+      }))
+
+    } else {
+
+      setColumnVisibility((prev: any) => ({
+        ...prev,
+        user_type: true
+      }))
+
+    }
+
+  }, [user?.user_type])
   const columns = useMemo<ColumnDef<any>[]>(() => [
     {
       accessorKey: 'name',

@@ -17,6 +17,7 @@ interface Props {
     userId: number | null;
     message: string;
     userType: string;
+    tenant_id: any
 }
 
 export default function VerifyOtpPage({
@@ -26,6 +27,7 @@ export default function VerifyOtpPage({
     message,
     userId,
     userType,
+    tenant_id
 }: Props) {
     const router = useRouter();
     const dispatch = useDispatch<AppDispatch>();
@@ -104,8 +106,9 @@ export default function VerifyOtpPage({
         const result = await dispatch(
             verifyMfa({
                 user_id: userId,
-                otp: code, // ✅ FIXED
+                otp: code,
                 user_type: userType,
+                tenant_id: tenant_id,
             })
         );
 

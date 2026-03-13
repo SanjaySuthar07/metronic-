@@ -2,6 +2,7 @@
 import { RiCheckboxCircleFill } from '@remixicon/react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { useDispatch } from 'react-redux';
 import { Alert, AlertIcon, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
@@ -13,31 +14,35 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { LoaderCircleIcon } from 'lucide-react';
-interface InviteDeleteDialogProps {
+import { AppDispatch } from '@/store';
+import { resendInvitation } from '@/store/thunk/invite.thunk';
+interface InviteResendDialogProps {
   open: boolean;
   closeDialog: () => void;
   user: any;
-  onDeleted?: (user: any) => void;
+  onResent?: (user: any) => void;
 }
-const InviteDeleteDialog = ({
+const InviteResendDialog = ({
   open,
   closeDialog,
   user,
-  onDeleted,
-}: InviteDeleteDialogProps) => {
-
+  onResent,
+}: InviteResendDialogProps) => {
+  const dispatch = useDispatch<AppDispatch>();
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const handleDelete = async () => {
-
-    if (!user?.id) return;
+  const handleResend = async () => {
+    if (!user?.email || !user?.user_type) return;
 
     setIsProcessing(true);
 
     try {
-
-      // fake delay (optional)
-      await new Promise((res) => setTimeout(res, 500));
+      await dispatch(
+        resendInvitation({
+          email: user.email,
+          user_type: user.user_type,
+        })
+      ).unwrap();
 
       toast.custom(
         () => (
@@ -45,20 +50,20 @@ const InviteDeleteDialog = ({
             <AlertIcon>
               <RiCheckboxCircleFill />
             </AlertIcon>
-            <AlertTitle>User deleted successfully</AlertTitle>
+            <AlertTitle>Invitation resent successfully</AlertTitle>
           </Alert>
         ),
         { position: 'top-center' }
       );
 
-      if (onDeleted) {
-        onDeleted(user);
+      if (onResent) {
+        onResent(user);
       }
 
       closeDialog();
 
     } catch (err) {
-      console.error('delete user error', err);
+      console.error('resend invitation error', err);
     } finally {
       setIsProcessing(false);
     }
@@ -68,11 +73,11 @@ const InviteDeleteDialog = ({
     <Dialog open={open} onOpenChange={closeDialog}>
       <DialogContent showCloseButton={false}>
         <DialogHeader>
-          <DialogTitle>Confirm Delete</DialogTitle>
+          <DialogTitle>Confirm Resend</DialogTitle>
         </DialogHeader>
 
         <DialogDescription>
-          Are you sure you want to delete the user <strong>{user?.name}</strong>?
+          Are you sure you want to resend the invitation to <strong>{user?.name}</strong>?
         </DialogDescription>
 
         <DialogFooter>
@@ -82,14 +87,14 @@ const InviteDeleteDialog = ({
           </Button>
 
           <Button
-            variant="destructive"
-            onClick={handleDelete}
+            variant="mono"
+            onClick={handleResend}
             disabled={isProcessing}
           >
             {isProcessing && (
               <LoaderCircleIcon className="animate-spin mr-2" />
             )}
-            Delete
+            Resend
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -97,4 +102,4 @@ const InviteDeleteDialog = ({
   );
 };
 
-export default InviteDeleteDialog;
+export default InviteResendDialog;

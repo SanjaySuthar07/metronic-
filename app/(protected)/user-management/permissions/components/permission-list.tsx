@@ -44,6 +44,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import PermissionAddDialog from './permission-add-dialog';
+import { hasPermission } from '@/lib/permissions';
 
 const DataGridToolbar = ({
   inputValue,
@@ -68,6 +69,7 @@ const DataGridToolbar = ({
     };
     fetch();
   }, [dispatch]);
+  const { user } = useSelector((s) => s.auth)
 
   return (
     <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -104,10 +106,17 @@ const DataGridToolbar = ({
 
       </div>
 
-      <Button className="bg-primary text-white" onClick={onAddPermission}>
-        <Plus className="size-4 mr-1" />
-        Add Permission
-      </Button>
+      {
+        hasPermission(user, ["tenant-permission-create"]) ? (
+          <>
+            <Button className="bg-primary text-white" onClick={onAddPermission}>
+              <Plus className="size-4 mr-1" />
+              Add Permission
+            </Button>
+          </>
+        ) : ""
+      }
+
     </CardHeader>
   );
 };
@@ -307,19 +316,29 @@ const PermissionList = () => {
           </DropdownMenuTrigger>
 
           <DropdownMenuContent align="end">
+            {
+              hasPermission(user, ["tenant-permission-edit"]) ? (
+                <>
+                  <DropdownMenuItem
+                    onClick={() => handleEditPermissions(row.original.id)}
+                  >
+                    Edit
+                  </DropdownMenuItem>
 
-            <DropdownMenuItem
-              onClick={() => handleEditPermissions(row.original.id)}
-            >
-              Edit
-            </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                </>
+              ) : ""
+            }
 
-            <DropdownMenuSeparator />
-
-            <DropdownMenuItem variant="destructive" onClick={() => handleDeleteUser(row.original)}>
-              Delete
-            </DropdownMenuItem>
-
+            {
+              hasPermission(user, ["tenant-permission-delete"]) ? (
+                <>
+                  <DropdownMenuItem variant="destructive" onClick={() => handleDeleteUser(row.original)}>
+                    Delete
+                  </DropdownMenuItem>
+                </>
+              ) : ""
+            }
           </DropdownMenuContent>
 
         </DropdownMenu>
