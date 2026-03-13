@@ -80,6 +80,9 @@ const userManagementSlice = createSlice({
         if (action.payload.user.tenant_id != null) {
           state.userDetail = action.payload.user;
         }
+        else if (action.payload.user.user_type == "admin") {
+          state.userDetail = action.payload.user;
+        }
       })
 
       .addCase(fetchUserDetail.rejected, (state, action) => {

@@ -161,7 +161,7 @@ export default function UserLayout({
             .filter(([key, route]) => {
 
               // admin user ko sirf profile tab
-              if (user?.user_type === "admin" && key !== "general") {
+              if (userDetail?.user_type === "admin" && key !== "general") {
                 return false;
               }
 

@@ -59,16 +59,16 @@ const DataGridToolbar = ({
   onRoleChange: (value: string) => void;
 }) => {
   const dispatch = useDispatch<AppDispatch>();
-  const [roles, setRoles] = useState<any[]>([]);
+  // const [roles, setRoles] = useState<any[]>([]);
 
-  const { userDetail } = useSelector((s) => s.userManagement)
-  useEffect(() => {
-    const fetch = async () => {
-      const data = await dispatch(fetchRolesDropdown());
-      setRoles(data?.payload?.roles || []);
-    };
-    fetch();
-  }, [dispatch]);
+  // const { userDetail } = useSelector((s) => s.userManagement)
+  // useEffect(() => {
+  //   const fetch = async () => {
+  //     const data = await dispatch(fetchRolesDropdown());
+  //     setRoles(data?.payload?.roles || []);
+  //   };
+  //   fetch();
+  // }, [dispatch]);
 
   return (
     <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -459,14 +459,18 @@ const AgentList = () => {
           />
         )
       }
-      <AgentAddDialog
-        open={inviteDialogOpen}
-        isEdit={isEdit}
-        editData={editData}
-        closeDialog={() => setInviteDialogOpen(false)}
-        isProfile={false}
-        tenant_id={userDetail?.tenant_id}
-      />
+      {
+        inviteDialogOpen ? (
+          <AgentAddDialog
+            open={inviteDialogOpen}
+            isEdit={isEdit}
+            editData={editData}
+            closeDialog={() => setInviteDialogOpen(false)}
+            isProfile={false}
+            tenant_id={userDetail?.tenant_id}
+          />
+        ) : ""
+      }
 
     </>
   );
