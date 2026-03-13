@@ -405,14 +405,18 @@ const InviteList = () => {
 
       </Card>
 
-      <InviteAddDialog
-        open={inviteDialogOpen}
-        closeDialog={() => setInviteDialogOpen(false)}
-        onSuccess={refreshInvitations}
-      />
+      {
+        inviteDialogOpen ? (
+          <InviteAddDialog
+            open={inviteDialogOpen}
+            closeDialog={() => setInviteDialogOpen(false)}
+            onSuccess={refreshInvitations}
+          />
+        ) : ""
+      }
+
 
       {resendDialogOpen && selectedResendUser && (
-
         <InviteResendDialog
           open={resendDialogOpen}
           closeDialog={() => {
