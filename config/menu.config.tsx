@@ -53,7 +53,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { type MenuConfig } from './types';
-export const MENU_SIDEBAR: MenuConfig = [
+export const MENU_SIDEBAR: any = [
   { title: 'Dashboard', icon: LayoutGrid, path: '/dashboard' },
   {
     title: 'User Management',
@@ -62,21 +62,25 @@ export const MENU_SIDEBAR: MenuConfig = [
       {
         title: 'Users',
         path: '/user-management/users',
+        permission: ['agent-access'],
       },
       {
         title: 'Roles',
         path: '/user-management/roles',
+        permission: ['tenant-role-access'],
       },
       {
         title: 'Permissions',
         path: '/user-management/permissions',
+        permission: ['tenant-permission-access'],
       },
     ],
   },
   {
     title: 'Invite',
     icon: Users,
-    path: '/invite'
+    path: '/invite',
+    role: ['super_admin']
   },
 ];
 

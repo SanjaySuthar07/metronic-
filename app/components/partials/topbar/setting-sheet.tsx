@@ -13,6 +13,7 @@ import {
   SheetBody,
   SheetClose,
   SheetContent,
+  SheetFooter,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -76,15 +77,12 @@ export function SettingSheet({ trigger }: { trigger: ReactNode }) {
       })),
     };
     const res = await dispatch(updateSettings(payload));
-    // show toast from response or generic message
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const payloadRes: any = (res as any)?.payload;
     if (payloadRes?.message) {
       toast.success(payloadRes.message);
     } else {
       toast.success('Settings updated');
     }
-    // refresh list
     dispatch(fetchSettings());
   };
 
@@ -137,7 +135,7 @@ export function SettingSheet({ trigger }: { trigger: ReactNode }) {
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit)}>
-        <ScrollArea className="h-[calc(100vh-10.5rem)] p-6">
+              <ScrollArea className="h-[calc(100vh-10.5rem)] p-6">
 
                 <div className="space-y-6">
                   {fields.map((field, index) => (
@@ -166,38 +164,32 @@ export function SettingSheet({ trigger }: { trigger: ReactNode }) {
                   ))}
 
                 </div>
-
-                <div className="flex justify-end gap-3 pt-8">
-
-                  <SheetClose asChild>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => form.reset()}
-                    >
-                      Cancel
-                    </Button>
-                  </SheetClose>
-
-                  <Button
-                    type="submit"
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting && (
-                      <LoaderCircleIcon className="animate-spin mr-2" />
-                    )}
-                    Submit
-                  </Button>
-
-                </div>
-
               </ScrollArea>
 
+              <SheetFooter className="border-t border-border p-5 grid grid-cols-2 gap-2.5">
+                <SheetClose asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => form.reset()}
+                  >
+                    Cancel
+                  </Button>
+                </SheetClose>
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting && (
+                    <LoaderCircleIcon className="animate-spin mr-2" />
+                  )}
+                  Submit
+                </Button>
+              </SheetFooter>
             </form>
           </Form>
 
         </SheetBody>
-
       </SheetContent>
     </Sheet>
   );

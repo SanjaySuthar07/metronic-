@@ -2,7 +2,7 @@
 
 import { JSX, useCallback } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSelectedLayoutSegment } from 'next/navigation';
 import { MENU_SIDEBAR } from '@/config/menu.config';
 import { MenuConfig, MenuItem } from '@/config/types';
 import { cn } from '@/lib/utils';
@@ -17,6 +17,8 @@ import {
   AccordionMenuSubTrigger,
 } from '@/components/ui/accordion-menu';
 import { Badge } from '@/components/ui/badge';
+import { useSelector } from 'react-redux';
+import { filterMenu } from '@/lib/menu-filter';
 
 export function SidebarMenu() {
   const pathname = usePathname();
@@ -209,7 +211,8 @@ export function SidebarMenu() {
   const buildMenuHeading = (item: MenuItem, index: number): JSX.Element => {
     return <AccordionMenuLabel key={index}>{item.heading}</AccordionMenuLabel>;
   };
-
+  const { user } = useSelector((s) => s.auth)
+  const menu = filterMenu(MENU_SIDEBAR, user)
   return (
     <div className="kt-scrollable-y-hover flex grow shrink-0 py-5 px-5 lg:max-h-[calc(100vh-5.5rem)]">
       <AccordionMenu
@@ -219,9 +222,8 @@ export function SidebarMenu() {
         collapsible
         classNames={classNames}
       >
-        {buildMenu(MENU_SIDEBAR)}
+        {buildMenu(menu)}
       </AccordionMenu>
     </div>
   );
 }
-  

@@ -157,7 +157,21 @@ const InviteList = () => {
   const [inputValue, setInputValue] = useState('');
   const [selectedRole, setSelectedRole] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('all');
+  const getStatusVariant = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case "accepted":
+        return "success";
 
+      case "pending":
+        return "warning";
+
+      case "rejected":
+        return "destructive";
+
+      default:
+        return "secondary";
+    }
+  };
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
@@ -205,21 +219,19 @@ const InviteList = () => {
         );
       },
     },
-
     {
-      accessorKey: 'status',
-      id: 'status',
+      accessorKey: 'user_type',
+      id: 'user_type',
 
       header: ({ column }) =>
-        <DataGridColumnHeader title="Status" column={column} />,
+        <DataGridColumnHeader title="User Type" column={column} />,
 
       cell: ({ row }) => (
         <Badge variant="secondary">
-          {row.original.status}
+          {row.original.user_type}
         </Badge>
       ),
     },
-
     {
       accessorKey: 'created_at',
       id: 'created_at',
@@ -229,6 +241,19 @@ const InviteList = () => {
 
       cell: ({ row }) =>
         formatDate(new Date(row.original.created_at)),
+    },
+    {
+      accessorKey: 'status',
+      id: 'status',
+
+      header: ({ column }) =>
+        <DataGridColumnHeader title="Status" column={column} />,
+
+      cell: ({ row }) => (
+        <Badge variant={getStatusVariant(row.original.status) as any}>
+          {row.original.status}
+        </Badge>
+      ),
     },
 
     {
@@ -253,21 +278,20 @@ const InviteList = () => {
           </DropdownMenuTrigger>
 
           <DropdownMenuContent align="end">
-
             <DropdownMenuItem
               onClick={() =>
                 router.push(`/user-management/users/${row.original.id}`)
               }
             >
-              View
+              Resend
             </DropdownMenuItem>
 
             <DropdownMenuSeparator />
 
             <DropdownMenuItem
-              onClick={() => setDeleteDialogOpen(true)}
+              onClick={() => router.push(`/invite/${row.original.id}`)}
             >
-              Delete
+              View
             </DropdownMenuItem>
 
           </DropdownMenuContent>
@@ -300,19 +324,12 @@ const InviteList = () => {
   });
 
   useEffect(() => {
-
     dispatch(
       fetchInvitation({
-        user_type: selectedRole,
-        status: selectedStatus,
         page: pagination.pageIndex + 1,
         per_page: pagination.pageSize,
-        search: inputValue,
-        sort: "",
-        dir: ""
       })
     );
-
   }, [
     dispatch,
     selectedRole,

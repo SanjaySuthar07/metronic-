@@ -82,6 +82,7 @@ const DataGridToolbar = ({
 
 
 const RolesList = () => {
+  const { user } = useSelector((s) => s.auth)
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
 
   const dispatch = useDispatch<AppDispatch>();
@@ -122,6 +123,7 @@ const RolesList = () => {
         search: inputValue || undefined,
         sort: sortField,
         dir: sortField ? sortDirection : undefined,
+        tenant_id: user?.tenant_id
       })
     );
 
@@ -131,6 +133,7 @@ const RolesList = () => {
     pagination.pageSize,
     inputValue,
     sorting,
+    user?.tenant_id
   ]);
 
   const handleEditUser = async (id: number, type: any) => {

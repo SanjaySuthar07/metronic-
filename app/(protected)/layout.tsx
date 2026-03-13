@@ -5,7 +5,6 @@ import { useDispatch } from 'react-redux';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { AppDispatch } from '@/store';
 
-
 import { getProfile } from '@/store/thunk/auth.thunk';
 import { Header } from '../components/layouts/demo1/components/header';
 import { Sidebar } from '../components/layouts/demo1/components/sidebar';
@@ -24,7 +23,6 @@ export default function Layout({ children }: { children: ReactNode }) {
         router.replace("/signin");
         return;
       }
-
       const result = await dispatch(getProfile());
 
       if (getProfile.rejected.match(result)) {
@@ -61,7 +59,7 @@ export default function Layout({ children }: { children: ReactNode }) {
         <Header />
 
         <main className="grow pt-5" role="content">
-          {children}
+            {children}
         </main>
 
         <Footer />

@@ -119,7 +119,7 @@ const PermissionList = () => {
 
   const { userDetail } = useSelector((s) => s.userManagement)
   const refreshUsers = () => {
-    if (!userDetail?.tenant?.id) return;
+    if (!userDetail?.tenant_id) return;
     const roleFilter =
       selectedRole && selectedRole !== 'all' ? selectedRole : '';
     dispatch(
@@ -128,7 +128,7 @@ const PermissionList = () => {
         per_page: pagination.pageSize,
         search: inputValue.trim() || undefined,
         sort: sorting?.[0]?.id,
-        id: userDetail?.tenant?.id
+        id: userDetail?.tenant_id
       })
     );
   };
@@ -164,7 +164,7 @@ const PermissionList = () => {
   }, [inputValue, selectedRole]);
 
   useEffect(() => {
-    if (!userDetail?.tenant?.id) return;
+    if (!userDetail?.tenant_id) return;
     const sortField = sorting?.[0]?.id;
     const sortDirection = sorting?.[0]?.desc ? 'desc' : 'asc';
 
@@ -180,7 +180,7 @@ const PermissionList = () => {
         search: inputValue.trim() || undefined,
         sort: sortField,
         dir: sortField ? sortDirection : undefined,
-        id: userDetail?.tenant?.id
+        id: userDetail?.tenant_id
       })
     );
 
@@ -191,14 +191,14 @@ const PermissionList = () => {
     inputValue,
     selectedRole,
     sorting,
-    userDetail?.tenant?.id
+    userDetail?.tenant_id
   ]);
 
   const handleEditPermissions = async (id: number) => {
     try {
-      const res: any = await dispatch(fetchPermissionsDetail({ id, tenant_id: userDetail?.tenant?.id }));
+      const res: any = await dispatch(fetchPermissionsDetail({ id, tenant_id: userDetail?.tenant_id }));
       if (res?.payload?.permission) {
-        setEditData({ data: res.payload.permission, tenant_id: userDetail?.tenant?.id });
+        setEditData({ data: res.payload.permission, tenant_id: userDetail?.tenant_id });
         setIsEdit(true);
         setInviteDialogOpen(true);
       }
@@ -369,7 +369,7 @@ const PermissionList = () => {
       <DataGrid
         table={table}
         recordCount={permissions?.total}
-        isLoading={loadingPermissions || !userDetail?.tenant?.id}
+        isLoading={loadingPermissions || !userDetail?.tenant_id}
         tableLayout={{
           columnsResizable: true,
           columnsPinnable: true,
@@ -409,7 +409,7 @@ const PermissionList = () => {
           <PermissionDeleteDialog
             open={deleteDialogOpen}
             closeDialog={() => setDeleteDialogOpen(false)}
-            tenant_id={userDetail?.tenant?.id}
+            tenant_id={userDetail?.tenant_id}
             permission={deletePermissionObj}
             onDeleted={() => {
               setDeleteDialogOpen(false);
@@ -423,7 +423,7 @@ const PermissionList = () => {
         open={inviteDialogOpen}
         isEdit={isEdit}
         editData={editData}
-        tenant_id={userDetail?.tenant?.id}
+        tenant_id={userDetail?.tenant_id}
         closeDialog={() => setInviteDialogOpen(false)}
       />
 

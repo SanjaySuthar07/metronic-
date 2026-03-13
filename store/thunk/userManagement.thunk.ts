@@ -42,6 +42,7 @@ interface FetchUserDetail {
   tenant_id?: any
 }
 
+
 export const fetchUserDetail = createAsyncThunk(
   "users/fetchUserDetail",
   async (payload: FetchUserDetail, { rejectWithValue }) => {
@@ -144,7 +145,7 @@ export const fetchRoleDetail = createAsyncThunk(
 );
 
 export const fetchRolesDropdown = createAsyncThunk(
-  "users/fetchRoles",
+  "users/fetchRolesDropdown",
   async (payload: FetchUsersPayload, { rejectWithValue }) => {
     try {
       const response = await api.get("/roles", {
@@ -198,10 +199,6 @@ export const createRole = createAsyncThunk(
   }
 );
 
-
-// ----------------------------
-// Parmission api 
-// ----------------------------
 
 export const fetchPermissionsDropdown = createAsyncThunk(
   "users/fetchPermissionsDropdown",

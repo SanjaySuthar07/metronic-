@@ -101,7 +101,7 @@ const RolesList = () => {
         search: inputValue || undefined,
         sort: sortField,
         dir: sortField ? sortDirection : undefined,
-        tenant_id: userDetail?.tenant?.id
+        tenant_id: userDetail?.tenant_id
       })
     );
 
@@ -111,11 +111,11 @@ const RolesList = () => {
     pagination.pageSize,
     inputValue,
     sorting,
-    userDetail?.tenant?.id
+    userDetail?.tenant_id
   ]);
   const handleEditUser = async (id: number, type: any) => {
     try {
-      const res: any = await dispatch(fetchRoleDetail({ id, tenant_id: userDetail?.tenant?.id }));
+      const res: any = await dispatch(fetchRoleDetail({ id, tenant_id: userDetail?.tenant_id }));
       if (res?.payload?.role) {
         setEditData(res.payload.role);
         setIsEdit(true);
@@ -297,7 +297,7 @@ const RolesList = () => {
       {
         viewDialogOpen ?
           <RoleViewDialog
-            tenant_id={userDetail?.tenant?.id}
+            tenant_id={userDetail?.tenant_id}
             open={viewDialogOpen}
             closeDialog={() => {
               setViewDialogOpen(false);
@@ -310,7 +310,7 @@ const RolesList = () => {
         inviteDialogOpen ?
           <RoleInviteDialog
             open={inviteDialogOpen}
-            tenant_id={userDetail?.tenant?.id}
+            tenant_id={userDetail?.tenant_id}
             closeDialog={() => {
               setInviteDialogOpen(false);
               setIsEdit(false);

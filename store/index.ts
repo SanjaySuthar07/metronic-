@@ -21,7 +21,7 @@ const rootReducer = combineReducers({
     dashboard: dashboardReducer,
     userManagement: userManagementSlice,
     invite: invite,
-    settings:settings
+    settings: settings
 });
 
 const persistConfig = {

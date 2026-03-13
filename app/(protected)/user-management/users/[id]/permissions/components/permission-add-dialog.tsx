@@ -84,7 +84,7 @@ const PermissionAddDialog = ({
 
   const handleSubmit = async (values: PermissionAddSchemaType) => {
 
-    if (!userDetail?.tenant?.id) return;
+    if (!userDetail?.tenant_id) return;
 
     setIsProcessing(true);
 

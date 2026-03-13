@@ -130,7 +130,7 @@ const AgentList = () => {
   };
 
   const refreshUsers = () => {
-    if (!userDetail?.tenant?.id) return;
+    if (!userDetail?.tenant_id) return;
     const roleFilter =
       selectedRole && selectedRole !== 'all' ? selectedRole : '';
 
@@ -142,7 +142,7 @@ const AgentList = () => {
         search: inputValue.trim() || undefined,
         sort: sorting?.[0]?.id,
         dir: sorting?.[0]?.desc ? 'desc' : 'asc',
-        id: userDetail?.tenant?.id
+        id: userDetail?.tenant_id
       })
     );
   };
@@ -176,7 +176,7 @@ const AgentList = () => {
   }, [inputValue, selectedRole]);
 
   useEffect(() => {
-    if (!userDetail?.tenant?.id) return;
+    if (!userDetail?.tenant_id) return;
 
     const sortField = sorting?.[0]?.id;
     const sortDirection = sorting?.[0]?.desc ? 'desc' : 'asc';
@@ -194,7 +194,7 @@ const AgentList = () => {
         search: inputValue.trim() || undefined,
         sort: sortField,
         dir: sortField ? sortDirection : undefined,
-        id: userDetail?.tenant?.id
+        id: userDetail?.tenant_id
       })
     );
 
@@ -205,12 +205,12 @@ const AgentList = () => {
     inputValue,
     selectedRole,
     sorting,
-    userDetail?.tenant?.id
+    userDetail?.tenant_id
   ]);
 
   const handleEditUser = async (id: number) => {
     try {
-      const res: any = await dispatch(fetchUserDetail({ id, tenant_id: userDetail?.tenant?.id }));
+      const res: any = await dispatch(fetchUserDetail({ id, tenant_id: userDetail?.tenant_id }));
       if (res?.payload?.user) {
         setEditData(res.payload.user);
         setIsEdit(true);
@@ -451,7 +451,7 @@ const AgentList = () => {
             open={deleteDialogOpen}
             closeDialog={() => setDeleteDialogOpen(false)}
             user={deleteUserObj}
-            tenant_id={userDetail?.tenant?.id}
+            tenant_id={userDetail?.tenant_id}
             onDeleted={() => {
               setDeleteDialogOpen(false);
               refreshUsers();
@@ -465,7 +465,7 @@ const AgentList = () => {
         editData={editData}
         closeDialog={() => setInviteDialogOpen(false)}
         isProfile={false}
-        tenant_id={userDetail?.tenant?.id}
+        tenant_id={userDetail?.tenant_id}
       />
 
     </>

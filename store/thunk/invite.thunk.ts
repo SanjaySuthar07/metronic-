@@ -89,3 +89,17 @@ export const acceptInvitation = createAsyncThunk(
 
     }
 )
+
+export const fetchInvitationDetail = createAsyncThunk(
+    "fetchInvitationDetail",
+    async (payload: any, { rejectWithValue }) => {
+        try {
+            const response = await api.get(`/invitation-list/?id=${payload?.id}`);
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || "Failed to fetch users";
+            return rejectWithValue(message);
+        }
+    }
+);

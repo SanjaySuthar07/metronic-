@@ -114,7 +114,7 @@ const DataGridToolbar = ({
 
 const PermissionList = () => {
   const dispatch = useDispatch<AppDispatch>();
-
+  const { user } = useSelector((s) => s.auth)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletePermissionObj, setDeletePermissionObj] = useState<any>(null);
   const handleDeleteUser = (user: any) => {
@@ -134,7 +134,7 @@ const PermissionList = () => {
         search: inputValue.trim() || undefined,
         sort: sorting?.[0]?.id,
         dir: sorting?.[0]?.desc ? 'desc' : 'asc',
-        id: null
+        id: user?.tenant_id
       })
     );
   };
@@ -186,7 +186,7 @@ const PermissionList = () => {
         search: inputValue.trim() || undefined,
         sort: sortField,
         dir: sortField ? sortDirection : undefined,
-        id: null
+        id: user?.tenant_id
       })
     );
 
@@ -197,6 +197,7 @@ const PermissionList = () => {
     inputValue,
     selectedRole,
     sorting,
+    user?.tenant_id
   ]);
 
   const handleEditPermissions = async (id: number) => {
@@ -211,7 +212,7 @@ const PermissionList = () => {
       console.error("Failed to fetch permission details", error);
     }
   };
-  
+
   const columns = useMemo<ColumnDef<any>[]>(() => [
     {
       accessorKey: 'name',

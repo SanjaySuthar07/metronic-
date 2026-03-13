@@ -47,7 +47,6 @@ export default function VerifyOtpPage({
 
     const handleChange = (index: number, value: string) => {
         if (!/^\d*$/.test(value)) return;
-
         const newOtp = [...otp];
         newOtp[index] = value.slice(-1);
         setOtp(newOtp);
@@ -94,7 +93,10 @@ export default function VerifyOtpPage({
     async function handleVerify() {
         const code = otp.join('');
 
-        if (code.length !== 6 || otp.includes('') || !userId) return;
+        if (code.length !== 6 || otp.includes('') || !userId) {
+            setError("The otp field must be 6 digits.");
+            return;
+        }
 
         setLoading(true);
         setError('');
@@ -102,7 +104,7 @@ export default function VerifyOtpPage({
         const result = await dispatch(
             verifyMfa({
                 user_id: userId,
-                otp: Number(code),
+                otp: code, // ✅ FIXED
                 user_type: userType,
             })
         );
