@@ -2,48 +2,51 @@ import { createSlice } from "@reduxjs/toolkit";
 import { fetchInvitation } from "../thunk/invite.thunk";
 
 interface inviteState {
-    invite: {
-        data: any[];
-        total: number;
-        currentPage: number;
-        perPage: number;
-    };
-    loadingInvite: boolean;
-
+  invite: {
+    data: any[];
+    total: number;
+    currentPage: number;
+    perPage: number;
+  };
+  loadingInvite: boolean;
 }
 
 const initialState: inviteState = {
-    invite: {
-        data: [],
-        total: 0,
-        currentPage: 1,
-        perPage: 10,
-    },
-    loadingInvite: false
+  invite: {
+    data: [],
+    total: 0,
+    currentPage: 1,
+    perPage: 10,
+  },
+  loadingInvite: false,
 };
 
 const inviteSlice = createSlice({
-    name: "invite",
-    initialState,
-    reducers: {},
-    extraReducers: (builder) => {
-        builder
-            .addCase(fetchInvitation.pending, (state) => {
-                state.loadingInvite = true;
-            })
-            .addCase(fetchInvitation.fulfilled, (state, action) => {
-                console.log(action.payload)
-                // state.invite.data = action.payload.invite.data;
-                // state.invite.total = action.payload.users.total;
-                // state.invite.currentPage = action.payload.users.current_page;
-                // state.invite.perPage = action.payload.users.per_page;
-            })
-            .addCase(fetchInvitation.rejected, (state) => {
-                state.loadingInvite = true;
-            })
-    },
+  name: "invite",
+  initialState,
+  reducers: {},
+  extraReducers: (builder) => {
+
+    builder.addCase(fetchInvitation.pending, (state) => {
+      state.loadingInvite = true;
+    });
+
+    builder.addCase(fetchInvitation.fulfilled, (state, action) => {
+
+      state.loadingInvite = false;
+
+      state.invite.data = action.payload.data.data || [];
+      state.invite.total = action.payload.data.total || 0;
+      state.invite.currentPage = action.payload.data.current_page || 1;
+      state.invite.perPage = action.payload.data.per_page || 10;
+
+    });
+
+    builder.addCase(fetchInvitation.rejected, (state) => {
+      state.loadingInvite = false;
+    });
+
+  },
 });
 
 export default inviteSlice.reducer;
-
-

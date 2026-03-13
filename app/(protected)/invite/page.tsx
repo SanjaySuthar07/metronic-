@@ -15,12 +15,10 @@ import {
   ToolbarTitle,
 } from '@/components/common/toolbar';
 import InviteList from './components/invite-list';
-
 export const metadata: Metadata = {
-  title: 'Users',
-  description: 'Manage users.',
+  title: 'Invite',
+  description: 'Invitation users.',
 };
-
 export default async function Page() {
   return (
     <>

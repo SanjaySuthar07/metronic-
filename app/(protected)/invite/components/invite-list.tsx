@@ -11,7 +11,6 @@ import {
 } from '@tanstack/react-table';
 
 import { EllipsisVertical, Plus, Search } from 'lucide-react';
-
 import { formatDate, getInitials } from '@/lib/helpers';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -42,11 +41,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+
 import { useRouter } from 'next/navigation';
 import InviteAddDialog from './invite-add-dialog';
 import InviteDeleteDialog from './role-delete-dialog';
-import { useDispatch } from 'react-redux';
+
+import { useDispatch, useSelector } from 'react-redux';
 import { fetchInvitation } from '@/store/thunk/invite.thunk';
+import { RootState, AppDispatch } from '@/store';
 
 const roles = [
   { id: 1, name: 'Admin' },
@@ -54,34 +56,10 @@ const roles = [
   { id: 3, name: 'Agency' },
 ];
 
-const status = [
+const statusList = [
   { id: 1, name: 'Accepted' },
   { id: 2, name: 'Pending' },
   { id: 3, name: 'Rejected' },
-];
-
-const initialUsers = [
-  {
-    id: 1,
-    name: 'Sanjay',
-    email: 'sanjay@gmail.com',
-    user_type: 'Admin',
-    created_at: '2024-01-10',
-  },
-  {
-    id: 2,
-    name: 'Rahul',
-    email: 'rahul@gmail.com',
-    user_type: 'Agent',
-    created_at: '2024-02-15',
-  },
-  {
-    id: 3,
-    name: 'Vishal',
-    email: 'vishal@gmail.com',
-    user_type: 'User',
-    created_at: '2024-03-05',
-  },
 ];
 
 const DataGridToolbar = ({
@@ -90,12 +68,16 @@ const DataGridToolbar = ({
   onAddUser,
   selectedRole,
   onRoleChange,
+  selectedStatus,
+  onStatusChange,
 }: any) => {
   return (
     <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
 
         <div className="relative">
+
           <Search className="size-4 text-muted-foreground absolute start-3 top-1/2 -translate-y-1/2" />
 
           <Input
@@ -104,60 +86,77 @@ const DataGridToolbar = ({
             onChange={(e) => onInputChange(e.target.value)}
             className="ps-9 w-full sm:w-64"
           />
+
         </div>
+
         <Select value={selectedRole} onValueChange={onRoleChange}>
           <SelectTrigger className="w-full sm:w-40">
             <SelectValue placeholder="All types" />
           </SelectTrigger>
 
           <SelectContent>
+
             <SelectItem value="all">All Type</SelectItem>
 
             {roles.map((role) => (
               <Fragment key={role.id}>
-                <SelectItem value={role.name}>{role.name}</SelectItem>
+                <SelectItem value={role.name}>
+                  {role.name}
+                </SelectItem>
               </Fragment>
             ))}
+
           </SelectContent>
         </Select>
-        <Select value={selectedRole} onValueChange={onRoleChange}>
+
+        <Select value={selectedStatus} onValueChange={onStatusChange}>
+
           <SelectTrigger className="w-full sm:w-40">
-            <SelectValue placeholder="All types" />
+            <SelectValue placeholder="All Status" />
           </SelectTrigger>
 
           <SelectContent>
+
             <SelectItem value="all">All Status</SelectItem>
-            {status.map((status) => (
+
+            {statusList.map((status) => (
               <Fragment key={status.id}>
-                <SelectItem value={status.name}>{status.name}</SelectItem>
+                <SelectItem value={status.name}>
+                  {status.name}
+                </SelectItem>
               </Fragment>
             ))}
+
           </SelectContent>
+
         </Select>
+
       </div>
 
       <Button onClick={onAddUser}>
         <Plus className="size-4 mr-1" />
         Invite
       </Button>
+
     </CardHeader>
   );
 };
 
 const InviteList = () => {
-  const [inviteDialogOpen, setInviteDialogOpen] = useState(false)
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const dispatch = useDispatch()
-  const [isEdit, setIsEdit] = useState(false)
-  const [editData, setEditData] = useState<any>(null)
 
-  const [deleteUserObj, setDeleteUserObj] = useState<any>(null)
+  const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
 
-  const [users, setUsers] = useState(initialUsers);
+  const { invite } = useSelector((state: RootState) => state.invite);
+
+  const users = invite.data || [];
+
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const [inputValue, setInputValue] = useState('');
   const [selectedRole, setSelectedRole] = useState('all');
+  const [selectedStatus, setSelectedStatus] = useState('all');
 
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
@@ -166,48 +165,8 @@ const InviteList = () => {
 
   const [sorting, setSorting] = useState<SortingState>([]);
 
-  const filteredUsers = useMemo(() => {
-
-    let data = [...users];
-
-    if (inputValue) {
-      data = data.filter(
-        (u) =>
-          u.name.toLowerCase().includes(inputValue.toLowerCase()) ||
-          u.email.toLowerCase().includes(inputValue.toLowerCase())
-      );
-    }
-
-    if (selectedRole !== 'all') {
-      data = data.filter((u) => u.user_type === selectedRole);
-    }
-
-    return data;
-
-  }, [users, inputValue, selectedRole]);
-
-  const handleDeleteUser = (user: any) => {
-    setDeleteUserObj(user)
-    setDeleteDialogOpen(true)
-  }
-  const handleEditUser = (id: number) => {
-    const user = users.find(u => u.id === id)
-    if (!user) return
-    setEditData(user)
-    setIsEdit(true)
-    setInviteDialogOpen(true)
-  }
-
-  const handleSaveUser = (data: any) => {
-    if (isEdit) {
-      setUsers(prev =>
-        prev.map(u => u.id === data.id ? data : u)
-      )
-    } else {
-      setUsers(prev => [...prev, data])
-    }
-  }
   const columns = useMemo<ColumnDef<any>[]>(() => [
+
     {
       accessorKey: 'name',
       id: 'name',
@@ -216,34 +175,48 @@ const InviteList = () => {
         <DataGridColumnHeader title="User" column={column} />,
 
       cell: ({ row }) => {
+
         const user = row.original;
+
         return (
           <div className="flex items-center gap-3">
+
             <Avatar className="size-9">
+
               <AvatarFallback>
                 {getInitials(user.name)}
               </AvatarFallback>
+
             </Avatar>
+
             <div>
-              <div className="font-medium text-sm">{user.name}</div>
+
+              <div className="font-medium text-sm">
+                {user.name}
+              </div>
+
               <div className="text-xs text-muted-foreground">
                 {user.email}
               </div>
+
             </div>
+
           </div>
         );
       },
     },
 
     {
-      accessorKey: 'user_type',
-      id: 'user_type',
+      accessorKey: 'status',
+      id: 'status',
 
       header: ({ column }) =>
-        <DataGridColumnHeader title="User Type" column={column} />,
+        <DataGridColumnHeader title="Status" column={column} />,
 
       cell: ({ row }) => (
-        <Badge variant="secondary">{row.original.user_type}</Badge>
+        <Badge variant="secondary">
+          {row.original.status}
+        </Badge>
       ),
     },
 
@@ -282,31 +255,37 @@ const InviteList = () => {
           <DropdownMenuContent align="end">
 
             <DropdownMenuItem
-              onClick={() => handleEditUser(row.original.id)}
-            >
-              Edit
-            </DropdownMenuItem>
-
-            <DropdownMenuSeparator />
-
-            <DropdownMenuItem
               onClick={() =>
                 router.push(`/user-management/users/${row.original.id}`)
               }
             >
               View
             </DropdownMenuItem>
+
+            <DropdownMenuSeparator />
+
+            <DropdownMenuItem
+              onClick={() => setDeleteDialogOpen(true)}
+            >
+              Delete
+            </DropdownMenuItem>
+
           </DropdownMenuContent>
+
         </DropdownMenu>
+
       ),
     },
 
   ], []);
 
   const table = useReactTable({
+
     columns,
-    data: filteredUsers,
-    pageCount: Math.ceil(filteredUsers.length / pagination.pageSize),
+    data: users,
+
+    pageCount: Math.ceil(invite.total / invite.perPage),
+
     state: {
       pagination,
       sorting,
@@ -317,33 +296,46 @@ const InviteList = () => {
 
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
+
   });
 
   useEffect(() => {
-    dispatch(fetchInvitation({
-      user_type: "agent",
-      status: "",
-      page: 1,
-      limit: 10,
-      search: "",
-      sort: "",
-      dir: ""
-    }))
-  }, [])
+
+    dispatch(
+      fetchInvitation({
+        user_type: selectedRole,
+        status: selectedStatus,
+        page: pagination.pageIndex + 1,
+        per_page: pagination.pageSize,
+        search: inputValue,
+        sort: "",
+        dir: ""
+      })
+    );
+
+  }, [
+    dispatch,
+    selectedRole,
+    selectedStatus,
+    pagination.pageIndex,
+    pagination.pageSize,
+    inputValue
+  ]);
+
   return (
 
-    <DataGrid table={table} recordCount={filteredUsers.length}>
+    <DataGrid table={table} recordCount={invite.total}>
+
       <Card>
+
         <DataGridToolbar
           inputValue={inputValue}
           onInputChange={setInputValue}
-          onAddUser={() => {
-            setIsEdit(false)
-            setEditData(null)
-            setInviteDialogOpen(true)
-          }}
+          onAddUser={() => setInviteDialogOpen(true)}
           selectedRole={selectedRole}
           onRoleChange={setSelectedRole}
+          selectedStatus={selectedStatus}
+          onStatusChange={setSelectedStatus}
         />
 
         <CardTable>
@@ -367,22 +359,15 @@ const InviteList = () => {
       <InviteAddDialog
         open={inviteDialogOpen}
         closeDialog={() => setInviteDialogOpen(false)}
-        isEdit={isEdit}
-        editData={editData}
-        onSave={handleSaveUser}
       />
 
-      {deleteUserObj && (
+      {deleteDialogOpen && (
         <InviteDeleteDialog
           open={deleteDialogOpen}
           closeDialog={() => setDeleteDialogOpen(false)}
-          user={deleteUserObj}
-          onDeleted={(user: any) => {
-            setUsers(prev => prev.filter(u => u.id !== user.id))
-            setDeleteDialogOpen(false)
-          }}
         />
       )}
+
     </DataGrid>
 
   );

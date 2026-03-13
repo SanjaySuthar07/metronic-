@@ -11,6 +11,7 @@ export const InviteAddSchema = z
     email: z.string().email({
       message: "Please enter a valid email address.",
     }),
+
     password: z
       .string()
       .min(1, { message: "Password is required." })
@@ -19,23 +20,29 @@ export const InviteAddSchema = z
     confirmPassword: z.string().min(1, {
       message: "Password confirmation is required.",
     }),
-    typeID: z.string().nonempty({ message: "Type is required." }),
-    agencyID: z.string().optional(),
+
+    user_type: z.string().nonempty({
+      message: "Type is required.",
+    }),
+
+    tenant_id: z.string().optional(),
   })
+
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match.",
     path: ["confirmPassword"],
   })
+
   .refine(
     (data) => {
-      if (data.typeID === "agent" && !data.agencyID) {
+      if (data.user_type === "agent" && !data.tenant_id) {
         return false;
       }
       return true;
     },
     {
       message: "Agency is required.",
-      path: ["agencyID"],
+      path: ["tenant_id"],
     }
   );
 
