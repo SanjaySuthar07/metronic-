@@ -95,15 +95,14 @@ const DataGridToolbar = ({
           onChange={(e) => onInputChange(e.target.value)}
           className="ps-9 w-full sm:w-64"
         />
-        {(user?.user_type === "admin" || user?.user_type === "super_admin") && (
+        {(user?.user_type == "super_admin") && (
           <Select value={selectedRole} onValueChange={onRoleChange}>
             <SelectTrigger className="w-full sm:w-40">
               <SelectValue placeholder="All types" />
             </SelectTrigger>
 
             <SelectContent>
-              {/* <SelectItem value="all">All Type</SelectItem> */}
-
+              <SelectItem value="all">All Type</SelectItem>
               {roles.map((role: any) => {
                 if (role.name === "Super Admin") {
                   return null;

@@ -22,7 +22,8 @@ type IChannelStatsItems = Array<IChannelStatsItem>;
 function Dashboard() {
     const dispatch = useDispatch();
     const { count, loading } = useSelector((s: any) => s.dashboard);
-
+    const { user } = useSelector((s) => s.auth)
+    // console.log("hello ", user)
     useEffect(() => {
         const checkAuth = async () => {
             if (!loading) {
@@ -63,31 +64,43 @@ function Dashboard() {
         }
       `}
                 </style>
-                <Card>
-                    <CardHeader className="py-3">
-                        <CardHeading>
-                            <CardTitle>Users</CardTitle>
-                        </CardHeading>
-                    </CardHeader>
-                    <CardContent className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                        {Users.map((item, index) => (
-                            <CountBox key={index} item={item} />
-                        ))}
-                    </CardContent>
-                </Card>
 
-                <Card className='mt-3'>
-                    <CardHeader className="py-3">
-                        <CardHeading>
-                            <CardTitle>Invitation</CardTitle>
-                        </CardHeading>
-                    </CardHeader>
-                    <CardContent className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                        {Invitation.map((item, index) => (
-                            <CountBox key={index} item={item} />
-                        ))}
-                    </CardContent>
-                </Card>
+                {
+                    // console.log()
+                    !count?.status ? (
+                        <Card>
+                            <CardHeader className="py-3">
+                                <CardHeading>
+                                    <CardTitle>Users</CardTitle>
+                                </CardHeading>
+                            </CardHeader>
+                            <CardContent className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                                {Users.map((item, index) => (
+                                    <CountBox key={index} item={item} />
+                                ))}
+                            </CardContent>
+                        </Card>
+                    ) : ""
+                }
+                {
+                    // console.log()
+                    !count?.status ? (
+                        <Card className='mt-3'>
+                            <CardHeader className="py-3">
+                                <CardHeading>
+                                    <CardTitle>Invitation</CardTitle>
+                                </CardHeading>
+                            </CardHeader>
+                            <CardContent className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                                {Invitation.map((item, index) => (
+                                    <CountBox key={index} item={item} />
+                                ))}
+                            </CardContent>
+                        </Card>
+                    ) : ""
+                }
+
+
             </Container>
         </>
     );

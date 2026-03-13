@@ -124,7 +124,7 @@ export function Header() {
         <div className="flex items-center gap-3">
 
           <>
-            {user?.user_type !== "admin" && user?.user_type !== "agency" && (
+            {user?.user_type == "super_admin" && (
               <SettingSheet
                 trigger={
                   <Button
