@@ -38,7 +38,7 @@ export default function Page() {
 
   const dispatch = useDispatch<AppDispatch>();
   const { loading, rememberUser } = useSelector((state: RootState) => state.auth);
-
+  const [isLoading, setIsLoading] = useState(false)
   const [oppenQR, setOppenQR] = useState(false);
   const [qrCode, setQrCode] = useState<string | null>(null);
   const [userId, setUserId] = useState<number | null>(null);
@@ -72,19 +72,27 @@ export default function Page() {
 
   async function onSubmit(values: SigninSchemaType) {
     setError(null);
-    if (!recaptchaRef.current) return;
+    setIsLoading(true);
+
+    if (!recaptchaRef.current) {
+      setIsLoading(false);
+      return;
+    }
+
     let token;
     try {
       token = await recaptchaRef.current.executeAsync();
     } catch {
       setError("Captcha failed");
       resetCaptcha();
+      setIsLoading(false);
       return;
     }
 
     if (!token) {
       setError("Captcha token missing");
       resetCaptcha();
+      setIsLoading(false);
       return;
     }
 
@@ -95,6 +103,7 @@ export default function Page() {
     };
 
     const result = await dispatch(loginUser(payload));
+
     if (loginUser.fulfilled.match(result)) {
       const data = result.payload;
       setQrCode(data.qr_code);
@@ -102,11 +111,13 @@ export default function Page() {
       setOppenQR(true);
       setMessage(data?.message);
       setUserType(data?.user_type);
-
     } else {
       setError(result.payload as string);
     }
+
     resetCaptcha();
+    setIsLoading(false);
+
     if (values.rememberMe) {
       dispatch(remember(values));
     } else {
@@ -228,15 +239,11 @@ export default function Page() {
               </>
             )}
           />
-
         </div>
 
-        <Button type="submit" disabled={loading} className="w-full">
-
-          {loading && <LoaderCircleIcon className="animate-spin mr-2" />}
-
+        <Button type="submit" disabled={isLoading} className="w-full">
+          {isLoading && <LoaderCircleIcon className="animate-spin mr-2" />}
           Continue
-
         </Button>
       </form>
       {mounted && process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY && (
