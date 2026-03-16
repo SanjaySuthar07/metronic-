@@ -107,7 +107,7 @@ const PermissionAddDialog = ({
         payload.tenant_id = user.tenant_id
         res = await dispatch(updatePermissions(payload));
       } else {
-        res = await dispatch(createPermissions({ name: values.name, tenant_id: user.tenant_id }));
+        res = await dispatch(createPermissions({ name: values.name, id: user.tenant_id }));
       }
 
       // const result: any = await dispatch(updatePermissions(payload) as any);
@@ -137,7 +137,7 @@ const PermissionAddDialog = ({
       // }
 
       if (res?.meta?.requestStatus === "fulfilled") {
-        await dispatch(fetchPermissions({ page: 1, per_page: 10, tenant_id: user.tenant_id }));
+        await dispatch(fetchPermissions({ page: 1, per_page: 10, id: user.tenant_id }));
         closeDialog();
         toast.success(
           isEdit

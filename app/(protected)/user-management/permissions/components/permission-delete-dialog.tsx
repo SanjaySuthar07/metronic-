@@ -57,7 +57,7 @@ const PermissionDeleteDialog = ({
         if (onDeleted) {
           onDeleted();
         } else {
-          dispatch(fetchPermissions({ page: 1, per_page: 10, tenant_id: user.tenant_id }) as any);
+          dispatch(fetchPermissions({ page: 1, per_page: 10, id: user.tenant_id }) as any);
         }
         closeDialog();
       }
