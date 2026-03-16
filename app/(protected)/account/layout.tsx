@@ -72,10 +72,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             </Avatar>
             <div>
               <div className="capitalize font-semibold text-base">
-                {user?.name || 'User'}
+                {user?.name || ''}
               </div>
               <div className="capitalize text-muted-foreground text-xs">
-                {user?.user_type || 'Member'}
+                {user?.user_type|| "Agent"}
               </div>
             </div>
           </div>

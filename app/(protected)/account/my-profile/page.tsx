@@ -1,6 +1,7 @@
 'use client';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/store';
+
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState, AppDispatch } from '@/store';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { getProfileSchema, ProfileSchemaType } from '../forms/profile-schema';
@@ -24,8 +25,11 @@ import {
 } from '@/components/ui/form';
 import { LoaderCircleIcon } from 'lucide-react';
 import { toast } from 'sonner';
+import { getProfile, updateProfile } from '@/store/thunk/auth.thunk';
 
 export default function AccountDetails() {
+  const dispatch = useDispatch<AppDispatch>();
+
   const { user, loading } = useSelector((state: RootState) => state.auth);
 
   const form = useForm<ProfileSchemaType>({
@@ -36,7 +40,21 @@ export default function AccountDetails() {
   });
 
   async function onSubmit(values: ProfileSchemaType) {
-    toast.success('Profile updated (UI only)');
+    try {
+      const resultAction = await dispatch(updateProfile(values));
+      if (updateProfile.fulfilled.match(resultAction)) {
+        toast.success('Profile updated successfully');
+        const resultActions = await dispatch(getProfile());
+        if (getProfile.fulfilled.match(resultActions)) {
+          form.reset(values);
+        }
+      }
+      if (updateProfile.rejected.match(resultAction)) {
+        toast.error(resultAction.payload as string);
+      }
+    } catch (error) {
+      toast.error('Something went wrong');
+    }
   }
 
   return (
@@ -64,12 +82,14 @@ export default function AccountDetails() {
                   <FormLabel>
                     Name <span className="text-red-500">*</span>
                   </FormLabel>
+
                   <FormControl>
                     <Input
                       placeholder="Enter your name"
                       {...field}
                     />
                   </FormControl>
+
                   <FormMessage />
                 </FormItem>
               )}
@@ -77,9 +97,10 @@ export default function AccountDetails() {
 
             <div>
               <FormLabel>Email</FormLabel>
+
               <Input
                 value={user?.email || ''}
-                placeholder='Email'
+                placeholder="Email"
                 disabled
               />
             </div>
@@ -103,6 +124,7 @@ export default function AccountDetails() {
                     size={16}
                   />
                 )}
+
                 Save Profile
               </Button>
             </div>

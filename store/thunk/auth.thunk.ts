@@ -164,3 +164,24 @@ export const changePassword = createAsyncThunk(
         }
     }
 );
+
+interface UpdateProfilePayload {
+    name: string;
+}
+export const updateProfile = createAsyncThunk(
+    'auth/updateProfile',
+    async (payload: UpdateProfilePayload, { rejectWithValue }) => {
+        try {
+            const response = await api.post('/update-profile', payload);
+
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.errors
+                    ? Object.values(error.response.data.errors).flat().join(' ')
+                    : error.response?.data?.message || 'Network Problem';
+
+            return rejectWithValue(message);
+        }
+    }
+);

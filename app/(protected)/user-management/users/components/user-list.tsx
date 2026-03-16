@@ -229,183 +229,193 @@ const UserList = () => {
       console.error("Failed to fetch user details", error);
     }
   };
-  useEffect(() => {
 
-    if (user?.user_type === "agency") {
+  const columns = useMemo<ColumnDef<any>[]>(() => {
 
-      setColumnVisibility((prev: any) => ({
-        ...prev,
-        user_type: false
-      }))
+    const cols: ColumnDef<any>[] = [
 
-    } else {
+      {
+        accessorKey: 'name',
+        id: 'name',
+        enableSorting: true,
+        size: 300,
 
-      setColumnVisibility((prev: any) => ({
-        ...prev,
-        user_type: true
-      }))
+        header: ({ column }) => (
+          <DataGridColumnHeader title="User" column={column} />
+        ),
+
+        cell: ({ row }) => {
+
+          const userRow = row.original;
+          const name = userRow?.name || '-';
+          const email = userRow?.email || '-';
+
+          return (
+            <div className="flex items-center gap-3">
+
+              <Avatar className="size-9">
+                <AvatarFallback>
+                  {getInitials(name !== '-' ? name : email)}
+                </AvatarFallback>
+              </Avatar>
+
+              <div className="space-y-0.5">
+                <div className="font-medium text-sm capitalize">
+                  {name}
+                </div>
+
+                <div className="text-muted-foreground text-xs">
+                  {email}
+                </div>
+              </div>
+
+            </div>
+          );
+        },
+
+        meta: {
+          skeleton: (
+            <div className="flex items-center gap-3">
+              <Skeleton className="size-9 rounded-full" />
+              <div className="space-y-1">
+                <Skeleton className="h-4 w-40" />
+                <Skeleton className="h-4 w-32" />
+              </div>
+            </div>
+          ),
+        },
+      }
+
+    ];
+
+    if (user?.user_type !== "agency") {
+
+      cols.push({
+
+        accessorKey: 'user_type',
+        id: 'user_type',
+        enableSorting: true,
+        size: 160,
+
+        header: ({ column }) => (
+          <DataGridColumnHeader title="User Type" column={column} />
+        ),
+
+        cell: ({ row }) => {
+
+          const type = row.original?.user_type;
+
+          return type ? (
+            <Badge variant="secondary" className="capitalize">
+              {type}
+            </Badge>
+          ) : '-';
+        },
+
+        meta: {
+          skeleton: <Skeleton className="h-7 w-24" />,
+        },
+
+      });
 
     }
 
-  }, [user?.user_type])
-  const columns = useMemo<ColumnDef<any>[]>(() => [
-    {
-      accessorKey: 'name',
-      id: 'name',
-      enableSorting: true,
+    cols.push(
 
-      header: ({ column }) =>
-        <DataGridColumnHeader title="User" column={column} />,
+      {
+        accessorKey: 'created_at',
+        id: 'created_at',
+        enableSorting: true,
+        size: 160,
 
-      cell: ({ row }) => {
-
-        const user = row.original;
-        const name = user?.name || '-';
-        const email = user?.email || '-';
-
-        return (
-          <div className="flex items-center gap-3">
-
-            <Avatar className="size-9">
-              <AvatarFallback>
-                {getInitials(name !== '-' ? name : email)}
-              </AvatarFallback>
-            </Avatar>
-
-            <div className="space-y-0.5">
-              <div className="font-medium text-sm capitalize">{name}</div>
-              <div className="text-muted-foreground text-xs">{email}</div>
-            </div>
-
-          </div>
-        );
-      },
-
-      size: 300,
-
-      meta: {
-        skeleton: (
-          <div className="flex items-center gap-3">
-            <Skeleton className="size-9 rounded-full" />
-            <div className="space-y-1">
-              <Skeleton className="h-4 w-40" />
-              <Skeleton className="h-4 w-32" />
-            </div>
-          </div>
+        header: ({ column }) => (
+          <DataGridColumnHeader title="Joined" column={column} />
         ),
-      },
-    },
 
-    {
-      accessorKey: 'user_type',
-      id: 'user_type',
-      enableSorting: true,
+        cell: ({ row }) => {
 
-      header: ({ column }) =>
-        <DataGridColumnHeader title="User Type" column={column} />,
+          const date = row.original?.created_at;
 
-      cell: ({ row }) => {
+          return date
+            ? formatDate(new Date(date))
+            : '-';
+        },
 
-        const type = row.original?.user_type;
-
-        return type ? (
-          <Badge variant="secondary" className="capitalize">
-            {type}
-          </Badge>
-        ) : '-';
+        meta: {
+          skeleton: <Skeleton className="h-7 w-28" />,
+        },
       },
 
-      size: 160,
+      {
+        id: 'actions',
+        header: 'Actions',
+        enableSorting: false,
+        enableHiding: false,
+        size: 75,
 
-      meta: {
-        skeleton: <Skeleton className="h-7 w-24" />,
-      },
-    },
+        cell: ({ row }) => (
 
+          <DropdownMenu>
 
-    {
-      accessorKey: 'created_at',
-      id: 'created_at',
-      enableSorting: true,
+            <DropdownMenuTrigger asChild>
+              <Button className="h-7 w-7" mode="icon" variant="ghost">
+                <EllipsisVertical />
+              </Button>
+            </DropdownMenuTrigger>
 
-      header: ({ column }) =>
-        <DataGridColumnHeader title="Joined" column={column} />,
+            <DropdownMenuContent align="end">
 
-      cell: ({ row }) => {
+              {
+                hasPermission(user, ["agent-edit"]) && (
+                  <>
+                    <DropdownMenuItem
+                      onClick={() => handleEditUser(row.original.id)}
+                    >
+                      Edit
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                  </>
+                )
+              }
 
-        const date = row.original?.created_at;
+              {
+                hasPermission(user, ["agent-show"]) && (
+                  <>
+                    <DropdownMenuItem
+                      onClick={() =>
+                        router.push(`/user-management/users/${row.original.id}`)
+                      }
+                    >
+                      View
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                  </>
+                )
+              }
 
-        return date
-          ? formatDate(new Date(date))
-          : '-';
-      },
+              <DropdownMenuItem
+                variant="destructive"
+                onClick={() => handleDeleteUser(row.original)}
+              >
+                Delete
+              </DropdownMenuItem>
 
-      size: 160,
+            </DropdownMenuContent>
 
-      meta: {
-        skeleton: <Skeleton className="h-7 w-28" />,
-      },
-    },
+          </DropdownMenu>
 
-    {
-      id: 'actions',
-      header: 'Actions',
-      enableSorting: false,
-      enableHiding: false,
-      size: 75,
+        ),
 
-      cell: ({ row }) => (
+        meta: {
+          skeleton: <Skeleton className="size-5" />,
+        },
+      }
 
-        <DropdownMenu>
+    );
 
-          <DropdownMenuTrigger asChild>
+    return cols;
 
-            <Button
-              className="h-7 w-7"
-              mode="icon"
-              variant="ghost"
-            >
-              <EllipsisVertical />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {
-              hasPermission(user, ["agent-edit"]) ? (
-                <>
-                  <DropdownMenuItem
-                    onClick={() => handleEditUser(row.original.id)}
-                  >
-                    Edit
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                </>
-              ) : ""
-            }
-            {
-              hasPermission(user, ["agent-show"]) ? (
-                <>
-                  <DropdownMenuItem onClick={() => router.push(`/user-management/users/${row.original.id}`)}>
-                    View
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                </>
-              ) : ""
-            }
-            <DropdownMenuItem variant="destructive" onClick={() => handleDeleteUser(row.original)}>
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-
-        </DropdownMenu >
-      ),
-
-      meta: {
-        skeleton: <Skeleton className="size-5" />,
-      },
-    },
-
-  ], []);
-
+  }, [user?.user_type]);
   useEffect(() => {
     setColumnOrder(columns.map((col) => col.id as string));
   }, [columns]);

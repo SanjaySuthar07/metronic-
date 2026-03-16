@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { Eye, EyeOff, LoaderCircleIcon } from 'lucide-react'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { Button } from '@/components/ui/button'
 
@@ -57,8 +57,10 @@ const InviteAddDialog = ({
 }: any) => {
 
   const dispatch = useDispatch()
+  const { user } = useSelector((s: any) => s.auth)
 
   const [passwordVisible, setPasswordVisible] = useState(false)
+  const [CpasswordVisible, setCPasswordVisible] = useState(false)
   const [isAgencyDropDownOpen, setIsAgencyDropDownOpen] = useState(false)
   const [agency, setAgency] = useState<any[]>([])
   const [isSubmit, setIsSubmit] = useState(false)
@@ -75,6 +77,7 @@ const InviteAddDialog = ({
     },
   })
 
+  // reset form
   useEffect(() => {
     if (open) {
       form.reset({
@@ -89,6 +92,15 @@ const InviteAddDialog = ({
     }
   }, [open])
 
+  // ⭐ agency login auto set values
+  useEffect(() => {
+    if (user?.user_type === 'agency') {
+      form.setValue('tenant_id', user.tenant_id)
+      form.setValue('user_type', 'agent')
+    }
+  }, [user, form])
+
+  // fetch agency list
   useEffect(() => {
     const getAgency = async () => {
       const res: any = await dispatch(fetchAgency())
@@ -116,7 +128,7 @@ const InviteAddDialog = ({
 
       toast.success("User invited successfully")
 
-      onSuccess?.()   // ⭐ LIST REFRESH
+      onSuccess?.()
 
       closeDialog()
 
@@ -146,66 +158,70 @@ const InviteAddDialog = ({
 
             <DialogBody className="pt-2.5 space-y-6">
 
-              <FormField
-                control={form.control}
-                name="user_type"
-                render={({ field }) => (
-                  <FormItem>
+              {/* USER TYPE (hide if agency login) */}
+              {user?.user_type !== "agency" && (
+                <FormField
+                  control={form.control}
+                  name="user_type"
+                  render={({ field }) => (
+                    <FormItem>
 
-                    <FormLabel>
-                      Type <span className="text-red-500">*</span>
-                    </FormLabel>
+                      <FormLabel>
+                        Type <span className="text-red-500">*</span>
+                      </FormLabel>
 
-                    <FormControl>
+                      <FormControl>
 
-                      <Select
-                        value={field.value || ''}
-                        onValueChange={(value) => {
+                        <Select
+                          value={field.value || ''}
+                          onValueChange={(value) => {
 
-                          field.onChange(value)
+                            field.onChange(value)
 
-                          if (value === 'agent') {
-                            setIsAgencyDropDownOpen(true)
-                          } else {
-                            setIsAgencyDropDownOpen(false)
-                            form.setValue('tenant_id', '')
-                          }
+                            if (value === 'agent') {
+                              setIsAgencyDropDownOpen(true)
+                            } else {
+                              setIsAgencyDropDownOpen(false)
+                              form.setValue('tenant_id', '')
+                            }
 
-                        }}
-                      >
+                          }}
+                        >
 
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select Type" />
-                        </SelectTrigger>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select Type" />
+                          </SelectTrigger>
 
-                        <SelectContent>
+                          <SelectContent>
 
-                          <SelectGroup>
+                            <SelectGroup>
 
-                            {type.map((item) => (
-                              <SelectItem
-                                key={item.id}
-                                value={item.id}
-                              >
-                                {item.name}
-                              </SelectItem>
-                            ))}
+                              {type.map((item) => (
+                                <SelectItem
+                                  key={item.id}
+                                  value={item.id}
+                                >
+                                  {item.name}
+                                </SelectItem>
+                              ))}
 
-                          </SelectGroup>
+                            </SelectGroup>
 
-                        </SelectContent>
+                          </SelectContent>
 
-                      </Select>
+                        </Select>
 
-                    </FormControl>
+                      </FormControl>
 
-                    <FormMessage />
+                      <FormMessage />
 
-                  </FormItem>
-                )}
-              />
+                    </FormItem>
+                  )}
+                />
+              )}
 
-              {isAgencyDropDownOpen && (
+              {/* AGENCY DROPDOWN */}
+              {isAgencyDropDownOpen && user?.user_type !== "agency" && (
 
                 <FormField
                   control={form.control}
@@ -259,6 +275,7 @@ const InviteAddDialog = ({
 
               )}
 
+              {/* NAME */}
               <FormField
                 control={form.control}
                 name="name"
@@ -284,6 +301,7 @@ const InviteAddDialog = ({
                 )}
               />
 
+              {/* EMAIL */}
               <FormField
                 control={form.control}
                 name="email"
@@ -312,6 +330,7 @@ const InviteAddDialog = ({
                 )}
               />
 
+              {/* PASSWORD */}
               <FormField
                 control={form.control}
                 name="password"
@@ -361,6 +380,7 @@ const InviteAddDialog = ({
                 )}
               />
 
+              {/* CONFIRM PASSWORD */}
               <FormField
                 control={form.control}
                 name="confirmPassword"
@@ -372,17 +392,32 @@ const InviteAddDialog = ({
                       Confirm Password
                       <span className="text-red-500">*</span>
                     </FormLabel>
+                    <div className="relative">
+                      <FormControl>
 
-                    <FormControl>
+                        <Input
+                          type={CpasswordVisible ? 'text' : 'password'}
+                          placeholder="Confirm Password"
+                          {...field}
+                        />
 
-                      <Input
-                        type={passwordVisible ? 'text' : 'password'}
-                        placeholder="Confirm Password"
-                        {...field}
-                      />
-
-                    </FormControl>
-
+                      </FormControl>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() =>
+                          setCPasswordVisible(!CpasswordVisible)
+                        }
+                        className="absolute right-1 top-1/2 -translate-y-1/2"
+                      >
+                        {CpasswordVisible ? (
+                          <EyeOff size={18} />
+                        ) : (
+                          <Eye size={18} />
+                        )}
+                      </Button>
+                    </div>
                     <FormMessage />
 
                   </FormItem>
