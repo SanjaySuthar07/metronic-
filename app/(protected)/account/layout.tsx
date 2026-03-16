@@ -1,7 +1,7 @@
 'use client';
 import React, { useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { SquarePen, UserPen } from 'lucide-react';
+import { MoveLeft, SquarePen, UserPen } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import { getInitials } from '@/lib/helpers';
@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Container } from '@/components/common/container';
 import { DashboardHeader } from '../components/dashboardHeader';
+import { Button } from '@/components/ui/button';
 
 type NavRoutes = Record<
   string,
@@ -58,7 +59,16 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <Container>
-      <DashboardHeader title={"Account"} description={""} />
+      <div className='flex justify-between'>
+        <DashboardHeader title={"Account"} description={""} />
+        <Button asChild variant="outline">
+          <p onClick={() => window.history.back()}>
+            <MoveLeft />
+            Back
+          </p>
+        </Button>
+      </div>
+
       <div className="flex flex-col gap-10 lg:flex-row lg:gap-14">
         <div className="space-y-7 lg:w-[230px] shrink-0 pt-6">
           <div className="flex items-center gap-3">
@@ -75,7 +85,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 {user?.name || ''}
               </div>
               <div className="capitalize text-muted-foreground text-xs">
-                {user?.user_type|| "Agent"}
+                {user?.user_type || "Agent"}
               </div>
             </div>
           </div>
