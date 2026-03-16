@@ -251,7 +251,7 @@ export const updatePermissions = createAsyncThunk(
     try {
       const response = await api.put(`/permissions/${payload.id}`, {
         name: payload.name,
-        tenant_id: payload.tenant_id
+        tenant_id: payload?.tenant_id
       });
       return response.data;
     } catch (error: any) {

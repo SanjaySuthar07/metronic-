@@ -143,7 +143,8 @@ const PermissionList = () => {
         search: inputValue.trim() || undefined,
         sort: sorting?.[0]?.id,
         dir: sorting?.[0]?.desc ? 'desc' : 'asc',
-        id: user?.tenant_id
+        id: user?.tenant_id,
+        tenant_id: user.tenant_id
       })
     );
   };
@@ -195,7 +196,8 @@ const PermissionList = () => {
         search: inputValue.trim() || undefined,
         sort: sortField,
         dir: sortField ? sortDirection : undefined,
-        id: user?.tenant_id
+        id: user?.tenant_id,
+        tenant_id: user.tenant_id
       })
     );
 
@@ -211,7 +213,7 @@ const PermissionList = () => {
 
   const handleEditPermissions = async (id: number) => {
     try {
-      const res: any = await dispatch(fetchPermissionsDetail({ id }));
+      const res: any = await dispatch(fetchPermissionsDetail({ id, tenant_id: user.tenant_id }));
       if (res?.payload?.permission) {
         setEditData(res.payload.permission);
         setIsEdit(true);

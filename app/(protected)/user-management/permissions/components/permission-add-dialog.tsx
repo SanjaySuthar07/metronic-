@@ -36,7 +36,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import {
   fetchPermissions,
   createPermissions,
@@ -49,7 +49,7 @@ const PermissionAddSchema = z.object({
   name: z.string().nonempty('Permission name is required').min(2).max(50)
 });
 type PermissionAddSchemaType = z.infer<typeof PermissionAddSchema>;
-  const PermissionAddDialog = ({
+const PermissionAddDialog = ({
   open,
   closeDialog,
   isEdit,
@@ -62,9 +62,9 @@ type PermissionAddSchemaType = z.infer<typeof PermissionAddSchema>;
   onSave: (data: any) => void
 }) => {
   const [isProcessing, setIsProcessing] = useState(false);
-  
-  const dispatch = useDispatch(); 
-  
+
+  const dispatch = useDispatch();
+  const { user } = useSelector((s) => s.auth)
   const form = useForm<PermissionAddSchemaType>({
     resolver: zodResolver(PermissionAddSchema),
     defaultValues: {
@@ -87,77 +87,78 @@ type PermissionAddSchemaType = z.infer<typeof PermissionAddSchema>;
     }
   }, [open, isEdit, editData, form]);
   const handleSubmit = async (values: PermissionsAddSchemaType) => {
-      setIsProcessing(true);
-  
-      try {
-        const payload: any = {
-          ...values,
-        };
+    setIsProcessing(true);
 
-        if (isEdit) {
-          delete payload.roleId;
-        }
+    try {
+      const payload: any = {
+        ...values,
+      };
 
-        if (isEdit && editData?.id) {
-          payload.id = editData.id;
-        }
-
-        let res: any;
-        if (isEdit) {
-          res = await dispatch(updatePermissions(payload));
-        } else {
-          res = await dispatch(createPermissions({ name: values.name}));
-        }
-
-        // const result: any = await dispatch(updatePermissions(payload) as any);
-        // if(updatePermissions.fulfilled.match(result)) {
-        //   dispatch(fetchPermissions({ page: 1, per_page: 10 }) as any);
-        // }
-  
-        // if (result.error) {
-        //   toast.error(result.error.message || 'Failed to save permission', {
-        //     position: 'top-center',
-        //   });
-        // } else {
-        //   toast.custom(
-        //     () => (
-        //       <Alert variant="mono" icon="success" close={false}>
-        //         <AlertIcon>
-        //           <RiCheckboxCircleFill />
-        //         </AlertIcon>
-        //         <AlertTitle>
-        //           {isEdit ? 'Permission updated successfully' : 'Permission added successfully'}
-        //         </AlertTitle>
-        //       </Alert>
-        //     ),
-        //     { position: 'top-center' }
-        //   );
-        //   closeDialog();
-        // }
-
-        if (res?.meta?.requestStatus === "fulfilled") {
-          await dispatch(fetchPermissions({ page: 1, per_page: 10 }));
-          closeDialog();
-          toast.success(
-            isEdit
-              ? "Permissions Update Successfully"
-              : "Permission Created Successfully",
-            {
-              position: "top-center",
-              style: {
-                background: "#16a34a",
-                color: "#fff",
-                border: "none",
-              },
-            }
-          );
-        }
-      } catch (err) {
-        console.error('save user error', err);
-      } finally {
-        setIsProcessing(false);
+      if (isEdit) {
+        delete payload.roleId;
       }
-    };
+
+      if (isEdit && editData?.id) {
+        payload.id = editData.id;
+      }
+
+      let res: any;
+      if (isEdit) {
+        payload.tenant_id = user.tenant_id
+        res = await dispatch(updatePermissions(payload));
+      } else {
+        res = await dispatch(createPermissions({ name: values.name, tenant_id: user.tenant_id }));
+      }
+
+      // const result: any = await dispatch(updatePermissions(payload) as any);
+      // if(updatePermissions.fulfilled.match(result)) {
+      //   dispatch(fetchPermissions({ page: 1, per_page: 10 }) as any);
+      // }
+
+      // if (result.error) {
+      //   toast.error(result.error.message || 'Failed to save permission', {
+      //     position: 'top-center',
+      //   });
+      // } else {
+      //   toast.custom(
+      //     () => (
+      //       <Alert variant="mono" icon="success" close={false}>
+      //         <AlertIcon>
+      //           <RiCheckboxCircleFill />
+      //         </AlertIcon>
+      //         <AlertTitle>
+      //           {isEdit ? 'Permission updated successfully' : 'Permission added successfully'}
+      //         </AlertTitle>
+      //       </Alert>
+      //     ),
+      //     { position: 'top-center' }
+      //   );
+      //   closeDialog();
+      // }
+
+      if (res?.meta?.requestStatus === "fulfilled") {
+        await dispatch(fetchPermissions({ page: 1, per_page: 10, tenant_id: user.tenant_id }));
+        closeDialog();
+        toast.success(
+          isEdit
+            ? "Permissions Update Successfully"
+            : "Permission Created Successfully",
+          {
+            position: "top-center",
+            style: {
+              background: "#16a34a",
+              color: "#fff",
+              border: "none",
+            },
+          }
+        );
+      }
+    } catch (err) {
+      console.error('save user error', err);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={closeDialog}>

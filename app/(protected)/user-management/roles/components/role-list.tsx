@@ -147,9 +147,8 @@ const RolesList = () => {
 
   const handleEditUser = async (id: number, type: any) => {
     try {
-      const res: any = await dispatch(fetchRoleDetail({ id }));
+      const res: any = await dispatch(fetchRoleDetail({ id, tenant_id: user.tenant_id }));
       if (res?.payload?.role) {
-
         setEditData(res.payload.role);
         setIsEdit(true);
         if (type == "edit") {
@@ -158,7 +157,6 @@ const RolesList = () => {
           setViewDialogOpen(true)
         }
       }
-
     } catch (error) {
       console.error("Failed to fetch role details", error);
     }

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { LoaderCircleIcon, X } from 'lucide-react';
 import { useForm } from 'react-hook-form';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 import {
   Dialog,
@@ -72,6 +72,7 @@ const RoleInviteDialog = ({
   const [permissionList, setPermissionList] = useState<any[]>([]);
   const [selectedPermissions, setSelectedPermissions] = useState<number[]>([]);
   const [isProcess, setIsProcess] = useState(false);
+  const { user } = useSelector((s) => s.auth)
 
   const form = useForm<RoleSchemaType>({
     defaultValues: {
@@ -84,7 +85,7 @@ const RoleInviteDialog = ({
     if (!open) return;
     const getPermissions = async () => {
       console.log("permissions api called");
-      const res: any = await dispatch(fetchPermissionsDropdown());
+      const res: any = await dispatch(fetchPermissionsDropdown({ tenant_id: user.tenant_id }));
       setPermissionList(res?.payload?.permissions || []);
     };
 
@@ -136,6 +137,7 @@ const RoleInviteDialog = ({
       id: editData?.id,
       name: values.name,
       permissions: selectedPermissions,
+      tenant_id: user.tenant_id
     };
 
     let res: any;
@@ -147,12 +149,13 @@ const RoleInviteDialog = ({
         createRole({
           name: values.name,
           permissions: selectedPermissions,
+          tenant_id: user.tenant_id
         })
       );
     }
 
     if (res?.meta?.requestStatus === 'fulfilled') {
-      await dispatch(fetchRoles({ page: 1, per_page: 10 }));
+      await dispatch(fetchRoles({ page: 1, per_page: 10, tenant_id: user.tenant_id }));
 
       closeDialog();
 

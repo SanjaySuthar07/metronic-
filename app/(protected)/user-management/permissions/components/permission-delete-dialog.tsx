@@ -1,7 +1,7 @@
 'use client';
 import { RiCheckboxCircleFill } from '@remixicon/react';
 import { useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'sonner';
 import { Alert, AlertIcon, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -32,12 +32,12 @@ const PermissionDeleteDialog = ({
 }: PermissionDeleteDialogProps) => {
   const dispatch = useDispatch<AppDispatch>();
   const [isProcessing, setIsProcessing] = useState(false);
-
+  const { user } = useSelector((s) => s.auth)
   const handleDelete = async () => {
     if (!permission?.id) return;
     setIsProcessing(true);
     try {
-      const res: any = await dispatch(deletePermissions({ id: permission.id }) as any);
+      const res: any = await dispatch(deletePermissions({ id: permission.id, tenant_id: user.tenant_id }) as any);
       if (res.error) {
         toast.error(res.error.message || 'Failed to delete permission', {
           position: 'top-center',
@@ -57,7 +57,7 @@ const PermissionDeleteDialog = ({
         if (onDeleted) {
           onDeleted();
         } else {
-          dispatch(fetchPermissions({ page: 1, per_page: 10 }) as any);
+          dispatch(fetchPermissions({ page: 1, per_page: 10, tenant_id: user.tenant_id }) as any);
         }
         closeDialog();
       }
