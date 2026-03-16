@@ -144,7 +144,6 @@ const PermissionList = () => {
         sort: sorting?.[0]?.id,
         dir: sorting?.[0]?.desc ? 'desc' : 'asc',
         id: user?.tenant_id,
-        tenant_id: user.tenant_id
       })
     );
   };
@@ -197,7 +196,7 @@ const PermissionList = () => {
         sort: sortField,
         dir: sortField ? sortDirection : undefined,
         id: user?.tenant_id,
-        tenant_id: user.tenant_id
+      
       })
     );
 

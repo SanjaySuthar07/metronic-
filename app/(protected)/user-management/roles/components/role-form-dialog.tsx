@@ -84,7 +84,6 @@ const RoleInviteDialog = ({
   useEffect(() => {
     if (!open) return;
     const getPermissions = async () => {
-      console.log("permissions api called");
       const res: any = await dispatch(fetchPermissionsDropdown({ tenant_id: user.tenant_id }));
       setPermissionList(res?.payload?.permissions || []);
     };

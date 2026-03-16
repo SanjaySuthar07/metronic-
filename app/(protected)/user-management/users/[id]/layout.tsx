@@ -151,46 +151,28 @@ export default function UserLayout({
       </Toolbar>
 
       <UserHero user={userDetail} />
-
       <Tabs value={activeTab}>
-
         <TabsList variant="line" className="mb-5">
-
           {Object.entries(navRoutes)
-
             .filter(([key, route]) => {
-
-              // admin user ko sirf profile tab
               if (userDetail?.user_type === "admin" && key !== "general") {
                 return false;
               }
-
-              // permission check
               return hasPermission(user, route.permission);
-
             })
-
             .map(([key, { title, icon: Icon, path }]) => (
-
               <TabsTrigger
                 key={key}
                 value={key}
                 onClick={() => router.push(path)}
               >
-
                 <Icon />
                 <span>{title}</span>
-
               </TabsTrigger>
-
             ))}
-
         </TabsList>
-
       </Tabs>
-
       {children}
-
     </Container>
   );
 }
