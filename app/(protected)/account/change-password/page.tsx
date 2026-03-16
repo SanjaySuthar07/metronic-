@@ -1,9 +1,9 @@
 'use client';
 
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { useState } from 'react';
-import { Eye, EyeOff } from 'lucide-react';
-import { AppDispatch, RootState } from '@/store';
+import { Eye, EyeOff, LoaderCircleIcon } from 'lucide-react';
+import { AppDispatch } from '@/store';
 import { changePassword } from '@/store/thunk/auth.thunk';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -11,6 +11,7 @@ import {
   getChangePasswordSchema,
   ChangePasswordSchemaType,
 } from '../forms/change-password-schema';
+
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -20,7 +21,9 @@ import {
   CardHeading,
   CardTitle,
 } from '@/components/ui/card';
+
 import { Input } from '@/components/ui/input';
+
 import {
   Form,
   FormControl,
@@ -29,16 +32,17 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { LoaderCircleIcon } from 'lucide-react';
+
 import { toast } from 'sonner';
 
 export default function ChangePassword() {
   const dispatch = useDispatch<AppDispatch>();
-  const { loading } = useSelector((state: RootState) => state.auth);
 
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+
+  const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<ChangePasswordSchemaType>({
     resolver: zodResolver(getChangePasswordSchema()),
@@ -50,14 +54,24 @@ export default function ChangePassword() {
   });
 
   async function onSubmit(values: ChangePasswordSchemaType) {
+
+    setIsLoading(true);
+
     const resultAction = await dispatch(changePassword(values));
 
     if (changePassword.fulfilled.match(resultAction)) {
+
       toast.success('Password changed successfully');
+
       form.reset();
+
     } else {
+
       toast.error(resultAction.payload as string);
+
     }
+
+    setIsLoading(false);
   }
 
   return (
@@ -70,7 +84,6 @@ export default function ChangePassword() {
           </CardDescription>
         </CardHeading>
       </CardHeader>
-
       <CardContent>
         <Form {...form}>
           <form
@@ -82,6 +95,7 @@ export default function ChangePassword() {
               name="current_password"
               render={({ field }) => (
                 <FormItem>
+
                   <FormLabel>
                     Current Password <span className="text-red-500">*</span>
                   </FormLabel>
@@ -89,7 +103,8 @@ export default function ChangePassword() {
                     <FormControl>
                       <Input
                         type={showCurrent ? 'text' : 'password'}
-                        placeholder='Enter your current password'
+                        placeholder="Enter your current password"
+                        disabled={isLoading}
                         {...field}
                       />
                     </FormControl>
@@ -107,28 +122,35 @@ export default function ChangePassword() {
                         <EyeOff className="text-muted-foreground" />
                       )}
                     </Button>
+
                   </div>
+
                   <FormMessage />
+
                 </FormItem>
               )}
             />
-
             <FormField
               control={form.control}
               name="new_password"
               render={({ field }) => (
                 <FormItem>
+
                   <FormLabel>
                     New Password <span className="text-red-500">*</span>
                   </FormLabel>
+
                   <div className="relative">
+
                     <FormControl>
                       <Input
                         type={showNew ? 'text' : 'password'}
-                        placeholder='Enter your new password'
+                        placeholder="Enter your new password"
+                        disabled={isLoading}
                         {...field}
                       />
                     </FormControl>
+
                     <Button
                       type="button"
                       variant="ghost"
@@ -143,29 +165,35 @@ export default function ChangePassword() {
                         <EyeOff className="text-muted-foreground" />
                       )}
                     </Button>
+
                   </div>
+
                   <FormMessage />
+
                 </FormItem>
               )}
             />
-
             <FormField
               control={form.control}
               name="new_password_confirmation"
               render={({ field }) => (
                 <FormItem>
+
                   <FormLabel>
-                    Confirm New Password{' '}
-                    <span className="text-red-500">*</span>
+                    Confirm New Password <span className="text-red-500">*</span>
                   </FormLabel>
+
                   <div className="relative">
+
                     <FormControl>
                       <Input
                         type={showConfirm ? 'text' : 'password'}
-                        placeholder='Enter your confirm password'
+                        placeholder="Enter your confirm password"
+                        disabled={isLoading}
                         {...field}
                       />
                     </FormControl>
+
                     <Button
                       type="button"
                       variant="ghost"
@@ -180,16 +208,19 @@ export default function ChangePassword() {
                         <EyeOff className="text-muted-foreground" />
                       )}
                     </Button>
+
                   </div>
+
                   <FormMessage />
+
                 </FormItem>
               )}
             />
-
             <div className="flex justify-end gap-3">
               <Button
                 type="button"
                 variant="outline"
+                disabled={isLoading}
                 onClick={() => form.reset()}
               >
                 Reset
@@ -197,9 +228,9 @@ export default function ChangePassword() {
 
               <Button
                 type="submit"
-                disabled={loading}
+                disabled={isLoading}
               >
-                {loading && (
+                {isLoading && (
                   <LoaderCircleIcon
                     className="animate-spin mr-2"
                     size={16}
@@ -210,6 +241,7 @@ export default function ChangePassword() {
             </div>
           </form>
         </Form>
+
       </CardContent>
     </Card>
   );

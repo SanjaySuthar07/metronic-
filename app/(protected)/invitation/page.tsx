@@ -16,7 +16,7 @@ import {
 } from '@/components/common/toolbar';
 import InviteList from './components/invite-list';
 export const metadata: Metadata = {
-  title: 'Invite',
+  title: 'Invitation',
   description: 'Invitation users.',
 };
 export default async function Page() {
@@ -25,7 +25,7 @@ export default async function Page() {
       <Container>
         <Toolbar>
           <ToolbarHeading>
-            <ToolbarTitle>Invite</ToolbarTitle>
+            <ToolbarTitle>Invitation</ToolbarTitle>
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem>
@@ -33,7 +33,7 @@ export default async function Page() {
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
-                  <BreadcrumbPage>invite</BreadcrumbPage>
+                  <BreadcrumbPage>Invitation</BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>

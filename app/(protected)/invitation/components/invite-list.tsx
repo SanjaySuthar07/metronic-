@@ -297,10 +297,9 @@ const InviteList = () => {
 
               )}
 
-            <DropdownMenuSeparator />
 
             <DropdownMenuItem
-              onClick={() => router.push(`/invite/${row.original.id}`)}
+              onClick={() => router.push(`/invitation/${row.original.id}`)}
             >
               View
             </DropdownMenuItem>

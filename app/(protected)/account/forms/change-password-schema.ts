@@ -4,9 +4,7 @@ export const getChangePasswordSchema = () => {
   return z
     .object({
       current_password: getPasswordSchema(),
-
       new_password: getPasswordSchema(),
-
       new_password_confirmation: getPasswordSchema(),
     })
     .refine(

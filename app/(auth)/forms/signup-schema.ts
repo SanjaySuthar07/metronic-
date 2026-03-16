@@ -13,9 +13,7 @@ export const getSignupSchema = () => {
         .email({ message: 'Please enter a valid email address.' })
         .min(1, { message: 'Email is required.' }),
       password: getPasswordSchema(),
-      passwordConfirmation: z.string().min(1, {
-        message: 'Password confirmation is required.',
-      }),
+      passwordConfirmation: getPasswordSchema(),
       accept: z.boolean().refine((val) => val === true, {
         message: 'You must accept the terms and conditions.',
       }),

@@ -26,10 +26,11 @@ import { Alert, AlertIcon, AlertTitle } from '@/components/ui/alert';
 import { acceptInvitation } from '@/store/thunk/invite.thunk';
 import { decryptLaravelData } from '@/lib/laravelDecrypt';
 import { toast } from 'sonner';
+import { getPasswordSchema } from '../forms/password-schema';
 
 const formSchema = z
   .object({
-    password: z.string().min(6, 'Password must be at least 6 characters'),
+    password: getPasswordSchema(),
     confirm_password: z
       .string()
       .min(6, 'Confirm password must be at least 6 characters'),

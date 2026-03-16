@@ -1,3 +1,4 @@
+import { getPasswordSchema } from "@/app/(auth)/forms/password-schema";
 import { z } from "zod";
 
 export const InviteAddSchema = z
@@ -12,14 +13,9 @@ export const InviteAddSchema = z
       message: "Please enter a valid email address.",
     }),
 
-    password: z
-      .string()
-      .min(1, { message: "Password is required." })
-      .min(6, { message: "Password must be at least 6 characters long." }),
+    password: getPasswordSchema(),
 
-    confirmPassword: z.string().min(1, {
-      message: "Password confirmation is required.",
-    }),
+    confirmPassword: getPasswordSchema(),
 
     user_type: z.string().nonempty({
       message: "Type is required.",

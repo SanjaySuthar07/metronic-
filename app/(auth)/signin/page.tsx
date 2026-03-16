@@ -47,7 +47,7 @@ export default function Page() {
   const [message, setMessage] = useState<string | null>(null);
   const [userType, setUserType] = useState<string | null>(null);
   const [tenant_id, setTenant_id] = useState<string | null>(null);
-  
+
 
   const form = useForm<SigninSchemaType>({
     resolver: zodResolver(getSigninSchema()),
@@ -61,7 +61,6 @@ export default function Page() {
   useEffect(() => {
     if (rememberUser) {
       form.setValue('email', rememberUser.email || '');
-      form.setValue('password', rememberUser.password || '');
       form.setValue('rememberMe', rememberUser.rememberMe || false);
     }
   }, [rememberUser, form]);
@@ -122,7 +121,7 @@ export default function Page() {
     setIsLoading(false);
 
     if (values.rememberMe) {
-      dispatch(remember(values));
+      dispatch(remember({ email: values.email }));
     } else {
       dispatch(remember(null));
     }

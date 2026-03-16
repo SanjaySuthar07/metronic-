@@ -75,9 +75,9 @@ export const MENU_SIDEBAR: any = [
     ],
   },
   {
-    title: 'Invite',
+    title: 'invitation',
     icon: Users,
-    path: '/invite',
+    path: '/invitation',
     role: ['super_admin']
   },
 ];
