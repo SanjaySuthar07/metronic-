@@ -44,6 +44,7 @@ import { toast } from 'sonner'
 
 const type = [
   { id: 'admin', name: 'Admin' },
+  { id: 'agency', name: 'Agency' },
   { id: 'agent', name: 'Agent' },
 ]
 
