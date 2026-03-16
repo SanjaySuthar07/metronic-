@@ -99,10 +99,11 @@ function Dashboard() {
 
 
     const filteredUsers =
-        user?.user_type === "agency" ? Users.slice(2) : Users;
+        user?.user_type === "agency" ? Users.slice(2) :
+            user?.user_type === "admin" ? Users.slice(Users.length) : Users;
 
     const filteredInvitation =
-        user?.user_type === "agency" ? [] : Invitation;
+        user?.user_type === "agency" ? [] : user?.user_type === "admin" ? Users.slice(Users.length) : Invitation;
 
     return (
         <>

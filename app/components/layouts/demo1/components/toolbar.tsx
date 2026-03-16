@@ -3,11 +3,12 @@
 import { Fragment, ReactNode } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Linkedin, MoveLeft } from 'lucide-react';
 import { MENU_SIDEBAR } from '@/config/menu.config';
 import { MenuItem } from '@/config/types';
 import { cn } from '@/lib/utils';
 import { useMenu } from '@/hooks/use-menu';
+import { Button } from '@/components/ui/button';
 
 export interface ToolbarHeadingProps {
   title?: string | ReactNode;
@@ -80,16 +81,24 @@ function ToolbarHeading({ title = '', description }: ToolbarHeadingProps) {
   const item = getCurrentItem(MENU_SIDEBAR);
 
   return (
-    <div className="flex flex-col justify-center gap-2">
-      <h1 className="text-xl font-medium leading-none text-mono">
-        {title || item?.title || 'Untitled'}
-      </h1>
-      {description && (
-        <div className="flex items-center gap-2 text-sm font-normal text-muted-foreground">
-          {description}
-        </div>
-      )}
-    </div>
+    <>
+      <div className="flex  justify-between gap-2">
+        <h1 className="text-xl font-medium leading-none text-mono">
+          {title || item?.title || 'Untitled'}
+        </h1>
+        {description && (
+          <div className="flex items-center gap-2 text-sm font-normal text-muted-foreground">
+            {description}
+          </div>
+        )}
+      </div>
+      <Button asChild variant="outline">
+        <p onClick={() => window.history.back()}>
+          <MoveLeft />
+          Back
+        </p>
+      </Button>
+    </>
   );
 }
 
