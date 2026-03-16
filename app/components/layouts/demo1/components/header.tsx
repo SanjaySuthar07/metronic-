@@ -121,7 +121,7 @@ export function Header() {
           !mobileMode && <MegaMenu />
         )}
 
-        <div className="flex items-center gap-3">
+        <div className="ml-auto flex items-center gap-3 shrink-0">
 
           <>
             {user?.user_type == "super_admin" && (
