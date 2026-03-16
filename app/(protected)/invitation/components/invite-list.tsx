@@ -53,7 +53,7 @@ import { RootState, AppDispatch } from '@/store';
 const roles = [
   { id: 1, name: 'Admin' },
   { id: 2, name: 'Agent' },
-  { id: 2, name: 'Agency' },
+  { id: 3, name: 'Agency' },
 ];
 
 const statusList = [
