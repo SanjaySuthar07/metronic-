@@ -31,9 +31,7 @@ import { getPasswordSchema } from '../forms/password-schema';
 const formSchema = z
   .object({
     password: getPasswordSchema(),
-    confirm_password: z
-      .string()
-      .min(6, 'Confirm password must be at least 6 characters'),
+    confirm_password: getPasswordSchema(),
   })
   .refine((data) => data.password === data.confirm_password, {
     path: ['confirm_password'],

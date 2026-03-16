@@ -59,7 +59,7 @@ const AgentDeleteDialog = ({
         if (onDeleted) {
           onDeleted();
         } else {
-          dispatch(fetchUsers({ page: 1, per_page: 10, tenant_id }) as any);
+          dispatch(fetchUsers({ page: 1, per_page: 10, id: tenant_id }) as any);
         }
         closeDialog();
       }

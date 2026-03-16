@@ -5,7 +5,7 @@ export const getChangePasswordSchema = () => {
   return z
     .object({
       newPassword: getPasswordSchema(),
-      confirmPassword: z.string(),
+      confirmPassword: getPasswordSchema(),
     })
     .refine((data) => data.newPassword === data.confirmPassword, {
       message: 'Passwords do not match.',

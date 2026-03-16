@@ -5,17 +5,17 @@ import { notFound } from "next/navigation"
 
 export default function InviteLayout({
   children
-}:{
-  children:React.ReactNode
-}){
+}: {
+  children: React.ReactNode
+}) {
 
-  const { user } = useSelector((s:any)=>s.auth)
+  const { user } = useSelector((s: any) => s.auth)
 
-  if(!user){
+  if (!user) {
     return null
   }
 
-  if(user.user_type !== "super_admin"){
+  if (user.user_type !== "super_admin" || user.user_type !== "agency") {
     notFound()
   }
 
