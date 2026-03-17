@@ -51,16 +51,17 @@ export function UserDropdownMenu({ trigger }: { trigger: ReactNode }) {
             )}
 
             <div className="flex flex-col">
-              <p
+              <Link
+                href="/account/home/get-started"
                 className="text-sm text-mono hover:text-primary font-semibold"
               >
                 {user?.name || 'User'}
-              </p>
+              </Link>
               <Link
-                href={user?.email || ""}
+                href={`mailto:${user?.email}`}
                 className="text-xs text-muted-foreground hover:text-primary"
               >
-                {user?.email || ""}
+                {user?.email || 'user@email.com'}
               </Link>
             </div>
           </div>
