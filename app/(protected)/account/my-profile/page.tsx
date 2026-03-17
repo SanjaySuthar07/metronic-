@@ -107,6 +107,14 @@ export default function AccountDetails() {
 
             <div className="flex justify-end gap-3">
               <Button
+                type="button"
+                variant="outline"
+                onClick={() => form.reset()}
+              >
+                Reset
+              </Button>
+
+              <Button
                 type="submit"
                 disabled={loading || !form.formState.isDirty}
               >
