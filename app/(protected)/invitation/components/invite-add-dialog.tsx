@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { Eye, EyeOff, LoaderCircleIcon } from 'lucide-react'
@@ -41,12 +41,8 @@ import {
 import { InviteAddSchema, InviteAddSchemaType } from '../forms/invite-add-schema'
 import { createInviteUser, fetchAgency } from '@/store/thunk/invite.thunk'
 import { toast } from 'sonner'
+import { hasPermission } from '@/lib/permissions'
 
-const type = [
-  { id: 'admin', name: 'Admin' },
-  { id: 'agency', name: 'Agency' },
-  { id: 'agent', name: 'Agent' },
-]
 
 const InviteAddDialog = ({
   open,
@@ -55,7 +51,32 @@ const InviteAddDialog = ({
   editData,
   onSuccess
 }: any) => {
+  const { user } = useSelector((s) => s.auth)
+  const type = useMemo(() => {
+    if (!user) return [];
+    if (user.user_type === "super_admin") {
+      return [
+        { id: 'admin', name: 'Admin' },
+        { id: 'agency', name: 'Agency' },
+        { id: 'agent', name: 'Agent' },
+      ];
+    }
+    if (user.user_type === "admin") {
+      const result = [];
+      if (hasPermission(user, "agency-create")) {
+        result.push({ id: 'agency', name: 'Agency' });
+      }
+      if (hasPermission(user, "agent-create")) {
+        result.push({ id: 'agent', name: 'Agent' });
+      }
+      return result;
+    }
 
+    if (user.user_type === "agency") {
+      return [{ id: 'agent', name: 'Agent' }];
+    }
+    return [];
+  }, [user]);
   const dispatch = useDispatch()
   const { user } = useSelector((s: any) => s.auth)
 
