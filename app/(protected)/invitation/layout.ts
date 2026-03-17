@@ -15,7 +15,7 @@ export default function InviteLayout({
     return null
   }
 
-  if (user.user_type !== "super_admin" && user.user_type !== "agency") {
+  if (user.user_type !== "super_admin" && user.user_type !== "agency" && user.user_type !== "admin") {
     notFound()
   }
 
