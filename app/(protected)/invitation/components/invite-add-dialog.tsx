@@ -92,7 +92,6 @@ const InviteAddDialog = ({
     }
   }, [open])
 
-  // ⭐ agency login auto set values
   useEffect(() => {
     if (user?.user_type === 'agency') {
       form.setValue('tenant_id', user.tenant_id)
@@ -158,63 +157,47 @@ const InviteAddDialog = ({
 
             <DialogBody className="pt-2.5 space-y-6">
 
-              {/* USER TYPE (hide if agency login) */}
               {user?.user_type !== "agency" && (
                 <FormField
                   control={form.control}
                   name="user_type"
                   render={({ field }) => (
                     <FormItem>
-
                       <FormLabel>
                         Type <span className="text-red-500">*</span>
                       </FormLabel>
-
                       <FormControl>
-
                         <Select
                           value={field.value || ''}
                           onValueChange={(value) => {
-
                             field.onChange(value)
-
                             if (value === 'agent') {
                               setIsAgencyDropDownOpen(true)
                             } else {
                               setIsAgencyDropDownOpen(false)
                               form.setValue('tenant_id', '')
                             }
-
                           }}
                         >
-
                           <SelectTrigger>
                             <SelectValue placeholder="Select Type" />
                           </SelectTrigger>
-
                           <SelectContent>
-
                             <SelectGroup>
-
                               {type.map((item) => (
                                 <SelectItem
                                   key={item.id}
                                   value={item.id}
                                 >
-                                  {item.name}
+                                  {item.name || "No Agency Found"}
                                 </SelectItem>
                               ))}
 
                             </SelectGroup>
-
                           </SelectContent>
-
                         </Select>
-
                       </FormControl>
-
                       <FormMessage />
-
                     </FormItem>
                   )}
                 />

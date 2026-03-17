@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { formatDateTime } from '@/lib/helpers';
-import { Badge } from '@/components/ui/badge';
+import { Badge, BadgeDot } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 // import UserInviteDialog from '../../components/user-add-dialog';
@@ -66,9 +66,12 @@ const InviteUserProfile = ({
 
             <div className="grid grid-cols-subgrid capitalize col-span-2 items-baseline">
               <dt className="flex md:w-64 ">Invite Status:</dt>
-              <dd> <Badge className='capitalize' variant={getStatusVariant(user.status) as any}>
-                {user.status}
-              </Badge></dd>
+              <dd>
+                <Badge variant={getStatusVariant(user.status) as any} appearance="ghost">
+                  <BadgeDot />
+                  {user.status}
+                </Badge>
+              </dd>
             </div>
             <div className="grid grid-cols-subgrid col-span-2 items-baseline">
               <dt>Joined:</dt>

@@ -16,7 +16,7 @@ import { formatDate, getInitials } from '@/lib/helpers';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardFooter, CardHeader, CardTable } from '@/components/ui/card';
+import { Card, CardFooter, CardHeader, CardTable, CardToolbar } from '@/components/ui/card';
 
 import { DataGrid } from '@/components/ui/data-grid';
 import { DataGridColumnHeader } from '@/components/ui/data-grid-column-header';
@@ -58,7 +58,7 @@ const roles = [
 const statusList = [
   { id: 1, name: 'Accepted' },
   { id: 2, name: 'Pending' },
-  { id: 3, name: 'Rejected' },
+  { id: 3, name: 'Expired' },
 ];
 
 const DataGridToolbar = ({
@@ -71,10 +71,8 @@ const DataGridToolbar = ({
   onStatusChange,
 }: any) => {
   return (
-    <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-
+    <CardHeader className="flex-col flex-wrap sm:flex-row items-end items-stretch sm:items-center py-5">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
         <div className="relative">
           <Search className="size-4 text-muted-foreground absolute start-3 top-1/2 -translate-y-1/2" />
 
@@ -123,12 +121,12 @@ const DataGridToolbar = ({
         </Select>
 
       </div>
-
-      <Button onClick={onAddUser}>
-        <Plus className="size-4 mr-1" />
-        Invite
-      </Button>
-
+      <CardToolbar>
+        <Button onClick={onAddUser}>
+          <Plus className="size-4 mr-1" />
+          Invite
+        </Button>
+      </CardToolbar>
     </CardHeader>
   );
 };
@@ -171,7 +169,7 @@ const InviteList = () => {
         return "success";
       case "pending":
         return "warning";
-      case "rejected":
+      case "expired":
         return "destructive";
       default:
         return "secondary";
