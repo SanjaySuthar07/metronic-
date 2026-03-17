@@ -48,6 +48,7 @@ import InviteAddDialog from './invite-add-dialog';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchInvitation } from '@/store/thunk/invite.thunk';
 import { RootState, AppDispatch } from '@/store';
+import { hasPermission } from '@/lib/permissions';
 
 const roles = [
   { id: 1, name: 'Admin' },
@@ -70,6 +71,7 @@ const DataGridToolbar = ({
   selectedStatus,
   onStatusChange,
 }: any) => {
+  const { user } = useSelector((s) => s.auth)
   return (
     <CardHeader className="flex-col flex-wrap sm:flex-row items-end items-stretch sm:items-center py-5">
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
@@ -121,12 +123,20 @@ const DataGridToolbar = ({
         </Select>
 
       </div>
-      <CardToolbar>
-        <Button onClick={onAddUser}>
-          <Plus className="size-4 mr-1" />
-          Invite
-        </Button>
-      </CardToolbar>
+      {
+        (
+          user?.user_type === "super_admin" ||
+          (user?.user_type === "admin" &&
+            hasPermission(user, ["agency-create", "agent-create"])) ||
+          (user?.user_type === "agency" &&
+            hasPermission(user, "agent-create"))
+        ) && (
+          <Button onClick={onAddUser}>
+            <Plus />
+            Invite
+          </Button>
+        )
+      }
     </CardHeader>
   );
 };
