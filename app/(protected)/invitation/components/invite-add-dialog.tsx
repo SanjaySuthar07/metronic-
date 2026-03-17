@@ -51,7 +51,8 @@ const InviteAddDialog = ({
   editData,
   onSuccess
 }: any) => {
-  const { user } = useSelector((s) => s.auth)
+  const { user } = useSelector((s: any) => s.auth)
+
   const type = useMemo(() => {
     if (!user) return [];
     if (user.user_type === "super_admin") {
@@ -78,7 +79,6 @@ const InviteAddDialog = ({
     return [];
   }, [user]);
   const dispatch = useDispatch()
-  const { user } = useSelector((s: any) => s.auth)
 
   const [passwordVisible, setPasswordVisible] = useState(false)
   const [CpasswordVisible, setCPasswordVisible] = useState(false)
