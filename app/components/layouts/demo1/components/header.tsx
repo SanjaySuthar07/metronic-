@@ -138,7 +138,7 @@ export function Header() {
                 }
               />
             )}
-            <NotificationsSheet
+            {/* <NotificationsSheet
               trigger={
                 <Button
                   variant="ghost"
@@ -149,7 +149,7 @@ export function Header() {
                   <Bell className="size-4.5!" />
                 </Button>
               }
-            />
+            /> */}
             <UserDropdownMenu
               trigger={
                 user?.avatar ? (

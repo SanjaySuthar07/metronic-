@@ -416,6 +416,7 @@ const InviteAddDialog = ({
                 type="button"
                 variant="outline"
                 onClick={closeDialog}
+                disabled={isSubmit}
               >
                 Cancel
               </Button>
