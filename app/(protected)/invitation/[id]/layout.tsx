@@ -104,7 +104,7 @@ export default function InviteUserLayout({
 
         <ToolbarActions>
           <Button asChild variant="outline">
-            <Link href="/invite">
+            <Link href="/invitation">
               <MoveLeft />
               Back to Invite
             </Link>
