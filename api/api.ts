@@ -50,8 +50,8 @@ api.interceptors.response.use((response) => response, async (error) => {
             originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
             return api(originalRequest);
         } catch (error) {
-            store.dispatch(removeData());
             window.location.href = '/signin';
+            store.dispatch(removeData());
             return Promise.reject(error);
         }
     }
