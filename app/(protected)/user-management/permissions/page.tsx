@@ -35,7 +35,7 @@ export default async function Page() {
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
-                  <BreadcrumbPage>Permission Management</BreadcrumbPage>
+                  <BreadcrumbPage>Permission</BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
