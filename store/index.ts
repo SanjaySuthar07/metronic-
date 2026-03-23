@@ -4,6 +4,8 @@ import dashboardReducer from "./slice/dashboard.slice";
 import userManagementSlice from "./slice/userManagement.slice";
 import invite from "./slice/invite.slice"
 import settings from "./slice/setting.slice"
+import masterModuleSlice from "./slice/masterModule.slice"
+
 import {
     persistStore,
     persistReducer,
@@ -21,7 +23,8 @@ const rootReducer = combineReducers({
     dashboard: dashboardReducer,
     userManagement: userManagementSlice,
     invite: invite,
-    settings: settings
+    settings: settings,
+    masterModule: masterModuleSlice,
 });
 
 const persistConfig = {

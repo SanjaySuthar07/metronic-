@@ -142,7 +142,15 @@ const data = [
     required: "both",
   },
 ];
+const adminOptions = [
+  { label: "Super Admin", value: "super-admin" },
+  { label: "Sub Admin", value: "sub-admin" },
+];
 
+const customerOptions = [
+  { label: "Premium Customer", value: "premium" },
+  { label: "Normal Customer", value: "normal" },
+];
 /* =========================
    MAIN COMPONENT
 ========================= */
@@ -256,19 +264,23 @@ export default function ChildMenuForm() {
   ];
   const form = useForm<MenuSchemaType>({
     resolver: zodResolver(menuSchema),
+    mode: "onChange",          // ✅ ADD THIS
+    reValidateMode: "onChange",// ✅ ADD THIS
     defaultValues: {
       menuName: "",
       menuTitle: "",
       parentMenu: "",
       status: "",
       userType: "",
+      adminType: "",
+      customerType: "",
     },
   });
 
   const onSubmit = (values: MenuSchemaType) => {
     console.log(values);
   };
-
+  const selectedUserType = form.watch("userType");
   const table = useReactTable({
     data,
     columns,
@@ -349,7 +361,14 @@ export default function ChildMenuForm() {
     />
   );
   const [iconSearch, setIconSearch] = React.useState("");
-
+  React.useEffect(() => {
+    if (selectedUserType !== "admin") {
+      form.setValue("adminType", "");
+    }
+    if (selectedUserType !== "customer") {
+      form.setValue("customerType", "");
+    }
+  }, [selectedUserType]);
   return (
     <Card>
       <CardHeader>
@@ -413,22 +432,27 @@ export default function ChildMenuForm() {
                         <PopoverTrigger asChild>
                           <div
                             className={cn(
-                              "flex items-center border rounded-md px-3 py-2 cursor-pointer bg-white",
-                              "hover:bg-gray-50 transition-colors",
+                              "flex items-center border rounded-md overflow-hidden bg-white",
                               fieldState.error && "border-red-500 focus-within:ring-2 focus-within:ring-red-500/30"
                             )}
                           >
-                            {/* Selected icon preview */}
-                            <div className="mr-2.5 text-gray-500">
-                              <SelectedIcon className="h-4 w-4" />
+                            {/* LEFT ICON BACKGROUND */}
+                            <div className="bg-gray-100 px-3 cursor-pointer py-2 flex items-center justify-center border-r">
+                              <SelectedIcon className="h-5 w-4 text-gray-500" />
                             </div>
+
+                            {/* INPUT */}
                             <input
                               placeholder="Enter Menu Title"
-                              className="flex-1 outline-none text-sm bg-transparent placeholder:text-muted-foreground"
+                              className="flex-1 px-3 py-2 text-sm outline-none bg-transparent placeholder:text-muted-foreground"
                               value={field.value || ""}
                               onChange={field.onChange}
                             />
-                            <ChevronDown className="h-4 w-4 opacity-50" />
+
+                            {/* DROPDOWN ICON */}
+                            <div className="px-2">
+                              <ChevronDown className="h-4 w-4 opacity-50" />
+                            </div>
                           </div>
                         </PopoverTrigger>
 
@@ -491,22 +515,27 @@ export default function ChildMenuForm() {
               {renderDropdown("parentMenu", "Parent Menu", parentOptions)}
               {renderDropdown("status", "Status", statusOptions)}
               {renderDropdown("userType", "User Type", userTypeOptions)}
+              {selectedUserType === "admin" &&
+                renderDropdown("adminType", "Admin", adminOptions)}
 
-              <div className="col-span-1 ">
-                <FormLabel className="font-medium text-gray-800">Action</FormLabel>
-                <div className="flex  gap-6 mt-3 flex-wrap items-center">
-                  {["Create form", "Edit form", "Show page", "Delete action"].map((item) => (
-                    <div key={item} className="flex items-center gap-2">
-                      <Checkbox id={item} />
-                      <label htmlFor={item} className="text-sm cursor-pointer">
-                        {item}
-                      </label>
-                    </div>
-                  ))}
-                </div>
+
+              {selectedUserType === "customer" &&
+                renderDropdown("customerType", "Customer", customerOptions)}
+
+            </div>
+            <div className="col-span-1  ">
+              <FormLabel className="font-medium text-gray-800">Action</FormLabel>
+              <div className="flex grid-cols-3  gap-6 mt-3  items-center">
+                {["Create form", "Edit form", "Show page", "Delete action"].map((item) => (
+                  <div key={item} className="flex items-center gap-2">
+                    <Checkbox id={item} />
+                    <label htmlFor={item} className="text-sm text-nowrap cursor-pointer">
+                      {item}
+                    </label>
+                  </div>
+                ))}
               </div>
             </div>
-
             <div>
               <FormLabel className="font-medium  text-gray-800">Permissions</FormLabel>
               <div className="flex gap-6 mt-2 flex-wrap">
