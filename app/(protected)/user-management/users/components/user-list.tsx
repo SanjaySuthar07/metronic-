@@ -18,7 +18,7 @@ import {
   fetchUsers,
 } from '@/store/thunk/userManagement.thunk';
 
-import { EllipsisVertical, Plus, Search } from 'lucide-react';
+import { EllipsisVertical, Plus, Search, X } from 'lucide-react';
 import { formatDate, getInitials } from '@/lib/helpers';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -53,9 +53,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+
 import { useRouter } from 'next/navigation';
 import { hasPermission } from '@/lib/permissions';
 
+
+/* =============================
+   TOOLBAR (NEW DESIGN)
+============================= */
 
 const DataGridToolbar = ({
   inputValue,
@@ -70,8 +75,9 @@ const DataGridToolbar = ({
   selectedRole: string;
   onRoleChange: (value: string) => void;
 }) => {
+
   const dispatch = useDispatch<AppDispatch>();
-  const { user } = useSelector((s) => s.auth)
+  const { user } = useSelector((s: any) => s.auth);
 
   const [roles, setRoles] = useState<any[]>([]);
 
@@ -80,37 +86,53 @@ const DataGridToolbar = ({
       const data = await dispatch(fetchRolesDropdown());
       setRoles(data?.payload?.roles || []);
     };
+
     if (user.user_type != "agency" && user.user_type != "admin") {
       fetch();
     }
+
   }, [dispatch]);
 
   return (
-    <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-        <Search className="size-4 text-muted-foreground absolute start-3 top-1/2 -translate-y-1/2" />
-        <Input
-          placeholder="Search users"
-          value={inputValue}
-          onChange={(e) => onInputChange(e.target.value)}
-          className="ps-9 w-full sm:w-64"
-        />
-        {(user?.user_type == "super_admin") && (
+    <CardHeader className="flex-col flex-wrap sm:flex-row items-stretch sm:items-center py-5">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+        <div className="relative">
+          <Search className="size-4 text-muted-foreground absolute start-3 top-1/2 -translate-y-1/2" />
+          <Input
+            placeholder="Search users"
+            value={inputValue}
+            onChange={(e) => onInputChange(e.target.value)}
+            className="ps-9 w-full sm:w-64"
+          />
+          {inputValue.length > 0 && (
+            <Button
+              mode="icon"
+              variant="dim"
+              className="absolute end-1.5 top-1/2 -translate-y-1/2 h-6 w-6"
+              onClick={() => onInputChange('')}
+            >
+              <X />
+            </Button>
+          )}
+        </div>
+        {/* ROLE FILTER */}
+        {(user?.user_type === "super_admin") && (
           <Select value={selectedRole} onValueChange={onRoleChange}>
             <SelectTrigger className="w-full sm:w-40">
               <SelectValue placeholder="All types" />
             </SelectTrigger>
-
             <SelectContent>
               <SelectItem value="all">All Type</SelectItem>
               {roles.map((role: any) => {
                 if (role.name === "Super Admin") {
                   return null;
                 }
-
                 return (
                   <Fragment key={role.id}>
-                    <SelectItem value={role.name} className="capitalize">
+                    <SelectItem
+                      value={role.name}
+                      className="capitalize"
+                    >
                       {role.name}
                     </SelectItem>
                   </Fragment>
@@ -120,51 +142,42 @@ const DataGridToolbar = ({
           </Select>
         )}
       </div>
-
+      <div className="flex items-center justify-end">
+        {hasPermission(user, ["agent-create"]) && (
+          <Button onClick={onAddUser}>
+            <Plus />
+            Add User
+          </Button>
+        )}
+      </div>
     </CardHeader>
   );
 };
 
+/* =============================
+   MAIN COMPONENT
+============================= */
+
 const UserList = () => {
-
   const dispatch = useDispatch<AppDispatch>();
-  const { user } = useSelector((s) => s.auth)
-  const router = useRouter()
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [deleteUserObj, setDeleteUserObj] = useState<any>(null);
-  const handleDeleteUser = (user: any) => {
-    setDeleteUserObj(user);
-    setDeleteDialogOpen(true);
-  };
-
-  const refreshUsers = () => {
-
-    const roleFilter =
-      selectedRole && selectedRole !== 'all' ? selectedRole : '';
-    console.log("user")
-    dispatch(
-      fetchUsers({
-        user_type: roleFilter,
-        page: pagination.pageIndex + 1,
-        per_page: pagination.pageSize,
-        search: inputValue.trim() || undefined,
-        sort: sorting?.[0]?.id,
-        dir: sorting?.[0]?.desc ? 'desc' : 'asc',
-        id: user?.tenant_id
-      })
-    );
-  };
-
+  const { user } = useSelector((s: any) => s.auth);
+  const router = useRouter();
   const { users, loadingUsers } = useSelector(
     (state: RootState) => state.userManagement
   );
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteUserObj, setDeleteUserObj] = useState<any>(null);
 
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+
   const [isEdit, setIsEdit] = useState(false);
+
   const [editData, setEditData] = useState<any>(null);
 
   const [inputValue, setInputValue] = useState('');
+
   const [selectedRole, setSelectedRole] = useState('all');
+
 
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
@@ -174,6 +187,7 @@ const UserList = () => {
   const [sorting, setSorting] = useState<SortingState>([]);
 
   const [columnOrder, setColumnOrder] = useState<string[]>([]);
+
   const [columnPinning, setColumnPinning] = useState<any>({
     left: [],
     right: [],
@@ -181,13 +195,15 @@ const UserList = () => {
 
   const [columnVisibility, setColumnVisibility] = useState({});
 
-  useEffect(() => {
-    setPagination((prev) => ({ ...prev, pageIndex: 0 }));
-  }, [inputValue, selectedRole]);
+
+  /* =============================
+     FETCH USERS
+  ============================= */
 
   useEffect(() => {
 
     const sortField = sorting?.[0]?.id;
+
     const sortDirection = sorting?.[0]?.desc ? 'desc' : 'asc';
 
     const roleFilter =
@@ -217,18 +233,71 @@ const UserList = () => {
     user?.tenant_id
   ]);
 
-  const handleEditUser = async (id: number) => {
-    try {
-      const res: any = await dispatch(fetchUserDetail({ id }));
-      if (res?.payload?.user) {
-        setEditData(res.payload.user);
-        setIsEdit(true);
-        setInviteDialogOpen(true);
-      }
-    } catch (error) {
-      console.error("Failed to fetch user details", error);
-    }
+
+  /* =============================
+     DELETE USER
+  ============================= */
+
+  const handleDeleteUser = (user: any) => {
+    setDeleteUserObj(user);
+    setDeleteDialogOpen(true);
   };
+
+
+  const refreshUsers = () => {
+
+    const roleFilter =
+      selectedRole && selectedRole !== 'all'
+        ? selectedRole
+        : '';
+
+    dispatch(
+      fetchUsers({
+        user_type: roleFilter,
+        page: pagination.pageIndex + 1,
+        per_page: pagination.pageSize,
+        search: inputValue.trim() || undefined,
+        sort: sorting?.[0]?.id,
+        dir: sorting?.[0]?.desc ? 'desc' : 'asc',
+        id: user?.tenant_id
+      })
+    );
+
+  };
+
+
+  /* =============================
+     EDIT USER
+  ============================= */
+
+  const handleEditUser = async (id: number) => {
+
+    try {
+
+      const res: any = await dispatch(fetchUserDetail({ id }));
+
+      if (res?.payload?.user) {
+
+        setEditData(res.payload.user);
+
+        setIsEdit(true);
+
+        setInviteDialogOpen(true);
+
+      }
+
+    } catch (error) {
+
+      console.error("Failed to fetch user details", error);
+
+    }
+
+  };
+
+
+  /* =============================
+     TABLE COLUMNS
+  ============================= */
 
   const columns = useMemo<ColumnDef<any>[]>(() => {
 
@@ -247,19 +316,27 @@ const UserList = () => {
         cell: ({ row }) => {
 
           const userRow = row.original;
+
           const name = userRow?.name || '-';
+
           const email = userRow?.email || '-';
 
           return (
+
             <div className="flex items-center gap-3">
 
               <Avatar className="size-9">
+
                 <AvatarFallback>
+
                   {getInitials(name !== '-' ? name : email)}
+
                 </AvatarFallback>
+
               </Avatar>
 
               <div className="space-y-0.5">
+
                 <div className="font-medium text-sm capitalize">
                   {name}
                 </div>
@@ -267,10 +344,13 @@ const UserList = () => {
                 <div className="text-muted-foreground text-xs">
                   {email}
                 </div>
+
               </div>
 
             </div>
+
           );
+
         },
 
         meta: {
@@ -284,9 +364,11 @@ const UserList = () => {
             </div>
           ),
         },
+
       }
 
     ];
+
 
     if (user?.user_type !== "agency") {
 
@@ -306,10 +388,15 @@ const UserList = () => {
           const type = row.original?.user_type;
 
           return type ? (
+
             <Badge variant="secondary" className="capitalize">
+
               {type}
+
             </Badge>
+
           ) : '-';
+
         },
 
         meta: {
@@ -319,6 +406,7 @@ const UserList = () => {
       });
 
     }
+
 
     cols.push(
 
@@ -339,18 +427,19 @@ const UserList = () => {
           return date
             ? formatDate(new Date(date))
             : '-';
+
         },
 
         meta: {
           skeleton: <Skeleton className="h-7 w-28" />,
         },
+
       },
 
       {
         id: 'actions',
         header: 'Actions',
         enableSorting: false,
-        enableHiding: false,
         size: 75,
 
         cell: ({ row }) => (
@@ -358,40 +447,46 @@ const UserList = () => {
           <DropdownMenu>
 
             <DropdownMenuTrigger asChild>
+
               <Button className="h-7 w-7" mode="icon" variant="ghost">
+
                 <EllipsisVertical />
+
               </Button>
+
             </DropdownMenuTrigger>
 
             <DropdownMenuContent align="end">
 
-              {
-                hasPermission(user, ["agent-edit"]) && (
-                  <>
-                    <DropdownMenuItem
-                      onClick={() => handleEditUser(row.original.id)}
-                    >
-                      Edit
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                  </>
-                )
-              }
+              {hasPermission(user, ["agent-edit"]) && (
 
-              {
-                hasPermission(user, ["agent-show"]) && (
-                  <>
-                    <DropdownMenuItem
-                      onClick={() =>
-                        router.push(`/user-management/users/${row.original.id}`)
-                      }
-                    >
-                      View
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                  </>
-                )
-              }
+                <>
+                  <DropdownMenuItem
+                    onClick={() => handleEditUser(row.original.id)}
+                  >
+                    Edit
+                  </DropdownMenuItem>
+
+                  <DropdownMenuSeparator />
+                </>
+
+              )}
+
+              {hasPermission(user, ["agent-show"]) && (
+
+                <>
+                  <DropdownMenuItem
+                    onClick={() =>
+                      router.push(`/user-management/users/${row.original.id}`)
+                    }
+                  >
+                    View
+                  </DropdownMenuItem>
+
+                  <DropdownMenuSeparator />
+                </>
+
+              )}
 
               <DropdownMenuItem
                 variant="destructive"
@@ -409,6 +504,7 @@ const UserList = () => {
         meta: {
           skeleton: <Skeleton className="size-5" />,
         },
+
       }
 
     );
@@ -416,20 +512,28 @@ const UserList = () => {
     return cols;
 
   }, [user?.user_type]);
+
+
   useEffect(() => {
     setColumnOrder(columns.map((col) => col.id as string));
   }, [columns]);
 
+
   const table = useReactTable({
+
     columns,
+
     data: users?.data || [],
+
     pageCount:
       users?.total
         ? Math.ceil(users.total / pagination.pageSize)
         : -1,
 
     manualPagination: true,
+
     manualSorting: true,
+
     state: {
       pagination,
       sorting,
@@ -439,19 +543,27 @@ const UserList = () => {
     },
 
     onPaginationChange: setPagination,
+
     onSortingChange: setSorting,
+
     onColumnOrderChange: setColumnOrder,
+
     onColumnPinningChange: setColumnPinning,
+
     onColumnVisibilityChange: setColumnVisibility,
 
     columnResizeMode: 'onChange',
 
     getCoreRowModel: getCoreRowModel(),
+
     getSortedRowModel: getSortedRowModel(),
+
   });
+
 
   return (
     <>
+
       <DataGrid
         table={table}
         recordCount={users?.total}
@@ -463,7 +575,9 @@ const UserList = () => {
           columnsVisibility: true,
         }}
       >
+
         <Card>
+
           <DataGridToolbar
             inputValue={inputValue}
             onInputChange={setInputValue}
@@ -481,40 +595,41 @@ const UserList = () => {
               <ScrollBar orientation="horizontal" />
             </ScrollArea>
           </CardTable>
-
           <CardFooter>
             <DataGridPagination />
           </CardFooter>
-
         </Card>
-
       </DataGrid>
-      {
-        deleteUserObj && (
-          <UserDeleteDialog
-            open={deleteDialogOpen}
-            closeDialog={() => setDeleteDialogOpen(false)}
-            user={deleteUserObj}
-            onDeleted={() => {
-              setDeleteDialogOpen(false);
-              refreshUsers();
-            }}
-          />
-        )
-      }
-      {
-        inviteDialogOpen && (
-          <UserInviteDialog
-            open={inviteDialogOpen}
-            isEdit={isEdit}
-            editData={editData}
-            closeDialog={() => setInviteDialogOpen(false)}
-            isProfile={false}
-          />
-        )
-      }
+
+
+      {deleteUserObj && (
+
+        <UserDeleteDialog
+          open={deleteDialogOpen}
+          closeDialog={() => setDeleteDialogOpen(false)}
+          user={deleteUserObj}
+          onDeleted={() => {
+            setDeleteDialogOpen(false);
+            refreshUsers();
+          }}
+        />
+
+      )}
+
+      {inviteDialogOpen && (
+        <UserInviteDialog
+          open={inviteDialogOpen}
+          isEdit={isEdit}
+          editData={editData}
+          closeDialog={() => setInviteDialogOpen(false)}
+          isProfile={false}
+        />
+
+      )}
+
     </>
   );
+
 };
 
 export default UserList;

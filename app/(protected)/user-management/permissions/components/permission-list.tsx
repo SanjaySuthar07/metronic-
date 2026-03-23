@@ -21,9 +21,8 @@ import { EllipsisVertical, Plus, Search } from 'lucide-react';
 import { formatDate, getInitials } from '@/lib/helpers';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardFooter, CardHeader, CardTable } from '@/components/ui/card';
+import { Card, CardFooter, CardHeader, CardTable, CardToolbar } from '@/components/ui/card';
 
 import { DataGrid } from '@/components/ui/data-grid';
 import { DataGridColumnHeader } from '@/components/ui/data-grid-column-header';
@@ -72,12 +71,10 @@ const DataGridToolbar = ({
   const { user } = useSelector((s) => s.auth)
 
   return (
-    <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-
+    <CardHeader className="flex-col flex-wrap sm:flex-row items-end items-stretch sm:items-center py-5">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
         <div className="relative">
           <Search className="size-4 text-muted-foreground absolute start-3 top-1/2 -translate-y-1/2" />
-
           <Input
             placeholder="Search permissions..."
             value={inputValue}
@@ -85,7 +82,6 @@ const DataGridToolbar = ({
             className="ps-9 w-full sm:w-64"
           />
         </div>
-
         {/* <Select value={selectedRole} onValueChange={onRoleChange}>
           <SelectTrigger className="w-full sm:w-40">
             <SelectValue placeholder="All types" />
@@ -103,20 +99,21 @@ const DataGridToolbar = ({
             ))}
           </SelectContent>
         </Select> */}
-
       </div>
-
-      {
-        hasPermission(user, ["tenant-permission-create"]) ? (
-          <>
-            <Button className="bg-primary text-white" onClick={onAddPermission}>
-              <Plus className="size-4 mr-1" />
-              Add Permission
-            </Button>
-          </>
-        ) : ""
-      }
-
+      <CardToolbar>
+        {
+          hasPermission(user, ["tenant-permission-create"]) ? (
+            <>
+              <Button
+                onClick={onAddPermission}
+              >
+                <Plus />
+                Add Permission
+              </Button>
+            </>
+          ) : ""
+        }
+      </CardToolbar>
     </CardHeader>
   );
 };
@@ -132,7 +129,6 @@ const PermissionList = () => {
   };
 
   const refreshUsers = () => {
-    // rerun the fetch with current filters/pagination
     const roleFilter =
       selectedRole && selectedRole !== 'all' ? selectedRole : '';
 
@@ -196,7 +192,7 @@ const PermissionList = () => {
         sort: sortField,
         dir: sortField ? sortDirection : undefined,
         id: user?.tenant_id,
-      
+
       })
     );
 

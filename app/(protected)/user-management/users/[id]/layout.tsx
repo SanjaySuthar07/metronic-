@@ -106,50 +106,36 @@ export default function UserLayout({
 
   return (
     <Container>
-
       <Toolbar>
         <ToolbarHeading>
-
           <ToolbarTitle>User</ToolbarTitle>
-
           <Breadcrumb>
             <BreadcrumbList>
-
               <BreadcrumbItem>
                 <BreadcrumbLink href="/">Home</BreadcrumbLink>
               </BreadcrumbItem>
-
               <BreadcrumbSeparator />
-
               <BreadcrumbItem>
                 <BreadcrumbPage>User Management</BreadcrumbPage>
               </BreadcrumbItem>
-
               <BreadcrumbSeparator />
-
               <BreadcrumbItem>
                 <BreadcrumbLink href="/user-management/users">
                   Users
                 </BreadcrumbLink>
               </BreadcrumbItem>
-
             </BreadcrumbList>
           </Breadcrumb>
-
         </ToolbarHeading>
-
         <ToolbarActions>
-
           <Button asChild variant="outline">
             <Link href="/user-management/users">
               <MoveLeft />
               Back to users
             </Link>
           </Button>
-
         </ToolbarActions>
       </Toolbar>
-
       <UserHero user={userDetail} />
       <Tabs value={activeTab}>
         <TabsList variant="line" className="mb-5">

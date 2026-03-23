@@ -5,7 +5,6 @@ import { formatDateTime } from '@/lib/helpers';
 import { Badge, BadgeDot } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-// import UserInviteDialog from '../../components/user-add-dialog';
 
 const InviteUserProfile = ({
   user,
@@ -19,10 +18,12 @@ const InviteUserProfile = ({
         return "success";
       case "pending":
         return "warning";
+      case "expired":
+        return "destructive";
       case "rejected":
         return "destructive";
       default:
-        return "secondary";
+        return "destructive";
     }
   };
 

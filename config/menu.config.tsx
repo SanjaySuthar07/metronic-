@@ -49,6 +49,7 @@ import {
   Users,
   Briefcase as WorkIcon,
   Zap,
+  Puzzle,
 } from 'lucide-react';
 import { type MenuConfig } from './types';
 export const MENU_SIDEBAR: any = [
@@ -79,6 +80,11 @@ export const MENU_SIDEBAR: any = [
     icon: Users,
     path: '/invitation',
     role: ['super_admin', "agency", "admin"]
+  },
+  {
+    title: 'master module',
+    icon: Puzzle,
+    path: '/masterModule',
   },
 ];
 
