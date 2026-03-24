@@ -1,7 +1,12 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { getColumnTypes } from "../thunk/masterModule.thunk";
+import { getColumnTypes, getAllModels, childUserTypeAdmin ,childUserTypeCustomer } from "../thunk/masterModule.thunk";
 const initialState = {
+    // Add child Module  Dropdown  Data
+    adminList: [],
+    customerList: [],
+    // Add child Module in side  add fild dropdown data 
     inputTypes: [],
+    inputModel: [],
     setting: [],
     loading: false
 };
@@ -21,6 +26,25 @@ const masterModuleSlice = createSlice({
 
             .addCase(getColumnTypes.rejected, (state, action) => {
                 state.loading = false
+            })
+            .addCase(getAllModels.pending, (state, action) => {
+                state.loading = true
+            })
+            .addCase(getAllModels.fulfilled, (state, action) => {
+                console.log(action.payload.data)
+                state.inputModel = action.payload.data
+            })
+
+            .addCase(getAllModels.rejected, (state, action) => {
+                state.loading = false
+            })
+            .addCase(childUserTypeAdmin.fulfilled, (state, action) => {
+                console.log(action.payload.data)
+                state.adminList = action.payload.admin
+            })
+             .addCase(childUserTypeCustomer.fulfilled, (state, action) => {
+                console.log(action.payload.agency)
+                state.customerList = action.payload.agency
             })
     },
 });

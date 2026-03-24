@@ -3,7 +3,6 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-
 import {
   Card,
   CardContent,
@@ -68,7 +67,8 @@ import AddFieldDialog from "./AddFieldDialog";
 import RoleDeleteDialog from "./delete-dialog"
 import { ChevronDown } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-
+import { childUserTypeAdmin, childUserTypeCustomer } from "../../../../../store/thunk/masterModule.thunk.ts"
+import { useDispatch, useSelector } from "react-redux";
 /* =========================
    DROPDOWN OPTIONS
 ========================= */
@@ -141,15 +141,6 @@ const data = [
     inShow: "false",
     required: "both",
   },
-];
-const adminOptions = [
-  { label: "Super Admin", value: "super-admin" },
-  { label: "Sub Admin", value: "sub-admin" },
-];
-
-const customerOptions = [
-  { label: "Premium Customer", value: "premium" },
-  { label: "Normal Customer", value: "normal" },
 ];
 /* =========================
    MAIN COMPONENT
@@ -361,12 +352,32 @@ export default function ChildMenuForm() {
     />
   );
   const [iconSearch, setIconSearch] = React.useState("");
+  const dispatch = useDispatch();
+  const { adminList ,customerList } = useSelector((s) => s.masterModule);
+
+  const adminOptionsFormatted = adminList?.map((item: any) => ({
+    label: item.name,
+    value: item.id.toString(), // unique hona chahiye
+  }));
+    const customerOptionsFormatted = customerList?.map((item: any) => ({
+    label: item.agency_name,
+    value: item.id.toString(), // unique hona chahiye
+  }));
+  
+  // console.log(adminList)
   React.useEffect(() => {
     if (selectedUserType !== "admin") {
       form.setValue("adminType", "");
     }
     if (selectedUserType !== "customer") {
       form.setValue("customerType", "");
+    }
+    if (selectedUserType == "customer") {
+      dispatch(childUserTypeCustomer());
+
+    }
+    if (selectedUserType == "admin") {
+      dispatch(childUserTypeAdmin());
     }
   }, [selectedUserType]);
   return (
@@ -516,11 +527,9 @@ export default function ChildMenuForm() {
               {renderDropdown("status", "Status", statusOptions)}
               {renderDropdown("userType", "User Type", userTypeOptions)}
               {selectedUserType === "admin" &&
-                renderDropdown("adminType", "Admin", adminOptions)}
-
-
+                renderDropdown("adminType", "Admin", adminOptionsFormatted)}
               {selectedUserType === "customer" &&
-                renderDropdown("customerType", "Customer", customerOptions)}
+                renderDropdown("customerType", "Customer", customerOptionsFormatted)}
 
             </div>
             <div className="col-span-1  ">
