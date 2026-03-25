@@ -11,7 +11,7 @@ import {
   SortingState,
   useReactTable,
 } from '@tanstack/react-table';
-
+import masterModuleView from './masterModule-view';
 import {
   Select,
   SelectContent,
@@ -52,6 +52,9 @@ import RoleViewDialog from './masterModule-view-dialog';
 
 import { hasPermission } from '@/lib/permissions';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { fetchmodule } from '@/store/thunk/masterModule.thunk';
+
+import { useDispatch, useSelector } from 'react-redux';
 
 /* =========================
    TOOLBAR DESIGN
@@ -68,11 +71,19 @@ const DataGridToolbar = ({
 }) => {
   const [parentMenu, setParentMenu] = useState('');
   const [createdBy, setCreatedBy] = useState('');
-  const [status, setStatus] = useState('');
+  const [statusdata, setStatusdata] = useState('');
   const router = useRouter()
+    const [moduleData, setModuleData] = useState<any[]>([]);
+
+
+  
+
+ 
+
+
   return (
     <div className="py-4 px-5 flex  flex-row items-center justify-between gap-3 border-b border-gray-100">
-
+      
       <div className="flex flex-wrap items-center gap-3 w-full">
 
         <div className="relative">
@@ -106,7 +117,7 @@ const DataGridToolbar = ({
           </SelectContent>
         </Select>
 
-        <Select value={status} onValueChange={setStatus}>
+        <Select value={statusdata} onValueChange={setStatusdata}>
           <SelectTrigger className="w-[160px] h-9">
             <SelectValue placeholder="Select Status" />
           </SelectTrigger>
@@ -120,7 +131,7 @@ const DataGridToolbar = ({
 
       {/* RIGHT SIDE BUTTONS */}
       <div className="flex items-center gap-2">
-
+    
         <Button
           onClick={() => router.push("/masterModule/createParent")}
           className="bg-blue-600 hover:bg-blue-700 text-white h-9 px-4"
@@ -185,6 +196,61 @@ const MasterModuleList = () => {
   });
 
   const [columnVisibility, setColumnVisibility] = useState({});
+  const dispatch = useDispatch<AppDispatch>();
+
+  useEffect(() => {
+  dispatch(
+    fetchmodule({
+      page: pagination.pageIndex + 1,
+      limit: pagination.pageSize,
+      dir : sorting?.[0]?.desc ? "desc" : "asc",
+      sort: sorting?.[0]?.id === "Created Date" ? "created_at" : sorting?.[0]?.id ? sorting?.[0]?.id.toLocaleLowerCase().replaceAll(" ", "_") : undefined
+      
+    })
+  );
+}, [dispatch, pagination.pageIndex, pagination.pageSize, sorting]);
+
+console.log("fetchmodule", fetchmodule);
+  const fetchModuleData = useSelector(
+    (state: RootState) => state.masterModule.setting
+  );
+  const [moduleData, setModuleData] = useState<any[]>([]);
+  const formatDate = (dateString: string) => {
+
+  const date = new Date(dateString);
+
+  const day = String(date.getDate()).padStart(2, '0');
+
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+
+  const year = String(date.getFullYear()).slice(-2);
+
+  return `${day}-${month}-${year}`;
+
+};
+
+  useEffect(() => {
+     if (fetchModuleData?.data) {
+
+      const formattedData = fetchModuleData.data.map((item: any) => ({
+
+        name: item.main_model_name || "-",
+
+        menu_title: item.menu_title || "-",
+
+        status: item.status || false,
+
+        order_name: item.order_number || "-",
+
+        created_by: item.created_by || "-",
+
+        created_date: item.created_at
+      }));
+
+    setModuleData(formattedData);
+    }
+  }, [fetchModuleData]);
+
 
 
   /* =========================
@@ -294,14 +360,14 @@ const MasterModuleList = () => {
 
     },
     {
-      accessorKey: 'Parent Menu',
+      accessorKey: 'Menu Title',
       id: 'MenuTitle',
       enableSorting: true,
       header: ({ column }) =>
         <DataGridColumnHeader title="Menu Title" column={column} />,
       cell: ({ row }) => {
-        const role = row.original;
-        const name = role?.name || '-';
+        const role = row.original;  
+        const name = role?.menu_title || '-';
         return (
           <div className="flex items-center gap-3">
             <Avatar className="size-9">
@@ -324,31 +390,35 @@ const MasterModuleList = () => {
           </div>
         ),
       },
+    }
+      ,
 
-    },
-    {
-      accessorKey: 'Status',
-      id: 'Status',
-      enableSorting: true,
-      header: ({ column }) =>
-        <DataGridColumnHeader title="Status" column={column} />,
-      cell: ({ row }) => {
-        const role = row.original;
-        const name = role?.name || '-';
-        return (
-          <div className="flex items-center gap-3">
-            <Avatar className="size-9">
-              <AvatarFallback>
-                {getInitials(name)}
-              </AvatarFallback>
-            </Avatar>
-            <div className="font-medium capitalize text-sm">
-              {name}
-            </div>
-          </div>
-        );
-      },
-      size: 160,
+ {
+  accessorKey: 'status',
+  id: 'status',
+  enableSorting: true,
+  header: ({ column }) =>
+    <DataGridColumnHeader title="Status" column={column} />,
+ cell: ({ row }) => {
+  const role = row.original;
+
+ 
+
+  const name = role?.status === true ? 'Active' : 'Inactive';
+
+  return (
+    <div className="flex items-center gap-3">
+      <Avatar className="size-9">
+        <AvatarFallback>
+          {getInitials(name)}
+        </AvatarFallback>
+      </Avatar>
+      <div className="font-medium capitalize text-sm">
+        {name}
+      </div>
+    </div>
+  );
+}, size: 160,
       meta: {
         skeleton: (
           <div className="flex items-center gap-3">
@@ -357,8 +427,8 @@ const MasterModuleList = () => {
           </div>
         ),
       },
-
-    },
+ 
+},
     {
       accessorKey: 'Order Name',
       id: 'Order Name',
@@ -367,14 +437,14 @@ const MasterModuleList = () => {
         <DataGridColumnHeader title="Order Name" column={column} />,
       cell: ({ row }) => {
         const role = row.original;
-        const name = role?.name || '-';
+        const name = role?.order_name || '-';
         return (
           <div className="flex items-center gap-3">
-            <Avatar className="size-9">
+            {/* <Avatar className="size-9">
               <AvatarFallback>
                 {getInitials(name)}
               </AvatarFallback>
-            </Avatar>
+            </Avatar> */}
             <div className="font-medium capitalize text-sm">
               {name}
             </div>
@@ -399,14 +469,14 @@ const MasterModuleList = () => {
         <DataGridColumnHeader title="Created By" column={column} />,
       cell: ({ row }) => {
         const role = row.original;
-        const name = role?.name || '-';
+        const name = role?.created_by || '-';
         return (
           <div className="flex items-center gap-3">
-            <Avatar className="size-9">
+            {/* <Avatar className="size-9">
               <AvatarFallback>
                 {getInitials(name)}
               </AvatarFallback>
-            </Avatar>
+            </Avatar> */}
             <div className="font-medium capitalize text-sm">
               {name}
             </div>
@@ -432,7 +502,7 @@ const MasterModuleList = () => {
         <DataGridColumnHeader title="Created Date" column={column} />,
       cell: ({ row }) => {
         const role = row.original;
-        const name = role?.name || '-';
+        const name = formatDate(role?.created_date) || '-';
         return (
           <div className="flex items-center gap-3">
             <Avatar className="size-9">
@@ -497,11 +567,14 @@ const MasterModuleList = () => {
      COLUMN ORDER
   ========================= */
 
+
   useEffect(() => {
     setColumnOrder(columns.map((col) => col.id as string));
   }, [columns]);
+  
+  
 
-
+console.log("fetchModuleData", moduleData);
   /* =========================
      TABLE INSTANCE
   ========================= */
@@ -510,13 +583,11 @@ const MasterModuleList = () => {
 
     columns,
 
-    data: [],
+    data: moduleData || [],
 
-    // pageCount:
-    //   roles?.total
-    //     ? Math.ceil(roles.total / pagination.pageSize)
-    //     : -1,
-    pageCount: 5,
+   pageCount: fetchModuleData?.total
+  ? Math.ceil(fetchModuleData.total / pagination.pageSize)
+  : -1,
 
     manualPagination: true,
 
@@ -558,8 +629,7 @@ const MasterModuleList = () => {
 
       <DataGrid
         table={table}
-        recordCount={2}
-        isLoading={false}
+        recordCount={fetchModuleData?.total || 0}
         tableLayout={{
           columnsResizable: true,
           columnsPinnable: true,
@@ -571,6 +641,8 @@ const MasterModuleList = () => {
         <Card>
 
           <DataGridToolbar
+            pagination={pagination}
+
             inputValue={inputValue}
             onInputChange={setInputValue}
             onAddUser={() => {
@@ -594,7 +666,7 @@ const MasterModuleList = () => {
 
           <CardFooter>
 
-            <DataGridPagination />
+            <DataGridPagination   />
 
           </CardFooter>
 
