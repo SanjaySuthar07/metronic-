@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { NotificationsSheet } from '@/app/components/partials/topbar/notifications-sheet';
 import { UserDropdownMenu } from '@/app/components/partials/topbar/user-dropdown-menu';
 import {
@@ -35,7 +35,7 @@ import { SettingSheet } from '@/app/components/partials/topbar/setting-sheet';
 export function Header() {
   const [isSidebarSheetOpen, setIsSidebarSheetOpen] = useState(false);
   const [isMegaMenuSheetOpen, setIsMegaMenuSheetOpen] = useState(false);
-
+  const router = useRouter();
   const pathname = usePathname();
   const mobileMode = useIsMobile();
 
@@ -124,20 +124,17 @@ export function Header() {
         <div className="ml-auto flex items-center gap-3 shrink-0">
 
           <>
-            {user?.user_type == "super_admin" && (
-              <SettingSheet
-                trigger={
-                  <Button
-                    variant="ghost"
-                    mode="icon"
-                    shape="circle"
-                    className="size-9 hover:bg-primary/10 hover:[&_svg]:text-primary"
-                  >
-                    <Settings className="size-4.5!" />
-                  </Button>
-                }
-              />
-            )}
+            {/* {user?.user_type == "super_admin" && ( */}
+            <Button
+              onClick={() => router.push("/settings-plain")}
+              variant="ghost"
+              mode="icon"
+              shape="circle"
+              className="size-9 hover:bg-primary/10 hover:[&_svg]:text-primary"
+            >
+              <Settings className="size-4.5!" />
+            </Button>
+            {/* )} */}
             {/* <NotificationsSheet
               trigger={
                 <Button

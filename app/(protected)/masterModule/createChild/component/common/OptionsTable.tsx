@@ -32,7 +32,7 @@ export const OptionsTable = ({ form, fields, append, remove }: any) => {
                     {/* VALUE */}
                     <FormField
                         control={form.control}
-                        name={`options.${index}.value`}
+                        name={`options.${index}.option_value`}
                         render={({ field, fieldState }) => (
                             <FormItem>
                                 <FormControl>
@@ -53,7 +53,7 @@ export const OptionsTable = ({ form, fields, append, remove }: any) => {
                     {/* LABEL */}
                     <FormField
                         control={form.control}
-                        name={`options.${index}.label`}
+                        name={`options.${index}.option_label`}
                         render={({ field, fieldState }) => (
                             <FormItem>
                                 <FormControl>
@@ -91,7 +91,7 @@ export const OptionsTable = ({ form, fields, append, remove }: any) => {
             <Button
                 type="button"
                 className="bg-green-500 hover:bg-green-600"
-                onClick={() => append({ value: "", label: "" })}
+                onClick={() => append({ option_value: "", option_label: "" })}
             >
                 Add New Key
             </Button>

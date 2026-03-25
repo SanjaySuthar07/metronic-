@@ -33,6 +33,7 @@ export const FormDropdown = ({
     options,
     inputTypes,
     loading,
+    disabled,
 }: any) => {
     const [open, setOpen] = React.useState(false);
     const data = options || inputTypes || [];
@@ -42,15 +43,16 @@ export const FormDropdown = ({
             control={form.control}
             name={name}
             render={({ field, fieldState }) => (<FormItem className="space-y-1"> <FormLabel>
-                {label} <span className="text-red-500">*</span> </FormLabel>
-                <Popover open={open} onOpenChange={setOpen}>
+                {label} {label === "Type" ? "" : <span className="text-red-500">*</span>}   </FormLabel>
+                <Popover open={open} onOpenChange={disabled ? () => { } : setOpen}>
                     <PopoverTrigger asChild>
                         <FormControl>
                             <Button
                                 type="button"
                                 variant="outline"
+                                disabled={disabled}
                                 className={cn(
-                                    "w-79 justify-between font-normal capitalize",
+                                    "w-full disabled:bg-gray-200 disabled:cursor-not-allowed justify-between font-normal h-9 capitalize",
                                     !field.value && "text-muted-foreground",
                                     fieldState.error &&
                                     "border-red-500 focus-visible:ring-red-500"
@@ -62,7 +64,7 @@ export const FormDropdown = ({
                         </FormControl>
                     </PopoverTrigger>
 
-                    <PopoverContent className="p-0 w-79">
+                    <PopoverContent className="p-0 w-[var(--radix-popover-trigger-width)]">
                         <Command>
                             <CommandList>
                                 <CommandGroup>

@@ -48,8 +48,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ChevronDown, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-import { fieldSchema, FieldSchemaType } from "../forms/addFieldSchema.ts";
-import { getColumnTypes, getAllModels } from "../../../../../store/thunk/masterModule.thunk.ts";
+import { fieldSchema, FieldSchemaType } from "../forms/addFieldSchema";
+import { getColumnTypes, getAllModels } from "../../../../../store/thunk/masterModule.thunk";
 import { OptionsTable } from "./common/OptionsTable"
 import { FormDropdown } from "./common/FormDropdown";
 /* =========================
@@ -74,12 +74,20 @@ const validationOptions = [
 export default function AddFieldDialog({
     open,
     onClose,
+    setFields,
+    editData,
+    mode,
+    editIndex
 }: {
     open: boolean;
     onClose: () => void;
+    setFields: React.Dispatch<React.SetStateAction<any[]>>;
+    editData?: any;
+    mode: string;
+    editIndex?: number | null;
 }) {
 
-    const dispatch = useDispatch();
+    const dispatch = useDispatch() as any;
     const { inputTypes, loading, inputModel } = useSelector((s: any) => s.masterModule);
 
     const form = useForm<FieldSchemaType>({
@@ -90,17 +98,16 @@ export default function AddFieldDialog({
             dbColumn: "",
             label: "",
             validation: "",
-            tooltip: "",
-            defaultValue: "",
-            maxFileSize: "",
-            multipleFiles: false,
-            maxPhotoSize: "",
+            tooltip_text: "",
+            default_value: "",
+            max_file_size: "",
+            is_multiple: false,
             cropImage: false,
             currency: "",
             precision: "",
-            options: [],   // ← yahan ek empty option daal diya taaki Radio/Select mein turant dikhe
+            options: [],
             relationModel: "",
-            useCKEditor: false,
+            is_ckeditor: false,
         },
     });
 
@@ -108,30 +115,65 @@ export default function AddFieldDialog({
         control: form.control,
         name: "options",
     });
+    const [status, setStatus] = React.useState(true);
 
     React.useEffect(() => {
         if (open) {
-            form.reset({
-                type: "",
-                dbColumn: "",
-                label: "",
-                validation: "",
-                tooltip: "",
-                defaultValue: "",
-                maxFileSize: "",
-                multipleFiles: false,
-                maxPhotoSize: "",
-                cropImage: false,
-                currency: "",
-                precision: "",
-                options: [],
-                relationModel: "",
-                useCKEditor: false,
-            });
-        }
-    }, [open]);
+            if (editData) {
+                // Populate visArray from editData.visible (preferred) or legacy flags
+                let visArray: number[] = editData.visible || [];
 
-    const modelOptions = ["User", "Category", "Product"];
+                if (visArray.length === 0) {
+                    if (editData.inCreate) visArray.push(1);
+                    if (editData.inEdit) visArray.push(2);
+                    if (editData.inShow) visArray.push(3);
+                    if (editData.inDelete) visArray.push(4);
+                }
+
+                form.reset({
+                    type: editData.type || "",
+                    dbColumn: editData.db_column || "",
+                    label: editData.label || "",
+                    validation: editData.validation || "",
+                    tooltip_text: editData.tooltip_text || "",
+                    default_value: editData.default_value || "",
+                    max_file_size: editData.max_file_size || "",
+                    is_multiple: editData.is_multiple || false,
+                    cropImage: editData.cropImage || false,
+                    currency: editData.currency || "",
+                    precision: editData.precision || "",
+                    relationModel: editData.relationModel || "",
+                    is_ckeditor: editData.is_ckeditor || false,
+                    options: (editData.options || []).map((opt: any) => ({
+                        option_value: opt.option_value || "",
+                        option_label: opt.option_label || "",
+                    })),
+                    visibility: visArray,
+                });
+
+                setStatus(editData.status ?? true);
+            } else {
+                form.reset({
+                    type: inputTypes?.length ? inputTypes.find((item: any) => item.input_type === "text")?.name || "" : "",
+                    dbColumn: "",
+                    label: "",
+                    validation: "",
+                    tooltip_text: "",
+                    default_value: "",
+                    max_file_size: "",
+                    is_multiple: false,
+                    cropImage: false,
+                    currency: "",
+                    precision: "",
+                    options: [],
+                    relationModel: "",
+                    is_ckeditor: false,
+                    visibility: [],
+                });
+                setStatus(false);
+            }
+        }
+    }, [open, editData, inputTypes, form]);
 
     /* FETCH TYPES */
     React.useEffect(() => {
@@ -140,35 +182,8 @@ export default function AddFieldDialog({
         }
     }, [dispatch, inputTypes, open]);
 
-
-    /* SET DEFAULT TYPE = TEXT */
-    React.useEffect(() => {
-        if (inputTypes?.length && !form.getValues("type")) {
-            const textType = inputTypes.find((item: any) => item.input_type === "text");
-            if (textType) {
-                form.setValue("type", textType.name, { shouldValidate: true });
-            }
-        }
-    }, [inputTypes, form]);
-
     const selectedType = form.watch("type");
 
-    React.useEffect(() => {
-        if (!selectedType) return;
-        form.reset({
-            ...form.getValues(), // keep existing base values if needed
-            defaultValue: "",
-            maxFileSize: "",
-            multipleFiles: false,
-            maxPhotoSize: "",
-            cropImage: false,
-            currency: "",
-            precision: "",
-            options: [],
-            relationModel: "",
-            useCKEditor: false,
-        });
-    }, [selectedType]);
     React.useEffect(() => {
         if (
             selectedType === "BelongsTo Relationship" ||
@@ -176,29 +191,64 @@ export default function AddFieldDialog({
         ) {
             dispatch(getAllModels());
         }
-    }, [selectedType]);
-    React.useEffect(() => {
-        if (
-            selectedType !== "BelongsTo Relationship" &&
-            selectedType !== "BelongsToMany Relationship"
-        ) {
-            form.setValue("relationModel", "", { shouldValidate: true });
-        }
-    }, [selectedType, form]);
+    }, [selectedType, dispatch]);
 
     const onSubmit = (data: FieldSchemaType) => {
-        console.log("✅ FORM SUBMITTED SUCCESSFULLY 👉", data);
+        const selectedTypeObj = inputTypes.find((t: any) => t.name === data.type);
+        const newField = {
+            ...(editData?.column_type_id && mode === "edit" && { id: editData.column_type_id }),
+            column_type_id: selectedTypeObj?.id,
+            type: data.type,
+            db_column: data.dbColumn,
+            label: data.label,
+            validation: data.validation,
+            status: status,
+            is_multiple: data.is_multiple || false,
+            tooltip_text: data.tooltip_text,
+            default_value: data.default_value,
+            max_file_size: data.max_file_size,
+            cropImage: data.cropImage,
+            currency: data.currency,
+            precision: data.precision,
+            relationModel: data.relationModel,
+            is_ckeditor: data.is_ckeditor,
+
+            visible: data.visibility || [],
+
+            options: (data.options || []).map((opt: any) => ({
+                option_value: opt.option_value,
+                option_label: opt.option_label,
+            })),
+        };
+
+        setFields((prev) => {
+            if (editIndex !== null && editIndex !== undefined) {
+                const updated = [...prev];
+                updated[editIndex] = newField;
+                return updated;
+            }
+            return [...prev, newField];
+        });
+
+        console.log("data ->", newField)
+        onClose();
     };
 
     const onError = (errors: any) => {
         console.log("❌ VALIDATION ERRORS 👉", errors);
     };
+    const visibilityList = [
+        { id: 1, label: "Create form" },
+        { id: 2, label: "Edit form" },
+        { id: 3, label: "Show page" },
+        { id: 4, label: "Delete action" },
+    ];
 
     return (
         <Dialog open={open} onOpenChange={(val) => !val && onClose()}>
             <DialogContent className="max-w-5xl ">
                 <DialogHeader>
-                    <DialogTitle>Add Field</DialogTitle>
+                    <DialogTitle>{editData ? "Edit Field" : "Add Field"}</DialogTitle>
                 </DialogHeader>
 
                 <Form {...form}>
@@ -212,6 +262,7 @@ export default function AddFieldDialog({
                                 label="Type"
                                 inputTypes={inputTypes}
                                 loading={loading}
+                                disabled={mode === "edit" && editData}
                             />
 
                             {/* DATABASE COLUMN */}
@@ -222,8 +273,16 @@ export default function AddFieldDialog({
                                     <FormItem className="space-y-1">
                                         <FormLabel>Database Column <span className="text-red-500">*</span></FormLabel>
                                         <FormControl>
-                                            <Input placeholder="e.g. user_name" {...field}
-                                                className={cn(fieldState.error && "border-red-500 focus-visible:ring-red-500")} />
+                                            <Input
+                                                placeholder="e.g. user_name"
+                                                {...field}
+                                                onChange={(e) => {
+                                                    const val = e.target.value.toLowerCase();
+                                                    field.onChange(val);
+                                                }}
+                                                disabled={mode === "edit" && editData}
+                                                className={cn("h-9 w-full disabled:bg-gray-200 disabled:cursor-not-allowed", fieldState.error && "border-red-500 focus-visible:ring-red-500")}
+                                            />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -239,7 +298,8 @@ export default function AddFieldDialog({
                                         <FormLabel>Label <span className="text-red-500">*</span></FormLabel>
                                         <FormControl>
                                             <Input placeholder="Label Name" {...field}
-                                                className={cn(fieldState.error && "border-red-500 focus-visible:ring-red-500")} />
+                                                disabled={mode === "edit" && editData}
+                                                className={cn("h-9 w-full disabled:bg-gray-200 disabled:cursor-not-allowed", fieldState.error && "border-red-500 focus-visible:ring-red-500")} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -257,46 +317,82 @@ export default function AddFieldDialog({
                             {/* TOOLTIP */}
                             <FormField
                                 control={form.control}
-                                name="tooltip"
+                                name="tooltip_text"
                                 render={({ field, fieldState }) => (
                                     <FormItem className="space-y-1">
-                                        <FormLabel>Tooltip <span className="text-red-500">*</span></FormLabel>
+                                        <FormLabel>Tooltip </FormLabel>
                                         <FormControl>
                                             <Input placeholder="Tooltip Text" {...field}
-                                                className={cn(fieldState.error && "border-red-500 focus-visible:ring-red-500")} />
+                                                className={cn("h-9 w-full", fieldState.error && "border-red-500 focus-visible:ring-red-500")} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )}
                             />
 
-                            {/* VISIBILITY */}
-                            <div className="space-y-1">
-                                <FormLabel>Visibility</FormLabel>
-                                <div className="flex gap-4 mt-2 flex-wrap">
-                                    {["Create form", "Edit form", "Show page", "Delete action"].map((item) => (
-                                        <div key={item} className="flex items-center gap-2">
-                                            <Checkbox id={item} />
-                                            <label htmlFor={item} className="text-sm cursor-pointer">{item}</label>
-                                        </div>
-                                    ))}
-                                </div>
+                            <div className="flex items-center gap-2 mt-7 ">
+                                <Checkbox
+                                    id="field-status"
+                                    checked={status}
+                                    onCheckedChange={(val) => setStatus(!!val)}
+                                />
+                                <label htmlFor="field-status" className=" text-sm font-medium cursor-pointer">
+                                    Active Status
+                                </label>
                             </div>
+                            {/* STATUS TOGGLE */}
+
                         </div>
+                        {/* VISIBILITY */}
+                        <FormField
+                            control={form.control}
+                            name="visibility"
+                            render={({ field }) => {
+                                const selectedVis: number[] = field.value || [];
+
+                                const toggle = (id: number) => {
+                                    if (selectedVis.includes(id)) {
+                                        field.onChange(selectedVis.filter((v) => v !== id));
+                                    } else {
+                                        field.onChange([...selectedVis, id]);
+                                    }
+                                };
+
+                                return (
+                                    <FormItem>
+                                        <FormLabel>Visibility</FormLabel>
+
+                                        <div className="flex gap-6 mt-2 flex-wrap">
+                                            {visibilityList.map((item) => (
+                                                <div key={item.id} className="flex items-center gap-2">
+                                                    <Checkbox
+                                                        checked={selectedVis.includes(item.id)}
+                                                        onCheckedChange={() => toggle(item.id)}
+                                                    />
+                                                    <label className="text-sm cursor-pointer">
+                                                        {item.label}
+                                                    </label>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </FormItem>
+                                );
+                            }}
+                        />
 
                         {/* ====================== CONDITIONAL FIELDS ====================== */}
 
-                        {/* Text */}
+                        {/* Text / Numeric / Select */}
                         {(selectedType === "Text" || selectedType === "Radio" || selectedType === "Select" || selectedType === "Integer" || selectedType === "Money" || selectedType === "Float") && (
                             <FormField
                                 control={form.control}
-                                name="defaultValue"
+                                name="default_value"
                                 render={({ field, fieldState }) => (
                                     <FormItem className="space-y-1">
-                                        <FormLabel>Default value <span className="text-red-500">*</span></FormLabel>
+                                        <FormLabel>Default value </FormLabel>
                                         <FormControl>
                                             <Input placeholder="Default value"  {...field}
-                                                className={cn(fieldState.error && "w-80 border-red-500 focus-visible:ring-red-500" || "w-80")} />
+                                                className={cn("h-9 w-full md:w-80", fieldState.error && "border-red-500 focus-visible:ring-red-500")} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -308,10 +404,10 @@ export default function AddFieldDialog({
                         {selectedType === "Textarea" && (
                             <div className="flex gap-2 items-center">
                                 <Checkbox
-                                    checked={form.watch("useCKEditor")}
-                                    onCheckedChange={(val) => form.setValue("useCKEditor", val as boolean)}
+                                    checked={form.watch("is_ckeditor")}
+                                    onCheckedChange={(val) => form.setValue("is_ckeditor", val as boolean)}
                                 />
-                                <span>Use  Ckeditor</span>
+                                <span>Use CKEditor</span>
                             </div>
                         )}
 
@@ -329,12 +425,12 @@ export default function AddFieldDialog({
                         {selectedType === "Checkbox" && (
                             <FormField
                                 control={form.control}
-                                name="defaultValue"
+                                name="default_value"
                                 render={({ field }) => (
                                     <FormItem className="space-y-1">
                                         <FormLabel>Default Value *</FormLabel>
                                         <Select onValueChange={field.onChange} value={field.value}>
-                                            <SelectTrigger className="w-80">
+                                            <SelectTrigger className="h-9 w-full md:w-80">
                                                 <SelectValue placeholder="Select default" />
                                             </SelectTrigger>
                                             <SelectContent>
@@ -356,13 +452,13 @@ export default function AddFieldDialog({
                             <div className="flex items-center gap-6">
                                 <FormField
                                     control={form.control}
-                                    name={selectedType === "File" ? "maxFileSize" : selectedType === "Photo" ? "maxPhotoSize" : "maxPhotoSize"}
+                                    name={"max_file_size"}
                                     render={({ field, fieldState }) => (
                                         <FormItem>
                                             <FormLabel>Max {selectedType === "Photo" ? "photo" : "file"} file size (MB) <span className="text-red-500">*</span></FormLabel>
                                             <FormControl>
                                                 <div className="relative flex">
-                                                    <Input {...field} placeholder="2" className={cn("w-80", fieldState.error && "border-red-500")} />
+                                                    <Input {...field} placeholder="2" className={cn("h-9 w-full md:w-80", fieldState.error && "border-red-500")} />
                                                     <span className="absolute right-0 top-0 bottom-0 px-3 flex items-center bg-gray-200 rounded-r-md">MB</span>
                                                 </div>
                                             </FormControl>
@@ -372,8 +468,8 @@ export default function AddFieldDialog({
                                 />
                                 <div className="flex items-center gap-2 mt-8">
                                     <Checkbox
-                                        checked={form.watch("multipleFiles")}
-                                        onCheckedChange={(val) => form.setValue("multipleFiles", !!val)}
+                                        checked={form.watch("is_multiple")}
+                                        onCheckedChange={(val) => form.setValue("is_multiple", !!val)}
                                     />
                                     <span>Multiple files</span>
                                 </div>
@@ -419,7 +515,7 @@ export default function AddFieldDialog({
                                 Cancel
                             </Button>
                             <Button type="submit">
-                                Add Field
+                                {editData ? "Update Field" : "Add Field"}
                             </Button>
                         </div>
 

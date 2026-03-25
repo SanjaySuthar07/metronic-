@@ -52,7 +52,7 @@ import RoleViewDialog from './masterModule-view-dialog';
 
 import { hasPermission } from '@/lib/permissions';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { deleteModule, fetchmodule } from '@/store/thunk/masterModule.thunk';
+import { fetchmodule } from '@/store/thunk/masterModule.thunk';
 
 import { useDispatch, useSelector } from 'react-redux';
 import { removeCreateModuleMessage } from '@/store/slice/masterModule.slice';
@@ -163,7 +163,6 @@ const DataGridToolbar = ({
 ========================= */
 
 const MasterModuleList = () => {
-  const router = useRouter()
 
   // const { user } = useSelector((s: any) => s.auth);
 
@@ -215,10 +214,10 @@ const MasterModuleList = () => {
     );
   }, [dispatch, pagination.pageIndex, pagination.pageSize, sorting]);
 
+  console.log("fetchmodule", fetchmodule);
   const fetchModuleData = useSelector(
     (state: RootState) => state.masterModule.moduleList
   );
-  console.log("fetchModuleData", fetchModuleData);
   const [moduleData, setModuleData] = useState<any[]>([]);
   const formatDate = (dateString: string) => {
 
@@ -238,7 +237,7 @@ const MasterModuleList = () => {
     if (fetchModuleData?.data) {
 
       const formattedData = fetchModuleData.data.map((item: any) => ({
-        id: item.id,
+
         name: item.main_model_name || "-",
 
         menu_title: item.menu_title || "-",
@@ -329,23 +328,6 @@ const MasterModuleList = () => {
      TABLE COLUMNS
   ========================= */
 
-  const handleDelete = async (id: number) => {
-    if (!confirm("Are you sure you want to delete this module?")) return;
-
-    try {
-      const res: any = await dispatch(deleteModule(id));
-
-      if (res?.payload?.success) {
-        // optional: refetch list
-        dispatch(fetchmodule({
-          page: pagination.pageIndex + 1,
-          limit: pagination.pageSize,
-        }));
-      }
-    } catch (err) {
-      console.error("Delete failed", err);
-    }
-  };
   const columns = useMemo<ColumnDef<any>[]>(() => [
 
     {
@@ -563,22 +545,14 @@ const MasterModuleList = () => {
           <DropdownMenuContent>
             <>
               <DropdownMenuItem
-                onClick={() => router.push(`/masterModule/createChild/${row.original.id}`)}
               >
                 Edit
               </DropdownMenuItem>
               <DropdownMenuSeparator />
             </>
             <DropdownMenuItem
-              onClick={() => router.push(`/masterModule/${row.original.id}`)}
             >
               View
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => handleDelete(row.original.id)}
-            >
-              Delete
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

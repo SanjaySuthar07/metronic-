@@ -11,60 +11,39 @@ export const fieldSchema = z.object({
     label: z.string().min(1, "Label is required"),
 
     validation: z.string().min(1, "Please select validation type"),
-
-    tooltip: z.string().min(1, "Tooltip is required"),
-
-    // COMMON OPTIONAL
-    defaultValue: z.string().optional(),
-
-    maxFileSize: z.string().optional(),
-    multipleFiles: z.boolean().optional(),
-
-    maxPhotoSize: z.string().optional(),
+    max_file_size: z.string().optional(),
+    is_multiple: z.boolean().optional(),
     cropImage: z.boolean().optional(),
 
     currency: z.string().optional(),
-    precision: z.string().optional(),
 
-    useCKEditor: z.boolean().optional(),
+    is_ckeditor: z.boolean().optional(),
 
+    tooltip_text: z.string().optional(),
+    default_value: z.string().optional(),
     relationModel: z.string().optional(),
 
+    visibility: z.array(z.number()).optional(),
     options: z
         .array(
             z.object({
-                value: z.string().min(1, "Value required"),
-                label: z.string().min(1, "Label required"),
+                option_value: z.string().min(1, "Value required"), // ✅ FIX
+                option_label: z.string().min(1, "Label required"), // ✅ FIX
             })
         )
         .optional(),
 })
     .superRefine((data, ctx) => {
-        // 🔥 TYPE BASED VALIDATION
 
-        if (data.type === "Text" && !data.defaultValue) {
+        if (data.type === "File" && !data.max_file_size) {
             ctx.addIssue({
-                path: ["defaultValue"],
-                message: "Default value required for Text",
-                code: z.ZodIssueCode.custom,
-            });
-        }
-
-        if (data.type === "File" && !data.maxFileSize) {
-            ctx.addIssue({
-                path: ["maxFileSize"],
+                path: ["max_file_size"],
                 message: "Max file size required",
                 code: z.ZodIssueCode.custom,
             });
         }
 
-        if (data.type === "Photo" && !data.maxPhotoSize) {
-            ctx.addIssue({
-                path: ["maxPhotoSize"],
-                message: "Max photo size required",
-                code: z.ZodIssueCode.custom,
-            });
-        }
+
 
         if (data.type === "Select") {
             if (!data.options || data.options.length === 0) {
@@ -75,17 +54,17 @@ export const fieldSchema = z.object({
                 });
             } else {
                 data.options.forEach((opt, index) => {
-                    if (!opt.value) {
+                    if (!opt.option_value) {
                         ctx.addIssue({
-                            path: ["options", index, "value"],
+                            path: ["options", index, "option_value"],
                             message: "Value required",
                             code: z.ZodIssueCode.custom,
                         });
                     }
 
-                    if (!opt.label) {
+                    if (!opt.option_label) {
                         ctx.addIssue({
-                            path: ["options", index, "label"],
+                            path: ["options", index, "option_label"],
                             message: "Label required",
                             code: z.ZodIssueCode.custom,
                         });
@@ -106,21 +85,9 @@ export const fieldSchema = z.object({
             });
         }
 
-        if (data.type === "Money" && !data.currency) {
-            ctx.addIssue({
-                path: ["currency"],
-                message: "Currency is required",
-                code: z.ZodIssueCode.custom,
-            });
-        }
 
-        if (data.type === "Float" && !data.precision) {
-            ctx.addIssue({
-                path: ["precision"],
-                message: "Precision is required",
-                code: z.ZodIssueCode.custom,
-            });
-        }
+
+
     });
 
 export type FieldSchemaType = z.infer<typeof fieldSchema>;
