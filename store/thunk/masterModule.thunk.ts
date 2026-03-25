@@ -83,6 +83,31 @@ export const childUserTypeCustomer = createAsyncThunk(
         }
     }
 );
+
+
+export const fetchmodule = createAsyncThunk(
+    "fetchmodule",
+ async (
+    params: { page: number; limit: number ; dir : string ; sort?: string },
+    { rejectWithValue }
+  ) => {
+        try {
+            
+               const page = params?.page || 1;
+      const limit = params?.limit || 10;
+      const dir = params?.dir || "desc";
+      const sort = params?.sort || "created_at";
+
+      console.log("fetchmodule params", params);
+            const response = await api.get(`/modules?page=${page}&limit=${limit}&sort=${sort}&dir=${dir}`);
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || "Failed to fetch users";
+            return rejectWithValue(message);
+        }
+    }
+);
 // curl --location 'http://192.168.1.14:8000/api/get-admin' \
 // --header 'Authorization: Bearer Bearer 37|BURw49jCdnW8oE6denpLF9TYnLZ4wQvo00AzKJy9129f28c6'
 export const fetchmodule = createAsyncThunk(

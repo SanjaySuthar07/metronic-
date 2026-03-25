@@ -87,7 +87,7 @@ const DataGridToolbar = ({
 
   return (
     <div className="py-4 px-5 flex  flex-row items-center justify-between gap-3 border-b border-gray-100">
-
+      
       <div className="flex flex-wrap items-center gap-3 w-full">
 
         <div className="relative">
@@ -135,7 +135,7 @@ const DataGridToolbar = ({
 
       {/* RIGHT SIDE BUTTONS */}
       <div className="flex items-center gap-2">
-
+    
         <Button
           onClick={() => router.push("/masterModule/createParent")}
           className="bg-blue-600 hover:bg-blue-700 text-white h-9 px-4"
@@ -449,8 +449,8 @@ const MasterModuleList = () => {
           </div>
         ),
       },
-
-    },
+ 
+},
     {
       accessorKey: 'Order Name',
       id: 'Order Name',
@@ -601,6 +601,8 @@ const MasterModuleList = () => {
   useEffect(() => {
     setColumnOrder(columns.map((col) => col.id as string));
   }, [columns]);
+  
+  
 
 
 
@@ -696,7 +698,7 @@ const MasterModuleList = () => {
 
           <CardFooter>
 
-            <DataGridPagination />
+            <DataGridPagination   />
 
           </CardFooter>
 
