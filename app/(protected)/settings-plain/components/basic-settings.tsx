@@ -53,7 +53,6 @@ const schema = z.object({
 const BasicSettings = ({ title }: IGeneralSettingsProps) => {
   const dispatch = useDispatch();
   const { setting } = useSelector((s: any) => s.settings);
-  console.log(setting, "setting")
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues: {

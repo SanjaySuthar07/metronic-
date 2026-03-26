@@ -1,222 +1,153 @@
 "use client";
-import { use, useEffect, useMemo, useState } from "react";
 
+import { useEffect, useMemo, useState } from "react";
 import {
     Card,
     CardContent,
-    CardFooter,
     CardHeader,
     CardTable,
     CardTitle,
 } from "@/components/ui/card";
+
 import {
     ColumnDef,
     getCoreRowModel,
     useReactTable,
-    PaginationState,
-    RowModel,
-    Table,
 } from "@tanstack/react-table";
 
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import Image from "next/image";
 import { DataGrid } from "@/components/ui/data-grid";
 import { useDispatch, useSelector } from "react-redux";
-import { Search } from "lucide-react";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { DataGridTable } from "@/components/ui/data-grid-table";
-
 import { DataGridColumnHeader } from "@/components/ui/data-grid-column-header";
-import { m } from "motion/react";
+import { moduleDetailsApi } from "@/store/thunk/masterModule.thunk";
+import { useParams } from "next/navigation";
 
 function View() {
-    const [selectedRow, setSelectedRow] = useState<string | null>(null);
-    const data = {
-        menuName: "hyper",
-        menuIcon: "/images/module-icon.png", // 👈 place image in /public/images/
-        parentMenu: "venu",
-        status: "Required",
-        userType: "Admin",
-        action: "Edit Form, Show page",
-        permissions: "Module Access, Module Create",
-        defaultValue: "Checked",
-        databaseValue: "Module Access, Module Create",
-        maxFileSize: "2MB",
-        multipleFile: "Yes",
-        model: "Yes",
-        ckeditor: "User",
-    };
+    const dispatch = useDispatch() as any;
+    const params = useParams();
+    const id = params?.id;
 
-    // Convert key to readable label
+    const { moduleDetails } = useSelector((s: any) => s.masterModule);
+
+    const [selectedRow, setSelectedRow] = useState<string | null>(null);
+
+    // 🔥 FETCH DATA
+    useEffect(() => {
+        if (id) {
+            dispatch(moduleDetailsApi(id));
+        }
+    }, []);
+
+    const permissionList = [
+        { id: 1, label: "Module Access" },
+        { id: 2, label: "Module Create" },
+        { id: 3, label: "Module Edit" },
+        { id: 4, label: "Module Show" },
+        { id: 5, label: "Module Delete" },
+    ];
+    const actionList = [
+        { id: 1, label: "Create form" },
+        { id: 2, label: "Edit form" },
+        { id: 3, label: "Show page" },
+        { id: 4, label: "Delete action" },
+    ];
+    const visibilityList = [
+        { id: 1, label: "Create form" },
+        { id: 2, label: "Edit form" },
+        { id: 3, label: "Show page" },
+        { id: 4, label: "Delete action" },
+    ];
+    const mapIdsToLabels = (ids: number[] = [], list: any[]) => {
+        return ids
+            .map((id) => list.find((item) => item.id === id)?.label)
+            .filter(Boolean)
+            .join(", ");
+    };
+    action: mapIdsToLabels(moduleDetails.actions, actionList) || "-"
+    // 🔥 TOP DATA
+    const data = useMemo(() => {
+        if (!moduleDetails) return {};
+
+        return {
+            menuName: moduleDetails.main_model_name,
+            menuIcon: "/images/module-icon.png",
+            parentMenu: moduleDetails.parent_menu || "No Parent",
+            status: moduleDetails.status ? "Active" : "Inactive",
+            userType: moduleDetails.user_type,
+            action: moduleDetails.actions?.join(", ") || "-",
+            permissions:
+                moduleDetails.permissions
+                    ?.map((p: any) => p.permission_name)
+                    .join(", ") || "-",
+
+        };
+    }, [moduleDetails]);
+
+    // 🔥 FORMAT LABEL
     const formatLabel = (key: string) => {
         return key
-            .replace(/([A-Z])/g, " $1") // camelCase → space
-
-            .replace(/^./, (str) => str.toUpperCase()); // capitalize
+            .replace(/([A-Z])/g, " $1")
+            .replace(/^./, (str) => str.toUpperCase());
     };
 
-    const radioColumns = [
-        {
-            accessorKey: "value",
-            enableSorting: false,
-            header: ({ column }) => (
-                <DataGridColumnHeader column={column} title="Database Value" />
-            ),
-        },
-        {
-            accessorKey: "label",
-            enableSorting: false,
-            header: ({ column }) => (
-                <DataGridColumnHeader column={column} title="Label Text" />
-            ),
-        },
-    ];
+    // 🔥 FIELDS DATA
+    const Filedsdata = useMemo(() => {
+        if (!moduleDetails?.fields) return [];
 
-    const radioData = [
-        { name: "male", name2: "male" },
-        { name: "female", name2: "female" },
-    ];
+        return moduleDetails.fields.map((field: any) => ({
+            type: field.column_type?.name,
+            database_column: field.db_column,
+            label: field.label,
+            validation: field.validation || "-",
+            tooltip_text: field.tooltip_text || "-",
+            visibility: field.visibility?.join(", ") || "-",
+        }));
+    }, [moduleDetails]);
 
-    const selectData = [
-        { name: "1", name2: "Option 1" },
-        { name: "2", name2: "Option 2" },
-    ];
-
-    const columns = useMemo<ColumnDef<any>[]>(
-        () => [
-            {
-                accessorKey: "name",
-                id: "Database Value",
-                enableSorting: true,
-                header: ({ column }) => (
-                    <DataGridColumnHeader title="Database Value" column={column} />
-                ),
-                cell: ({ row }) => row.original.name || "-",
-                size: 300,
-            },
-            {
-                accessorKey: "name2",
-                id: "Labeled Text",
-                enableSorting: true,
-                header: ({ column }) => (
-                    <DataGridColumnHeader title="Label Text" column={column} />
-                ),
-                cell: ({ row }) => (
-                    <span className="inline-flex items-center rounded bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">
-                        {row.original.name2}
-                    </span>
-                ),
-                size: 300,
-            },
-        ],
-        [selectedRow],
-    );
+    // 🔥 FIELDS COLUMNS (UNCHANGED)
     const Filedscolums = useMemo<ColumnDef<any>[]>(
         () => [
             {
                 accessorKey: "type",
-                id: "Type",
-                enableSorting: true,
                 header: ({ column }) => (
                     <DataGridColumnHeader title="Type" column={column} />
                 ),
-                cell: ({ row }) => row.original.type || "-",
-                size: 200,
             },
             {
                 accessorKey: "database_column",
-                id: "databaseColumn",
-                enableSorting: true,
                 header: ({ column }) => (
                     <DataGridColumnHeader title="Database Column" column={column} />
                 ),
-                cell: ({ row }) => (
-                    <span className="inline-flex items-centerpx-2 py-0.5 text-xs">
-                        {row.original.database_column}
-                    </span>
-                ),
-                size: 200,
             },
             {
                 accessorKey: "label",
-                id: "Label",
-                enableSorting: true,
                 header: ({ column }) => (
                     <DataGridColumnHeader title="Label" column={column} />
                 ),
-                cell: ({ row }) => (
-                    <span className="inline-flex items-center  py-0.5 text-xs ">
-                        {row.original.label}
-                    </span>
-                ),
-                size: 75,
             },
             {
                 accessorKey: "validation",
-                id: "Validation",
-                enableSorting: true,
                 header: ({ column }) => (
                     <DataGridColumnHeader title="Validation" column={column} />
                 ),
-                cell: ({ row }) => (
-                    <span className="inline-flex items-center  px-2 py-0.5 text-xs  ">
-                        {row.original.validation}
-                    </span>
-                ),
-                size: 75,
             },
             {
                 accessorKey: "tooltip_text",
-                id: "Tooltip text",
-                enableSorting: true,
                 header: ({ column }) => (
                     <DataGridColumnHeader title="Tooltip text" column={column} />
                 ),
-                cell: ({ row }) => (
-                    <span className="inline-flex items-center  px-2 py-0.5 text-xs  ">
-                        {row.original.tooltip_text}
-                    </span>
-                ),
-                size: 75,
             },
             {
                 accessorKey: "visibility",
-                id: "Visibility",
-                enableSorting: true,
                 header: ({ column }) => (
                     <DataGridColumnHeader title="Visibility" column={column} />
                 ),
-                cell: ({ row }) => (
-                    <span className="inline-flex items-center  px-2 py-0.5 text-xs ">
-                        {row.original.visibility}
-                    </span>
-                ),
-                size: 75,
             },
         ],
-        [selectedRow],
+        [selectedRow]
     );
-
-
-    const Filedsdata = [
-        {
-            type: "Auto_Increment",
-            database_column: "id",
-            label: "ID",
-            validation: "Required",
-            tooltip_text: "!",
-            visibility: "Create Form",
-        },
-        {
-            type: "Auto_Increment",
-            database_column: "created_at",
-            label: "Created At",
-            validation: "Unique",
-            tooltip_text: "!",
-            visibility: "Create Form",
-        },
-    ];
 
     const fieldstable = useReactTable({
         columns: Filedscolums,
@@ -224,65 +155,12 @@ function View() {
         getCoreRowModel: getCoreRowModel(),
     });
 
-    const table = useReactTable({
-        columns,
-        data: radioData,
+    // 🔥 EMPTY TABLES (AS IS)
+    const emptyTable = useReactTable({
+        columns: [],
+        data: [],
         getCoreRowModel: getCoreRowModel(),
     });
-
-    const selecttable = useReactTable({
-        columns,
-        data: selectData,
-        getCoreRowModel: getCoreRowModel(),
-    });
-    const extraOptionscolumns = useMemo<ColumnDef<any>[]>(
-        () => [
-            {
-                accessorKey: "value",
-                id: "Database Value",
-                enableSorting: true,
-                header: ({ column }) => (
-                    <DataGridColumnHeader title="Database Value" column={column} />
-                ),
-                cell: ({ row }) => row.original.value || "-",
-                size: 300,
-            },
-            {
-                accessorKey: "label",
-                id: "Labeled Text",
-                enableSorting: true,
-                header: ({ column }) => (
-                    <DataGridColumnHeader title="Label Text" column={column} />
-                ),
-                cell: ({ row }) =>
-
-                    row.original.label || "-",
-
-
-                size: 300,
-            },
-        ],
-        [selectedRow],
-    );
-
-    const extraOptionsdata = [
-        {
-            value: "male",
-            label: "Male"
-        },
-        {
-            value: "female",
-            label: "Female"
-        },
-    ];
-    const extraOptionstable = useReactTable({
-        columns: extraOptionscolumns,
-        data: extraOptionsdata,
-        getCoreRowModel: getCoreRowModel(),
-    });
-
-
-
 
     return (
         <>
@@ -316,36 +194,8 @@ function View() {
                     </dl>
                 </CardContent>
             </Card>
-            <div className="grid grid-cols-2 gap-4 mt-4">
-                <DataGrid table={table} recordCount={0}>
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Radio</CardTitle>
-                        </CardHeader>
 
-                        <CardTable>
-                            <DataGridTable />
-                        </CardTable>
-
-
-                    </Card>
-                </DataGrid>
-
-                <DataGrid table={selecttable} recordCount={0}>
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>select</CardTitle>
-                        </CardHeader>
-                        <CardTable>
-                            <ScrollArea>
-                                <DataGridTable />
-                                <ScrollBar orientation="horizontal" />
-                            </ScrollArea>
-                        </CardTable>
-
-                    </Card>
-                </DataGrid>
-            </div>
+            {/* 🔥 FIELDS TABLE */}
             <DataGrid table={fieldstable} recordCount={0}>
                 <Card className="mt-4">
                     <CardHeader>
@@ -357,12 +207,39 @@ function View() {
                             <ScrollBar orientation="horizontal" />
                         </ScrollArea>
                     </CardTable>
-
                 </Card>
             </DataGrid>
-            <div className="grid grid-cols-2 gap-4 mt-4">
 
-                <DataGrid table={extraOptionstable} recordCount={0}>
+            {/* 🔥 EMPTY SECTIONS SAME DESIGN */}
+            <div className="grid grid-cols-2 gap-4 mt-4">
+                <DataGrid table={emptyTable} recordCount={0}>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Radio</CardTitle>
+                        </CardHeader>
+                        <CardTable>
+                            <DataGridTable />
+                        </CardTable>
+                    </Card>
+                </DataGrid>
+
+                <DataGrid table={emptyTable} recordCount={0}>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Select</CardTitle>
+                        </CardHeader>
+                        <CardTable>
+                            <ScrollArea>
+                                <DataGridTable />
+                                <ScrollBar orientation="horizontal" />
+                            </ScrollArea>
+                        </CardTable>
+                    </Card>
+                </DataGrid>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 mt-4">
+                <DataGrid table={emptyTable} recordCount={0}>
                     <Card>
                         <CardHeader>
                             <CardTitle>Extra Options</CardTitle>
@@ -373,7 +250,6 @@ function View() {
                                 <ScrollBar orientation="horizontal" />
                             </ScrollArea>
                         </CardTable>
-
                     </Card>
                 </DataGrid>
             </div>
@@ -382,4 +258,3 @@ function View() {
 }
 
 export default View;
-

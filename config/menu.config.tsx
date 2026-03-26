@@ -51,6 +51,14 @@ import {
   Zap,
   Puzzle,
 } from 'lucide-react';
+// const mapMenu = (data: any[]) => {
+//   return data.map((item) => ({
+//     title: item.menu_title,
+//     path: `/${item.slug}`, // 🔥 IMPORTANT
+//     icon: item.icon,       // abhi string hai
+//     children: [],          // future nested
+//   }));
+// };
 import { type MenuConfig } from './types';
 export const MENU_SIDEBAR: any = [
   { title: 'Dashboard', icon: LayoutGrid, path: '/dashboard' },

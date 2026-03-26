@@ -29,8 +29,9 @@ import { Breadcrumb } from './breadcrumb';
 import { MegaMenu } from './mega-menu';
 import { MegaMenuMobile } from './mega-menu-mobile';
 import { SidebarMenu } from './sidebar-menu';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { SettingSheet } from '@/app/components/partials/topbar/setting-sheet';
+import { fetchSettings } from '@/store/thunk/setting.thunk';
 
 export function Header() {
   const [isSidebarSheetOpen, setIsSidebarSheetOpen] = useState(false);
@@ -43,10 +44,14 @@ export function Header() {
   const headerSticky: boolean = scrollPosition > 0;
 
   const { user } = useSelector((s) => s.auth)
+  const { setting } = useSelector((s) => s.settings)
+  const dispatch = useDispatch()
   useEffect(() => {
     setIsMegaMenuSheetOpen(false);
+    dispatch(fetchSettings())
   }, [pathname]);
 
+  console.log(setting)
   return (
     <header
       className={cn(

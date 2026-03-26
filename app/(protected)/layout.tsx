@@ -59,7 +59,7 @@ export default function Layout({ children }: { children: ReactNode }) {
         <Header />
 
         <main className="grow pt-5" role="content">
-            {children}
+          {children}
         </main>
 
         <Footer />
