@@ -6,6 +6,7 @@ import invite from "./slice/invite.slice"
 import settings from "./slice/setting.slice"
 import masterModuleSlice from "./slice/masterModule.slice"
 import menuReducer from "./slice/menu.slice"
+import dynamicModuleReducer from "./slice/dynamicModule.slice"
 
 import {
     persistStore,
@@ -27,6 +28,7 @@ const rootReducer = combineReducers({
     settings: settings,
     masterModule: masterModuleSlice,
     menu: menuReducer,
+    dynamicModule: dynamicModuleReducer,
 });
 
 const persistConfig = {
