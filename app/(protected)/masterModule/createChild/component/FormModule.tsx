@@ -914,7 +914,7 @@ export default function FormModule({ mode, id }: Props) {
               </div>
 
               <DataGrid table={table} recordCount={dynamicFields.length} isLoading={false}>
-                <ScrollArea className="max-h-[400px]">
+                <ScrollArea >
                   <DataGridTable />
                   <ScrollBar orientation="horizontal" />
                 </ScrollArea>

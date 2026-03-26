@@ -35,6 +35,9 @@ const masterModuleSlice = createSlice({
         removeCreateModuleMessage: (state, action) => {
             state.createModuleResponse = null;
             state.loading = false
+        },
+        removeModuleDetails: (state, action) => {
+            state.moduleDetails = [];
         }
     },
     extraReducers: (builder) => {
@@ -116,7 +119,7 @@ const masterModuleSlice = createSlice({
             })
     },
 });
-export const { removeCreateModuleMessage } = masterModuleSlice.actions;
+export const { removeCreateModuleMessage, removeModuleDetails } = masterModuleSlice.actions;
 
 export default masterModuleSlice.reducer;
 

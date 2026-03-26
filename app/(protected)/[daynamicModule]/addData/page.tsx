@@ -46,6 +46,14 @@ export default async function Page() {
                             </BreadcrumbList>
                         </Breadcrumb>
                     </ToolbarHeading>
+                    <ToolbarActions>
+                        <Button asChild variant="outline">
+                            <Link href="/masterModule">
+                                <MoveLeft />
+                                Back to masterModule
+                            </Link>
+                        </Button>
+                    </ToolbarActions>
                 </Toolbar>
             </Container>
             <Container>
