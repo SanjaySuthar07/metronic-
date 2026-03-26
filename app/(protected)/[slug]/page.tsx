@@ -19,7 +19,12 @@ export const metadata: Metadata = {
   title: 'Roles',
   description: 'Manage Roles.',
 };
-export default async function Page() {
+export default async function Page({ params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params; // ✅ IMPORTANT
+  console.log("this is slug", slug)
   return (
     <>
       <Container>
@@ -43,7 +48,7 @@ export default async function Page() {
       </Container>
 
       <Container>
-        <MasterModule />
+        <MasterModule slug={slug} />
       </Container>
     </>
   );

@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { getColumnTypes, getAllModels, fetchmodule, childUserTypeAdmin, childUserTypeCustomer, createModule, updateModule, moduleDetailsApi } from "../thunk/masterModule.thunk";
+import { getColumnTypes, getAllModels, fetchmodule, getParentMenu, childUserTypeAdmin, childUserTypeCustomer, createModule, updateModule, moduleDetailsApi } from "../thunk/masterModule.thunk";
 interface MasterModuleState {
     adminList: any[];
     customerList: any[];
@@ -8,6 +8,7 @@ interface MasterModuleState {
     setting: any[];
     moduleDetails: any[];
     createModuleResponse: any;
+    parentMenuList: any[];
     mastmoduleloading: any,
     loading: boolean;
     moduleList: any[];
@@ -23,6 +24,7 @@ const initialState: MasterModuleState = {
     setting: [],
     // module list data
     moduleList: [],
+    parentMenuList: [],
     moduleDetails: [],
     createModuleResponse: null,
     loading: false,
@@ -115,6 +117,17 @@ const masterModuleSlice = createSlice({
             })
             .addCase(fetchmodule.rejected, (state, action) => {
                 state.mastmoduleloading = false
+            })
+            .addCase(getParentMenu.pending, (state, action) => {
+                state.loading = true
+            })
+            .addCase(getParentMenu.fulfilled, (state, action) => {
+                console.log(action.payload.data)
+                state.parentMenuList = action.payload.data
+                state.loading = false
+            })
+            .addCase(getParentMenu.rejected, (state, action) => {
+                state.loading = false
 
             })
     },

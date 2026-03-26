@@ -44,21 +44,12 @@ export default async function Page({ params,
                                 </BreadcrumbItem>
                                 <BreadcrumbSeparator />
                                 <BreadcrumbItem>
-                                    <BreadcrumbPage>Master Module</BreadcrumbPage>
+                                    <BreadcrumbLink href="/masterModule">Master Module</BreadcrumbLink>
                                 </BreadcrumbItem>
                                 <BreadcrumbSeparator />
-
                                 <BreadcrumbItem>
                                     <BreadcrumbPage>Master Module Detail</BreadcrumbPage>
                                 </BreadcrumbItem>
-                                <ToolbarActions>
-                                    <Button asChild variant="outline">
-                                        <Link href="/masterModule">
-                                            <MoveLeft />
-                                            Back to masterModule
-                                        </Link>
-                                    </Button>
-                                </ToolbarActions>
                             </BreadcrumbList>
                         </Breadcrumb>
                     </ToolbarHeading>

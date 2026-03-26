@@ -23,7 +23,12 @@ import Link from 'next/link';
 import { MoveLeft } from 'lucide-react';
 
 import FormModule from "./component/FormModule";
-export default async function Page() {
+export default async function Page({ params,
+}: {
+    params: Promise<{ slug: string }>;
+}) {
+    const { slug } = await params; // ✅ IMPORTANT
+    console.log("this is slug", slug)
     return (
         <>
             <Container>
@@ -37,27 +42,27 @@ export default async function Page() {
                                 </BreadcrumbItem>
                                 <BreadcrumbSeparator />
                                 <BreadcrumbItem>
-                                    <BreadcrumbPage>Master Module</BreadcrumbPage>
+                                    <BreadcrumbLink href={`/${slug}`}>Master Module</BreadcrumbLink>
                                 </BreadcrumbItem>
                                 <BreadcrumbSeparator />
                                 <BreadcrumbItem>
-                                    <BreadcrumbPage>Parent Module</BreadcrumbPage>
+                                    <BreadcrumbPage>Add Data</BreadcrumbPage>
                                 </BreadcrumbItem>
                             </BreadcrumbList>
                         </Breadcrumb>
                     </ToolbarHeading>
-                    <ToolbarActions>
+                    {/* <ToolbarActions>
                         <Button asChild variant="outline">
-                            <Link href="/masterModule">
+                            <Link href={`/${slug}`}>
                                 <MoveLeft />
                                 Back to masterModule
                             </Link>
                         </Button>
-                    </ToolbarActions>
+                    </ToolbarActions> */}
                 </Toolbar>
             </Container>
             <Container>
-                <FormModule></FormModule>
+                <FormModule slug={slug}></FormModule>
             </Container>
         </>
     );

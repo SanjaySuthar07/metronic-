@@ -65,10 +65,12 @@ const DataGridToolbar = ({
   inputValue,
   onInputChange,
   onAddUser,
+  slug,
 }: {
   inputValue: string;
   onInputChange: (value: string) => void;
   onAddUser: () => void;
+  slug: string;
 }) => {
   const [parentMenu, setParentMenu] = useState('');
   const [createdBy, setCreatedBy] = useState('');
@@ -106,7 +108,7 @@ const DataGridToolbar = ({
       {/* RIGHT SIDE BUTTONS */}
       <div className="flex items-center gap-2">
         <Button
-          onClick={() => router.push("/daynamicModule/addData")}
+          onClick={() => router.push(`/${slug}/addData`)}
           className="bg-blue-600 hover:bg-blue-700 text-white h-9 px-4"
         >
           <Plus className="mr-1 size-4" />
@@ -122,7 +124,7 @@ const DataGridToolbar = ({
    MAIN COMPONENT
 ========================= */
 
-const MasterModuleList = () => {
+const MasterModuleList = ({ slug }: { slug: string }) => {
   const router = useRouter()
 
   // const { user } = useSelector((s: any) => s.auth);
@@ -163,22 +165,20 @@ const MasterModuleList = () => {
   const [columnVisibility, setColumnVisibility] = useState({});
   const dispatch = useDispatch<AppDispatch>();
 
-  useEffect(() => {
-    dispatch(
-      fetchmodule({
-        page: pagination.pageIndex + 1,
-        limit: pagination.pageSize,
-        dir: sorting?.[0]?.desc ? "desc" : "asc",
-        sort: sorting?.[0]?.id === "Created Date" ? "created_at" : sorting?.[0]?.id ? sorting?.[0]?.id.toLocaleLowerCase().replaceAll(" ", "_") : undefined
-
-      })
-    );
-  }, [dispatch, pagination.pageIndex, pagination.pageSize, sorting]);
+  // useEffect(() => {
+  //   dispatch(
+  //     fetchmodule({
+  //       page: pagination.pageIndex + 1,
+  //       limit: pagination.pageSize,
+  //       dir: sorting?.[0]?.desc ? "desc" : "asc",
+  //       sort: sorting?.[0]?.id === "Created Date" ? "created_at" : sorting?.[0]?.id ? sorting?.[0]?.id.toLocaleLowerCase().replaceAll(" ", "_") : undefined
+  //     })
+  //   );
+  // }, [dispatch, pagination.pageIndex, pagination.pageSize, sorting]);
 
   const fetchModuleData = useSelector(
     (state: RootState) => state.masterModule.moduleList
   );
-  console.log("fetchModuleData", fetchModuleData);
   const [moduleData, setModuleData] = useState<any[]>([]);
   const formatDate = (dateString: string) => {
 
@@ -297,10 +297,10 @@ const MasterModuleList = () => {
 
       if (res?.payload?.success) {
         // optional: refetch list
-        dispatch(fetchmodule({
-          page: pagination.pageIndex + 1,
-          limit: pagination.pageSize,
-        }));
+        // dispatch(fetchmodule({
+        //   page: pagination.pageIndex + 1,
+        //   limit: pagination.pageSize,
+        // }));
       }
     } catch (err) {
       console.error("Delete failed", err);
@@ -319,11 +319,6 @@ const MasterModuleList = () => {
         const name = role?.name || '-';
         return (
           <div className="flex items-center gap-3">
-            <Avatar className="size-9">
-              <AvatarFallback>
-                {getInitials(name)}
-              </AvatarFallback>
-            </Avatar>
             <div className="font-medium capitalize text-sm">
               {name}
             </div>
@@ -352,11 +347,6 @@ const MasterModuleList = () => {
         const name = role?.menu_title || '-';
         return (
           <div className="flex items-center gap-3">
-            <Avatar className="size-9">
-              <AvatarFallback>
-                {getInitials(name)}
-              </AvatarFallback>
-            </Avatar>
             <div className="font-medium capitalize text-sm">
               {name}
             </div>
@@ -390,11 +380,7 @@ const MasterModuleList = () => {
 
         return (
           <div className="flex items-center gap-3">
-            <Avatar className="size-9">
-              <AvatarFallback>
-                {getInitials(name)}
-              </AvatarFallback>
-            </Avatar>
+
             <div className="font-medium capitalize text-sm">
               {name}
             </div>
@@ -422,11 +408,7 @@ const MasterModuleList = () => {
         const name = role?.order_name || '-';
         return (
           <div className="flex items-center gap-3">
-            {/* <Avatar className="size-9">
-              <AvatarFallback>
-                {getInitials(name)}
-              </AvatarFallback>
-            </Avatar> */}
+
             <div className="font-medium capitalize text-sm">
               {name}
             </div>
@@ -487,11 +469,7 @@ const MasterModuleList = () => {
         const name = formatDate(role?.created_date) || '-';
         return (
           <div className="flex items-center gap-3">
-            <Avatar className="size-9">
-              <AvatarFallback>
-                {getInitials(name)}
-              </AvatarFallback>
-            </Avatar>
+
             <div className="font-medium capitalize text-sm">
               {name}
             </div>
@@ -556,16 +534,9 @@ const MasterModuleList = () => {
   /* =========================
      COLUMN ORDER
   ========================= */
-
-
   useEffect(() => {
     setColumnOrder(columns.map((col) => col.id as string));
   }, [columns]);
-
-
-
-
-
   console.log("fetchModuleData", moduleData);
   /* =========================
      TABLE INSTANCE
@@ -634,7 +605,7 @@ const MasterModuleList = () => {
 
           <DataGridToolbar
             pagination={pagination}
-
+            slug={slug}
             inputValue={inputValue}
             onInputChange={setInputValue}
             onAddUser={() => {

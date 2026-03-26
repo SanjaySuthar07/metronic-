@@ -87,19 +87,28 @@ export const childUserTypeCustomer = createAsyncThunk(
 
 export const fetchmodule = createAsyncThunk(
     "fetchmodule",
-    async (
-        params: { page: number; limit: number; dir: string; sort?: string },
-        { rejectWithValue }
-    ) => {
+    async (params: any, { rejectWithValue }) => {
         try {
+            const cleanParams = Object.fromEntries(
+                Object.entries({
+                    page: params?.page || 1,
+                    limit: params?.limit || 10,
+                    dir: params?.dir || "desc",
+                    sort: params?.sort || "created_at",
+                    search: params?.search,
+                    status: params?.status
+                }).filter(
+                    ([_, value]) =>
+                        value !== null &&
+                        value !== undefined &&
+                        value !== ""
+                )
+            );
 
-            const page = params?.page || 1;
-            const limit = params?.limit || 10;
-            const dir = params?.dir || "desc";
-            const sort = params?.sort || "created_at";
+            const response = await api.get("/modules", {
+                params: cleanParams,
+            });
 
-            console.log("fetchmodule params", params);
-            const response = await api.get(`/modules?page=${page}&limit=${limit}&sort=${sort}&dir=${dir}`);
             return response.data;
         } catch (error: any) {
             const message =
@@ -179,6 +188,21 @@ export const deleteModule = createAsyncThunk(
                 success: false,
                 message: error.message || "Failed to delete module",
             });
+        }
+    }
+);
+
+
+export const getParentMenu = createAsyncThunk(
+    "getParentMenu",
+    async (_, { rejectWithValue }) => {
+        try {
+            const response = await api.get("/get-parent-menu");
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || "Failed to fetch users";
+            return rejectWithValue(message);
         }
     }
 );

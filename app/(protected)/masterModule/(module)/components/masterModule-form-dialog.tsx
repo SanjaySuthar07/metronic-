@@ -1,10 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { LoaderCircleIcon, X } from 'lucide-react';
-import { useForm } from 'react-hook-form';
-import { useDispatch, useSelector } from 'react-redux';
+import { useState } from 'react';
+import { LoaderCircleIcon, Trash2 } from 'lucide-react';
+import { useDispatch } from 'react-redux';
 
 import {
   Dialog,
@@ -15,346 +13,105 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-
-import { Badge, BadgeButton } from '@/components/ui/badge';
-
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-
-import {
-  Command,
-  CommandCheck,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command';
-
-import { ScrollArea } from '@/components/ui/scroll-area';
-
-import {
-  createRole,
-  fetchPermissionsDropdown,
-  fetchRoles,
-  updateRoles,
-} from '@/store/thunk/userManagement.thunk';
-
-import { RoleSchemaType } from '../forms/role-schema';
 import { toast } from 'sonner';
 
-const RoleInviteDialog = ({
-  open,
-  closeDialog,
-  isEdit,
-  editData,
-}: {
+import { deleteModule } from '@/store/thunk/masterModule.thunk';
+import { AppDispatch } from '@/store';
+
+interface PermissionDeleteDialogProps {
   open: boolean;
   closeDialog: () => void;
-  isEdit: boolean;
-  editData: any;
-}) => {
-  const dispatch = useDispatch();
-  const [permissionList, setPermissionList] = useState<any[]>([]);
-  const [selectedPermissions, setSelectedPermissions] = useState<number[]>([]);
-  const [isProcess, setIsProcess] = useState(false);
-  const { user } = useSelector((s) => s.auth)
+  id: number | null;
+  onDeleted: () => void;
+}
 
-  const form = useForm<RoleSchemaType>({
-    defaultValues: {
-      name: '',
-      permissions: [],
-    },
-    mode: 'onSubmit',
-  });
-  useEffect(() => {
-    if (!open) return;
-    const getPermissions = async () => {
-      const res: any = await dispatch(fetchPermissionsDropdown({ tenant_id: user.tenant_id }));
-      setPermissionList(res?.payload?.permissions || []);
-    };
+const PermissionDeleteDialog = ({
+  open,
+  closeDialog,
+  id,
+  onDeleted,
+}: PermissionDeleteDialogProps) => {
+  const dispatch = useDispatch<AppDispatch>();
+  const [isDeleting, setIsDeleting] = useState(false);
 
-    getPermissions();
-  }, [open, dispatch]);
-  useEffect(() => {
-    if (!open) {
-      form.reset();
-      setSelectedPermissions([]);
-    }
-  }, [open, form]);
+  const handleDelete = async () => {
+    if (!id) return;
 
-  // set edit data AFTER permissionList loaded
-  useEffect(() => {
-    if (open && editData && permissionList.length > 0) {
-      const permissionIds =
-        editData?.permissions?.map((p: any) => p.id) ?? [];
+    setIsDeleting(true);
 
-      form.reset({
-        name: editData?.name || '',
-        permissions: permissionIds,
-      });
+    try {
+      const res: any = await dispatch(deleteModule(id));
 
-      setSelectedPermissions(permissionIds);
-    }
-  }, [open, editData, permissionList]);
-
-  // sync permissions with form
-  useEffect(() => {
-    form.setValue('permissions', selectedPermissions, {
-      shouldDirty: true,
-    });
-
-    form.trigger('permissions');
-  }, [selectedPermissions, form]);
-
-  const togglePermissionSelection = (permissionId: number) => {
-    setSelectedPermissions((prev) =>
-      prev.includes(permissionId)
-        ? prev.filter((id) => id !== permissionId)
-        : [...prev, permissionId]
-    );
-  };
-
-  const handleSubmit = async (values: RoleSchemaType) => {
-    setIsProcess(true);
-
-    const payload = {
-      id: editData?.id,
-      name: values.name,
-      permissions: selectedPermissions,
-      tenant_id: user.tenant_id
-    };
-
-    let res: any;
-
-    if (isEdit) {
-      res = await dispatch(updateRoles(payload));
-    } else {
-      res = await dispatch(
-        createRole({
-          name: values.name,
-          permissions: selectedPermissions,
-          tenant_id: user.tenant_id
-        })
-      );
-    }
-
-    if (res?.meta?.requestStatus === 'fulfilled') {
-      await dispatch(fetchRoles({ page: 1, per_page: 10, tenant_id: user.tenant_id }));
-
-      closeDialog();
-
-      toast.success(
-        isEdit
-          ? 'Roles Update Successfully'
-          : 'Role Created Successfully',
-        {
+      if (res?.payload?.success || res?.meta?.requestStatus === 'fulfilled') {
+        toast.success('Module deleted successfully', {
           position: 'top-center',
           style: {
-            background: '#16a34a',
+            background: '#ef4444',
             color: '#fff',
             border: 'none',
           },
-        }
-      );
+        });
+
+        onDeleted(); // This will refetch the list
+      } else {
+        toast.error('Failed to delete module', {
+          position: 'top-center',
+        });
+      }
+    } catch (error) {
+      console.error('Delete error:', error);
+      toast.error('Something went wrong while deleting the module');
+    } finally {
+      setIsDeleting(false);
     }
-
-    setIsProcess(false);
   };
-
-  const {
-    formState: { isDirty },
-  } = form;
 
   return (
     <Dialog open={open} onOpenChange={closeDialog}>
       <DialogContent showCloseButton={false}>
         <DialogHeader>
-          <DialogTitle>
-            {isEdit ? 'Edit Role' : 'Add Role'}
+          <DialogTitle className="flex items-center gap-3 text-destructive">
+            <Trash2 className="size-5" />
+            Delete Module
           </DialogTitle>
-          <DialogDescription></DialogDescription>
+          <DialogDescription>
+            Are you sure you want to delete this module? This action cannot be undone.
+          </DialogDescription>
         </DialogHeader>
 
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(handleSubmit)}
-            className="space-y-6"
+        <DialogFooter className="gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={closeDialog}
+            disabled={isDeleting}
           >
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Role Name</FormLabel>
+            Cancel
+          </Button>
 
-                  <FormControl>
-                    <Input
-                      placeholder="Enter role name"
-                      {...field}
-                    />
-                  </FormControl>
-
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="permissions"
-              render={() => (
-                <FormItem>
-                  <FormLabel>Permissions</FormLabel>
-
-                  <div className="flex flex-wrap gap-1.5 text-sm text-muted-foreground border border-input rounded-md px-3 py-3 max-h-52 overflow-y-auto">
-                    {selectedPermissions.length > 0 ? (
-                      selectedPermissions.map((permissionId) => {
-                        const permission = permissionList.find(
-                          (p: any) => p.id === permissionId
-                        );
-
-                        if (!permission) return null;
-
-                        return (
-                          <Badge
-                            key={permissionId}
-                            variant="secondary"
-                          >
-                            {permission.name}
-
-                            <BadgeButton
-                              onClick={() =>
-                                togglePermissionSelection(
-                                  permissionId
-                                )
-                              }
-                            >
-                              <X size={14} />
-                            </BadgeButton>
-                          </Badge>
-                        );
-                      })
-                    ) : (
-                      <span className="text-sm text-muted-foreground">
-                        No permissions assigned.
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="pt-1">
-                    <FormControl>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            role="combobox"
-                          >
-                            Add Permissions
-                          </Button>
-                        </PopoverTrigger>
-
-                        <PopoverContent
-                          className="w-[250px] p-0"
-                          align="start"
-                        >
-                          <Command>
-                            <CommandInput placeholder="Search permissions..." />
-
-                            <CommandList>
-                              <CommandEmpty>
-                                No permissions found.
-                              </CommandEmpty>
-
-                              <CommandGroup>
-                                <ScrollArea className="h-[220px]">
-                                  {permissionList.map(
-                                    (permission) => (
-                                      <CommandItem
-                                        key={permission.id}
-                                        onSelect={() =>
-                                          togglePermissionSelection(
-                                            permission.id
-                                          )
-                                        }
-                                      >
-                                        <span className="flex-1">
-                                          {permission.name}
-                                        </span>
-
-                                        <CommandCheck
-                                          className={
-                                            selectedPermissions.includes(
-                                              permission.id
-                                            )
-                                              ? 'opacity-100'
-                                              : 'opacity-0'
-                                          }
-                                        />
-                                      </CommandItem>
-                                    )
-                                  )}
-                                </ScrollArea>
-                              </CommandGroup>
-                            </CommandList>
-                          </Command>
-                        </PopoverContent>
-                      </Popover>
-                    </FormControl>
-                  </div>
-                </FormItem>
-              )}
-            />
-
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={closeDialog}
-              >
-                Cancel
-              </Button>
-
-              <Button
-                type="submit"
-                disabled={
-                  isProcess ||
-                  (isEdit
-                    ? !isDirty &&
-                    selectedPermissions.length ===
-                    (editData?.permissions?.length || 0)
-                    : !form.watch('name') ||
-                    selectedPermissions.length === 0)
-                }
-              >
-                {isProcess ? (
-                  <LoaderCircleIcon className="animate-spin" />
-                ) : isEdit ? (
-                  'Update Role'
-                ) : (
-                  'Create Role'
-                )}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
+          <Button
+            type="button"
+            variant="destructive"
+            onClick={handleDelete}
+            disabled={isDeleting || !id}
+          >
+            {isDeleting ? (
+              <>
+                <LoaderCircleIcon className="mr-2 size-4 animate-spin" />
+                Deleting...
+              </>
+            ) : (
+              <>
+                <Trash2 className="mr-2 size-4" />
+                Yes, Delete Module
+              </>
+            )}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 };
 
-export default RoleInviteDialog;
+export default PermissionDeleteDialog;

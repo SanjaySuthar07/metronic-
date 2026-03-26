@@ -69,9 +69,10 @@ import RoleDeleteDialog from "./delete-dialog"
 import { ChevronDown } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { toast } from "sonner";
-import { childUserTypeAdmin, childUserTypeCustomer, createModule, moduleDetailsApi, updateModule } from "../../../../../store/thunk/masterModule.thunk"
+import { childUserTypeAdmin, childUserTypeCustomer, createModule, getParentMenu, moduleDetailsApi, updateModule } from "../../../../../store/thunk/masterModule.thunk"
 import { useDispatch, useSelector } from "react-redux";
 import { removeCreateModuleMessage } from '@/store/slice/masterModule.slice';
+import { getMenu } from '@/store/thunk/menu.thunk';
 /* =========================
    DROPDOWN OPTIONS
 ========================= */
@@ -166,11 +167,12 @@ export default function FormModule({ mode, id }: Props) {
   const dispatch = useDispatch() as any;
 
   React.useEffect(() => {
+    dispatch(getParentMenu())
     if (mode === "edit" && id) {
       dispatch(moduleDetailsApi(id));
     }
   }, [id, mode]);
-  const { moduleDetails } = useSelector((s: any) => s.masterModule);
+  const { moduleDetails, parentMenuList } = useSelector((s: any) => s.masterModule);
   const [editIndex, setEditIndex] = React.useState<number | null>(null);
   const handleDelete = (index: number) => {
     setDynamicFields((prev) => prev.filter((_, i) => i !== index));
@@ -375,6 +377,8 @@ export default function FormModule({ mode, id }: Props) {
     }
   }, [moduleDetails, mode]);
 
+  const [selectedIcon, setSelectedIcon] = React.useState("Box");
+
   const onSubmit = (values: MenuSchemaType) => {
     const payload = {
       module: {
@@ -386,7 +390,7 @@ export default function FormModule({ mode, id }: Props) {
         menu_title: values.menuTitle,
         parent_menu: values.parentMenu === "no-parent" ? null : values.parentMenu,
         status: values.status === "active",
-        icon: "fa fa-briefcase",
+        icon: selectedIcon,
         user_type: values.userType,
         order_number: values.orderNumber,
         tenant_id: user?.tenant_id ?? null,
@@ -448,7 +452,7 @@ export default function FormModule({ mode, id }: Props) {
 
         // Condition for Relationships
         if (["BelongsTo Relationship", "BelongsToMany Relationship"].includes(type)) {
-          field.relationModel = f.relationModel;
+          field.model_name = f.relationModel;
         }
         // Extra model info if present
         if (f.main_model_name) {
@@ -462,8 +466,10 @@ export default function FormModule({ mode, id }: Props) {
 
     if (mode === "edit" && id) {
       dispatch(updateModule({ id, payload }));
+      dispatch(getMenu())
     } else {
       dispatch(createModule(payload));
+      dispatch(getMenu())
     }
   };
 
@@ -721,8 +727,14 @@ export default function FormModule({ mode, id }: Props) {
   const onError = (errors: any) => {
     console.log("❌ VALIDATION ERRORS 👉", errors);
   };
-  const [selectedIcon, setSelectedIcon] = React.useState("Box");
 
+  const parentMenuOptions = [
+    { label: "No Parent", value: "no-parent" },
+    ...(parentMenuList?.map((item: any) => ({
+      label: item.parent_menu,
+      value: item.id.toString(),
+    })) || [])
+  ];
   return (
     <Card>
       <CardHeader>
@@ -836,7 +848,7 @@ export default function FormModule({ mode, id }: Props) {
                 }}
               />
 
-              {renderDropdown("parentMenu", "Parent Menu", parentOptions)}
+              {renderDropdown("parentMenu", "Parent Menu", parentMenuOptions)}
               {renderDropdown("status", "Status", statusOptions)}
               {renderDropdown("userType", "User Type", userTypeOptions)}
               {selectedUserType === "admin" &&

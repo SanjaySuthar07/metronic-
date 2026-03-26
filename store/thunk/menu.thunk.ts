@@ -4,11 +4,11 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 
 export const getMenu = createAsyncThunk(
     "getMenu",
-    async (payload: any, { rejectWithValue }) => {
+    async (_, { rejectWithValue }) => {
         try {
             const response = await api.get("/modules?type=menu");
             return response.data;
-            } catch (error: any) {
+        } catch (error: any) {
             if (error.response && error.response.data) {
                 return rejectWithValue(error.response.data);
             }

@@ -56,6 +56,9 @@ import { deleteModule, fetchmodule } from '@/store/thunk/masterModule.thunk';
 
 import { useDispatch, useSelector } from 'react-redux';
 import { removeCreateModuleMessage } from '@/store/slice/masterModule.slice';
+import PermissionDeleteDialog from './masterModule-delete-dialog';
+import DeleteDialog from './masterModule-delete-dialog';
+import { getMenu } from '@/store/thunk/menu.thunk';
 
 /* =========================
    TOOLBAR DESIGN
@@ -127,8 +130,9 @@ const DataGridToolbar = ({
             <SelectValue placeholder="Select Status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="active">Active</SelectItem>
-            <SelectItem value="inactive">Inactive</SelectItem>
+            <SelectItem value="all">All</SelectItem>
+            <SelectItem value="1">Active</SelectItem>
+            <SelectItem value="0">Inactive</SelectItem>
           </SelectContent>
         </Select>
 
@@ -165,6 +169,8 @@ const DataGridToolbar = ({
 
 const MasterModuleList = () => {
   const router = useRouter()
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteData, setDeleteData] = useState<any>(null);
 
   // const { user } = useSelector((s: any) => s.auth);
 
@@ -202,7 +208,6 @@ const MasterModuleList = () => {
   });
 
   const [statusdata, setStatusdata] = useState('');
-
   const [columnVisibility, setColumnVisibility] = useState({});
   const dispatch = useDispatch<AppDispatch>();
   useEffect(() => {
@@ -210,8 +215,8 @@ const MasterModuleList = () => {
       fetchmodule({
         page: pagination.pageIndex + 1,
         limit: pagination.pageSize,
-        search: inputValue || undefined,
-        status: statusdata || undefined,
+        search: inputValue,
+        status: statusdata === "all" ? "" : statusdata,
         dir: sorting?.[0]?.desc ? "desc" : "asc",
         sort:
           sorting?.[0]?.id === "Created Date"
@@ -261,6 +266,7 @@ const MasterModuleList = () => {
         status: item.status || false,
 
         order_name: item.order_number || "-",
+        slug: item.slug || "-",
 
         created_by: item.created_by || "-",
 
@@ -343,26 +349,10 @@ const MasterModuleList = () => {
   /* =========================
      TABLE COLUMNS
   ========================= */
-  const handleDelete = async (id: number) => {
-    if (!confirm("Are you sure you want to delete this module?")) return;
 
-    try {
-      const res: any = await dispatch(deleteModule(id));
-
-      if (res?.payload?.success) {
-        // optional: refetch list
-        dispatch(fetchmodule({
-          page: pagination.pageIndex + 1,
-          limit: pagination.pageSize,
-          search: inputValue || undefined,
-          sort: sorting?.[0]?.id,
-          dir: sorting?.[0]?.desc ? 'desc' : 'asc',
-          status: statusdata || undefined,
-        }));
-      }
-    } catch (err) {
-      console.error("Delete failed", err);
-    }
+  const handleDelete = (rowData: any) => {
+    setDeleteData(rowData);
+    setDeleteDialogOpen(true);
   };
   const columns = useMemo<ColumnDef<any>[]>(() => [
 
@@ -439,7 +429,7 @@ const MasterModuleList = () => {
           <div className="flex items-center gap-3">
 
             <div className="font-medium capitalize text-sm">
-              <Badge variant={name == "Active" ? "success" : "danger"} >
+              <Badge variant={name == "Active" ? "success" : "destructive"} >
                 {name}
               </Badge>
 
@@ -564,15 +554,19 @@ const MasterModuleList = () => {
             </>
             <DropdownMenuItem
               onClick={() => router.push(`/masterModule/${row.original.id}`)}
+            // onClick={() => router.push(`/${row.original.slug}`)}
             >
               View
             </DropdownMenuItem>
+
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              onClick={() => handleDelete(row.original.id)}
+              onClick={() => handleDelete(row.original)}
             >
               Delete
+              {/* slug */}
             </DropdownMenuItem>
+
           </DropdownMenuContent>
         </DropdownMenu>
       ),
@@ -599,7 +593,6 @@ const MasterModuleList = () => {
 
 
 
-  console.log("fetchModuleData", moduleData);
   /* =========================
      TABLE INSTANCE
   ========================= */
@@ -648,6 +641,29 @@ const MasterModuleList = () => {
   /* =========================
      RENDER
   ========================= */
+  const confirmDelete = async (id: number) => {
+    try {
+      const res: any = await dispatch(deleteModule(id));
+
+      if (res?.payload?.success) {
+
+        dispatch(
+          fetchmodule({
+            page: pagination.pageIndex + 1,
+            limit: pagination.pageSize,
+            search: inputValue || undefined,
+            sort: sorting?.[0]?.id,
+            dir: sorting?.[0]?.desc ? "desc" : "asc",
+            status: statusdata || undefined,
+          })
+        );
+        dispatch(getMenu())
+      }
+    } catch (err) {
+      console.error("Delete failed", err);
+      throw err; // 🔥 important (dialog toast ke liye)
+    }
+  };
 
   return (
     <>
@@ -667,7 +683,6 @@ const MasterModuleList = () => {
 
           <DataGridToolbar
             pagination={pagination}
-
             inputValue={inputValue}
             onInputChange={setInputValue}
             onAddUser={() => {
@@ -730,6 +745,13 @@ const MasterModuleList = () => {
         />
 
       )}
+
+      <DeleteDialog
+        open={deleteDialogOpen}
+        closeDialog={() => setDeleteDialogOpen(false)}
+        data={deleteData}
+        onConfirm={confirmDelete}
+      />
 
     </>
   );
