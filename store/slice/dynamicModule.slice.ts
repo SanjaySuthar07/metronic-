@@ -1,15 +1,17 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { getDataApi, moduleDetailsApi } from "../thunk/dynamicModule.thunk";
+import { getDataApi, getDetailApi, moduleDetailsApi, putFormApi } from "../thunk/dynamicModule.thunk";
 interface DynamicModuleState {
     moduleList: any[];
     getModuleTableData: any[];
     loading: boolean;
     moduleListLoading: boolean;
     getModuleTableDataLoading: boolean;
+    getModuleDetailTableData: any[];
 }
 const initialState: DynamicModuleState = {
     moduleList: [],
     getModuleTableData: [],
+    getModuleDetailTableData: [],
     loading: false,
     moduleListLoading: false,
     getModuleTableDataLoading: false
@@ -40,6 +42,16 @@ const dynamicModuleSlice = createSlice({
             })
             .addCase(getDataApi.rejected, (state, action) => {
                 state.getModuleTableDataLoading = false;
+            })
+            .addCase(getDetailApi.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(getDetailApi.fulfilled, (state, action) => {
+                state.loading = false;
+                state.getModuleDetailTableData = action.payload;
+            })
+            .addCase(getDetailApi.rejected, (state, action) => {
+                state.loading = false;
             })
     },
 });

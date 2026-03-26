@@ -69,3 +69,39 @@ export const deleteDataApi = createAsyncThunk(
         }
     }
 );
+
+export const putFormApi = createAsyncThunk(
+    "putForm",
+    async ({ slug, id, data }: any, { rejectWithValue }) => {
+        try {
+            const response = await api.put(`/dynamic/${slug}/${id}`, data);
+            return response.data;
+        } catch (error: any) {
+            if (error.response && error.response.data) {
+                return rejectWithValue(error.response.data);
+            }
+            return rejectWithValue({
+                success: false,
+                message: error.message || "Failed to update data"
+            });
+        }
+    }
+);
+
+export const getDetailApi = createAsyncThunk(
+    "getDetail",
+    async ({ slug, id }: any, { rejectWithValue }) => {
+        try {
+            const response = await api.get(`/dynamic/${slug}/${id}`);
+            return response.data;
+        } catch (error: any) {
+            if (error.response && error.response.data) {
+                return rejectWithValue(error.response.data);
+            }
+            return rejectWithValue({
+                success: false,
+                message: error.message || "Failed to get detail data"
+            });
+        }
+    }
+);

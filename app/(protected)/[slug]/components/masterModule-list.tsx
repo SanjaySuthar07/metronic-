@@ -363,9 +363,7 @@ const MasterModuleList = ({ slug }: { slug: string }) => {
             {/* ✏️ EDIT */}
             <DropdownMenuItem
               onClick={() => {
-                setEditData(row.original);
-                setIsEdit(true);
-                setInviteDialogOpen(true);
+                router.push(`/${slug}/addData/${row.original.id}`);
               }}
             >
               Edit

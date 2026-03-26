@@ -26,12 +26,17 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
 import { menuSchema, MenuSchemaType } from "../forms/menuSchema.ts";
-import { addDataApi, moduleDetailsApi } from '@/store/thunk/dynamicModule.thunk';
+import { addDataApi, getDetailApi, moduleDetailsApi } from '@/store/thunk/dynamicModule.thunk';
 
-function FormModule({ slug }: { slug: string }) {
-
+function FormModule({ slug, id }: { slug: string, id: string }) {
   const dispatch = useDispatch();
-  const { moduleList } = useSelector((state: any) => state.dynamicModule);
+  const { moduleList, getModuleDetailTableData } = useSelector((state: any) => state.dynamicModule);
+
+  useEffect(() => {
+    if (id) {
+      dispatch(getDetailApi({ slug, id }));
+    }
+  }, [id]);
 
   // 🔥 FETCH MODULE
   useEffect(() => {
@@ -44,18 +49,46 @@ function FormModule({ slug }: { slug: string }) {
       const defaultValues: any = {};
 
       moduleList.fields.forEach((f: any) => {
-        defaultValues[f.name] =
-          f.default_value ??
-          (f.type === "checkbox"
-            ? f.is_checked
-            : f.is_multiple
-              ? []
-              : "");
+        let value: any = "";
+
+        if (id && getModuleDetailTableData) {
+          const apiValue = getModuleDetailTableData[f.name];
+
+          // ✅ OBJECT (radio/select)
+          if (
+            apiValue &&
+            typeof apiValue === "object" &&
+            apiValue.selected !== undefined
+          ) {
+            value = apiValue.selected;
+          }
+
+          // ✅ CHECKBOX (string "1" → true)
+          else if (f.type === "checkbox") {
+            value = apiValue === "1" || apiValue === true;
+          }
+
+          // ✅ NORMAL
+          else {
+            value = apiValue ?? "";
+          }
+        } else {
+          // CREATE MODE
+          if (f.type === "checkbox") {
+            value = f.is_checked ?? false;
+          } else if (f.is_multiple) {
+            value = [];
+          } else {
+            value = f.default_value ?? "";
+          }
+        }
+
+        defaultValues[f.name] = value;
       });
 
       form.reset(defaultValues);
     }
-  }, [moduleList]);
+  }, [moduleList, getModuleDetailTableData, id]);
 
   // 🔥 FILE HANDLER (MULTIPLE + SIZE VALIDATION)
   const handleFileChange = (e: any, field: any, config: any) => {
@@ -91,54 +124,59 @@ function FormModule({ slug }: { slug: string }) {
     moduleList?.fields?.forEach((field: any) => {
       let value = values[field.name];
 
-      // ❌ ignore hidden field
       if (field.status === false) return;
 
-      // ✅ HANDLE EMPTY
       if (value === "" || value === undefined) {
         formattedData[field.name] = null;
         return;
       }
 
-      // ✅ CHECKBOX
       if (field.type === "checkbox") {
         formattedData[field.name] = Boolean(value);
         return;
       }
 
-      // ✅ FILE / IMAGE
       if (["file", "photo"].includes(field.type)) {
-        if (field.is_multiple) {
-          formattedData[field.name] = value || [];
-        } else {
-          formattedData[field.name] = value || null;
-        }
+        formattedData[field.name] = value;
         return;
       }
 
-      // ✅ MULTIPLE SELECT
       if (field.is_multiple) {
         formattedData[field.name] = value || [];
         return;
       }
 
-      // ✅ NORMAL
       formattedData[field.name] = value;
     });
-
-    console.log("🔥 FINAL DATA 👉", formattedData);
 
     try {
       setLoading(true);
 
-      const res: any = await dispatch(
-        addDataApi({
-          slug: slug,
-          data: formattedData,
-        })
-      ).unwrap();
+      let res;
 
-      toast.success(res?.message || "Data Added Successfully");
+      if (id) {
+        // 🔥 UPDATE
+        res = await dispatch(
+          putFormApi({
+            slug,
+            id,
+            data: formattedData,
+          })
+        ).unwrap();
+
+        toast.success("Updated Successfully");
+
+      } else {
+        // 🔥 CREATE
+        res = await dispatch(
+          addDataApi({
+            slug,
+            data: formattedData,
+          })
+        ).unwrap();
+
+        toast.success("Created Successfully");
+      }
 
     } catch (err: any) {
       toast.error(err?.message || "Error");
@@ -307,7 +345,7 @@ function FormModule({ slug }: { slug: string }) {
                           <label className="flex items-center gap-2">
                             <input
                               type="checkbox"
-                              checked={formField.value || field.is_checked}
+                              checked={!!formField.value}
                               onChange={(e) =>
                                 formField.onChange(e.target.checked)
                               }
@@ -382,9 +420,9 @@ function FormModule({ slug }: { slug: string }) {
 
             </div>
 
-            <div className="flex justify-end mt-6">
-              <Button type="submit">Submit</Button>
-            </div>
+            <Button type="submit" disabled={loading}>
+              {loading ? "Saving..." : id ? "Update" : "Submit"}
+            </Button>
 
           </form>
         </Form>
