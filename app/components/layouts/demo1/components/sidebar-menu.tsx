@@ -1,6 +1,6 @@
 'use client';
 
-import { JSX, useCallback } from 'react';
+import { JSX, useCallback, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { usePathname, useSelectedLayoutSegment } from 'next/navigation';
 import { MENU_SIDEBAR } from '@/config/menu.config';
@@ -17,11 +17,38 @@ import {
   AccordionMenuSubTrigger,
 } from '@/components/ui/accordion-menu';
 import { Badge } from '@/components/ui/badge';
-import { useSelector } from 'react-redux';
+import { useSelector , useDispatch} from 'react-redux';
 import { filterMenu } from '@/lib/menu-filter';
+import { getMenu } from '@/store/thunk/menu.thunk';
+import { mapMenu } from '@/config/menu.config';
 
 export function SidebarMenu() {
   const pathname = usePathname();
+ 
+  const dispatch: any = useDispatch();
+
+useEffect(() => {
+  dispatch(getMenu());
+}, [dispatch]);
+
+// API response
+const MenuResponse = useSelector(
+  (s: any) => s.menu.menu
+);
+
+// Extract array
+const MenuData =
+  MenuResponse?.data || [];
+
+// 🔥 CALL mapMenu HERE
+const dynamicMenu = useMemo(() => {
+
+  return mapMenu(MenuData);
+
+}, [MenuData]);
+
+console.log("dynamicMenu", dynamicMenu);
+
 
   // Memoize matchPath to prevent unnecessary re-renders
   const matchPath = useCallback(
@@ -212,7 +239,7 @@ export function SidebarMenu() {
     return <AccordionMenuLabel key={index}>{item.heading}</AccordionMenuLabel>;
   };
   const { user } = useSelector((s) => s.auth)
-  const menu = filterMenu(MENU_SIDEBAR, user)
+  const menu = filterMenu(dynamicMenu, user)
   return (
     <div className="kt-scrollable-y-hover flex grow shrink-0 py-5 px-5 lg:max-h-[calc(100vh-5.5rem)]">
       <AccordionMenu

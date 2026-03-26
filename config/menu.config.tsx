@@ -25,6 +25,7 @@ import {
   Gift,
   Grid,
   Heart,
+   Box,
   HelpCircle,
   Kanban,
   Key,
@@ -51,6 +52,9 @@ import {
   Zap,
   Puzzle,
 } from 'lucide-react';
+
+
+
 // const mapMenu = (data: any[]) => {
 //   return data.map((item) => ({
 //     title: item.menu_title,
@@ -59,7 +63,94 @@ import {
 //     children: [],          // future nested
 //   }));
 // };
+
+const getIconComponent = (iconName: string) => {
+  const icons: { [key: string]: any } = {
+   AlertCircle,
+  Award,
+  Badge,
+  Bell,
+  Bitcoin,
+  Bolt,
+  Book,
+  Briefcase,
+  Building,
+  CalendarCheck,
+  Captions,
+  CheckCircle,
+  Code,
+  Coffee,
+  Euro,
+  Eye,
+  File,
+  FileQuestion,
+  FileText,
+  Flag,
+  Ghost,
+  Gift,
+  Grid,
+  Heart,
+   Box,
+  HelpCircle,
+  Kanban,
+  Key,
+  Layout,
+  LayoutGrid,
+  LifeBuoy,
+  MessageSquare,
+  Monitor,
+  Network,
+  Plug,
+  Settings,
+  Share2,
+  Shield,
+  ShieldUser,
+  ShoppingCart,
+  SquareMousePointer,
+  Star,
+  TrendingUp,
+  UserCheck,
+  UserCircle,
+  Users,
+  Zap,
+  Puzzle,
+  };
+
+  return icons[iconName] || null;
+};
+
+
 import { type MenuConfig } from './types';
+
+export const mapMenu = (data: any[]) => {
+
+  if (!Array.isArray(data)) return [];
+
+  return data.map((item: any) => {
+    
+    
+  
+    return {
+
+      title: item.menu_title,
+
+      path: `/${item.slug}`,
+
+    icon: item.icon ? getIconComponent(item.icon) : null, // Convert string to icon component
+    
+
+      children:
+        item.children &&
+        item.children.length > 0
+          ? mapMenu(item.children)
+          : undefined,
+
+    };
+
+  });
+
+};
+
 export const MENU_SIDEBAR: any = [
   { title: 'Dashboard', icon: LayoutGrid, path: '/dashboard' },
   {

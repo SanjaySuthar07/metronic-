@@ -1,4 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { getMenu } from "../thunk/menu.thunk";
 
 const initialState = {
     menu: [],
@@ -10,7 +11,16 @@ const menuSlice = createSlice({
     initialState,
     reducers: {},
     extraReducers: (builder) => {
-
+        builder.addCase(getMenu.pending, (state) => {
+            state.loading = true;
+        });
+        builder.addCase(getMenu.fulfilled, (state, action) => {
+            state.menu = action.payload;
+            state.loading = false;
+        });
+        builder.addCase(getMenu.rejected, (state) => {
+            state.loading = false;
+        });
     },
 });
 
