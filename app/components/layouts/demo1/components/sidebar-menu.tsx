@@ -239,7 +239,10 @@ console.log("dynamicMenu", dynamicMenu);
     return <AccordionMenuLabel key={index}>{item.heading}</AccordionMenuLabel>;
   };
   const { user } = useSelector((s) => s.auth)
+  const mainmenu = filterMenu(MENU_SIDEBAR, user)
   const menu = filterMenu(dynamicMenu, user)
+  
+
   return (
     <div className="kt-scrollable-y-hover flex grow shrink-0 py-5 px-5 lg:max-h-[calc(100vh-5.5rem)]">
       <AccordionMenu
@@ -249,8 +252,10 @@ console.log("dynamicMenu", dynamicMenu);
         collapsible
         classNames={classNames}
       >
+        {buildMenu(mainmenu)}
         {buildMenu(menu)}
       </AccordionMenu>
     </div>
+    
   );
 }
