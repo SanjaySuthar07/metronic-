@@ -24,16 +24,7 @@ export const addDataApi = createAsyncThunk(
     "addData",
     async ({ slug, data }: any, { rejectWithValue }) => {
         try {
-            const response = await api.post(
-                `/dynamic/project`,
-                data,
-                {
-                    headers: {
-                        "Content-Type": "multipart/form-data",
-                        Accept: "application/json",
-                    },
-                }
-            );
+            const response = await api.post(`/dynamic/${slug}`, data);
             return response.data;
         } catch (error: any) {
             if (error.response && error.response.data) {
@@ -43,6 +34,38 @@ export const addDataApi = createAsyncThunk(
                 success: false,
                 message: error.message || "Failed to add data"
             });
+        }
+    }
+);
+
+
+export const getDataApi = createAsyncThunk(
+    "getData",
+    async ({ slug }: any, { rejectWithValue }) => {
+        try {
+            const response = await api.get(`/dynamic/${slug}`);
+            return response.data;
+        } catch (error: any) {
+            if (error.response && error.response.data) {
+                return rejectWithValue(error.response.data);
+            }
+            return rejectWithValue({
+                success: false,
+                message: error.message || "Failed to get data"
+            });
+        }
+    }
+);
+
+
+export const deleteDataApi = createAsyncThunk(
+    "deleteData",
+    async ({ slug, id }: any, { rejectWithValue }) => {
+        try {
+            const res = await api.delete(`/dynamic/${slug}/${id}`);
+            return res.data;
+        } catch (err: any) {
+            return rejectWithValue(err.response?.data || { message: "Delete failed" });
         }
     }
 );

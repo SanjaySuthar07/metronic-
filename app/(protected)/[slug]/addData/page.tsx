@@ -34,7 +34,7 @@ export default async function Page({ params,
             <Container>
                 <Toolbar>
                     <ToolbarHeading>
-                        <ToolbarTitle>Master Module</ToolbarTitle>
+                        <ToolbarTitle className='capitalize'>{slug}</ToolbarTitle>
                         <Breadcrumb>
                             <BreadcrumbList>
                                 <BreadcrumbItem>
@@ -42,11 +42,11 @@ export default async function Page({ params,
                                 </BreadcrumbItem>
                                 <BreadcrumbSeparator />
                                 <BreadcrumbItem>
-                                    <BreadcrumbLink href={`/${slug}`}>Master Module</BreadcrumbLink>
+                                    <BreadcrumbLink href={`/${slug}`} className='capitalize'>{slug}</BreadcrumbLink>
                                 </BreadcrumbItem>
                                 <BreadcrumbSeparator />
                                 <BreadcrumbItem>
-                                    <BreadcrumbPage>Add Data</BreadcrumbPage>
+                                    <BreadcrumbPage className='capitalize'>Add {slug}</BreadcrumbPage>
                                 </BreadcrumbItem>
                             </BreadcrumbList>
                         </Breadcrumb>

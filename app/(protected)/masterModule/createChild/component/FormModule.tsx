@@ -453,6 +453,7 @@ export default function FormModule({ mode, id }: Props) {
         // Condition for Relationships
         if (["BelongsTo Relationship", "BelongsToMany Relationship"].includes(type)) {
           field.model_name = f.relationModel;
+          field.model_field_name = "id";
         }
         // Extra model info if present
         if (f.main_model_name) {

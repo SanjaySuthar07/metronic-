@@ -56,6 +56,8 @@ import { deleteModule, fetchmodule } from '@/store/thunk/masterModule.thunk';
 
 import { useDispatch, useSelector } from 'react-redux';
 import { removeCreateModuleMessage } from '@/store/slice/masterModule.slice';
+import { deleteDataApi, getDataApi } from '@/store/thunk/dynamicModule.thunk';
+import DeleteDialog from './masterModule-delete-dialog';
 
 /* =========================
    TOOLBAR DESIGN
@@ -109,10 +111,10 @@ const DataGridToolbar = ({
       <div className="flex items-center gap-2">
         <Button
           onClick={() => router.push(`/${slug}/addData`)}
-          className="bg-blue-600 hover:bg-blue-700 text-white h-9 px-4"
+          className="bg-blue-600 hover:bg-blue-700 text-white h-9 px-4 capitalize"
         >
-          <Plus className="mr-1 size-4" />
-          Add Data
+          <Plus className="mr-1 size-4 " />
+          Add {slug}
         </Button>
       </div>
     </div>
@@ -126,8 +128,10 @@ const DataGridToolbar = ({
 
 const MasterModuleList = ({ slug }: { slug: string }) => {
   const router = useRouter()
-
+  const { getModuleTableData, getModuleTableDataLoading } = useSelector((s: any) => s.dynamicModule)
   // const { user } = useSelector((s: any) => s.auth);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteData, setDeleteData] = useState<any>(null);
 
   // const dispatch = useDispatch<AppDispatch>();
 
@@ -165,16 +169,9 @@ const MasterModuleList = ({ slug }: { slug: string }) => {
   const [columnVisibility, setColumnVisibility] = useState({});
   const dispatch = useDispatch<AppDispatch>();
 
-  // useEffect(() => {
-  //   dispatch(
-  //     fetchmodule({
-  //       page: pagination.pageIndex + 1,
-  //       limit: pagination.pageSize,
-  //       dir: sorting?.[0]?.desc ? "desc" : "asc",
-  //       sort: sorting?.[0]?.id === "Created Date" ? "created_at" : sorting?.[0]?.id ? sorting?.[0]?.id.toLocaleLowerCase().replaceAll(" ", "_") : undefined
-  //     })
-  //   );
-  // }, [dispatch, pagination.pageIndex, pagination.pageSize, sorting]);
+  useEffect(() => {
+    dispatch(getDataApi({ slug }));
+  }, [dispatch, slug]);
 
   const fetchModuleData = useSelector(
     (state: RootState) => state.masterModule.moduleList
@@ -195,28 +192,29 @@ const MasterModuleList = ({ slug }: { slug: string }) => {
   };
 
   useEffect(() => {
-    if (fetchModuleData?.data) {
+    if (getModuleTableData?.data) {
 
-      const formattedData = fetchModuleData.data.map((item: any) => ({
+      const formattedData = getModuleTableData.data.map((item: any) => ({
         id: item.id,
-        name: item.main_model_name || "-",
-
-        menu_title: item.menu_title || "-",
-
-        status: item.status || false,
-
-        order_name: item.order_number || "-",
-
-        created_by: item.created_by || "-",
-
-        created_date: item.created_at
+        name: item.name || "-",
+        email: item.email || "-",
+        address: item.address || "-",
+        gender: item.gender || "-",
+        country: item.country || "-",
+        term: item.term || "-",
+        created_at: item.created_at,
       }));
 
       setModuleData(formattedData);
     }
-  }, [fetchModuleData]);
+  }, [getModuleTableData]);
 
 
+  const handleConfirmDelete = async (id: number) => {
+    await dispatch(deleteDataApi({ slug, id })).unwrap();
+
+    dispatch(getDataApi({ slug })); // refresh table
+  };
 
   /* =========================
      FETCH ROLES
@@ -306,230 +304,94 @@ const MasterModuleList = ({ slug }: { slug: string }) => {
       console.error("Delete failed", err);
     }
   };
-  const columns = useMemo<ColumnDef<any>[]>(() => [
+  const columns = useMemo<ColumnDef<any>[]>(() => {
 
-    {
-      accessorKey: 'Model Name',
-      id: 'ModelName',
-      enableSorting: true,
-      header: ({ column }) =>
-        <DataGridColumnHeader title="Model Name" column={column} />,
-      cell: ({ row }) => {
-        const role = row.original;
-        const name = role?.name || '-';
-        return (
-          <div className="flex items-center gap-3">
-            <div className="font-medium capitalize text-sm">
-              {name}
-            </div>
-          </div>
-        );
+    if (!moduleData || moduleData.length === 0) return [];
+
+    const keys = Object.keys(moduleData[0]);
+
+    const dynamicCols = keys.map((key) => ({
+      accessorKey: key,
+      id: key,
+      header: ({ column }: any) => (
+        <DataGridColumnHeader
+          title={key.replaceAll("_", " ").toUpperCase()}
+          column={column}
+        />
+      ),
+      cell: ({ row }: any) => {
+        const value = row.original[key];
+
+        if (value === null || value === undefined) return "-";
+
+        if (key.includes("date") || key.includes("created_at")) {
+          const date = new Date(value);
+          return `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`;
+        }
+
+        return String(value);
       },
-      size: 160,
-      meta: {
-        skeleton: (
-          <div className="flex items-center gap-3">
-            <Skeleton className="size-9 rounded-full" />
-            <Skeleton className="h-4 w-40" />
-          </div>
-        ),
-      },
+    }));
 
-    },
-    {
-      accessorKey: 'Menu Title',
-      id: 'MenuTitle',
-      enableSorting: true,
-      header: ({ column }) =>
-        <DataGridColumnHeader title="Menu Title" column={column} />,
-      cell: ({ row }) => {
-        const role = row.original;
-        const name = role?.menu_title || '-';
-        return (
-          <div className="flex items-center gap-3">
-            <div className="font-medium capitalize text-sm">
-              {name}
-            </div>
-          </div>
-        );
-      },
-      size: 160,
-      meta: {
-        skeleton: (
-          <div className="flex items-center gap-3">
-            <Skeleton className="size-9 rounded-full" />
-            <Skeleton className="h-4 w-40" />
-          </div>
-        ),
-      },
-    }
-    ,
-
-    {
-      accessorKey: 'status',
-      id: 'status',
-      enableSorting: true,
-      header: ({ column }) =>
-        <DataGridColumnHeader title="Status" column={column} />,
-      cell: ({ row }) => {
-        const role = row.original;
-
-
-
-        const name = role?.status === true ? 'Active' : 'Inactive';
-
-        return (
-          <div className="flex items-center gap-3">
-
-            <div className="font-medium capitalize text-sm">
-              {name}
-            </div>
-          </div>
-        );
-      }, size: 160,
-      meta: {
-        skeleton: (
-          <div className="flex items-center gap-3">
-            <Skeleton className="size-9 rounded-full" />
-            <Skeleton className="h-4 w-40" />
-          </div>
-        ),
-      },
-
-    },
-    {
-      accessorKey: 'Order Name',
-      id: 'Order Name',
-      enableSorting: true,
-      header: ({ column }) =>
-        <DataGridColumnHeader title="Order Name" column={column} />,
-      cell: ({ row }) => {
-        const role = row.original;
-        const name = role?.order_name || '-';
-        return (
-          <div className="flex items-center gap-3">
-
-            <div className="font-medium capitalize text-sm">
-              {name}
-            </div>
-          </div>
-        );
-      },
-      size: 160,
-      meta: {
-        skeleton: (
-          <div className="flex items-center gap-3">
-            <Skeleton className="size-9 rounded-full" />
-            <Skeleton className="h-4 w-40" />
-          </div>
-        ),
-      },
-    },
-    {
-      accessorKey: 'Created By',
-      id: 'Created By',
-      enableSorting: true,
-      header: ({ column }) =>
-        <DataGridColumnHeader title="Created By" column={column} />,
-      cell: ({ row }) => {
-        const role = row.original;
-        const name = role?.created_by || '-';
-        return (
-          <div className="flex items-center gap-3">
-            {/* <Avatar className="size-9">
-              <AvatarFallback>
-                {getInitials(name)}
-              </AvatarFallback>
-            </Avatar> */}
-            <div className="font-medium capitalize text-sm">
-              {name}
-            </div>
-          </div>
-        );
-      },
-      size: 160,
-      meta: {
-        skeleton: (
-          <div className="flex items-center gap-3">
-            <Skeleton className="size-9 rounded-full" />
-            <Skeleton className="h-4 w-40" />
-          </div>
-        ),
-      },
-
-    },
-    {
-      accessorKey: 'Created Date',
-      id: 'Created Date',
-      enableSorting: true,
-      header: ({ column }) =>
-        <DataGridColumnHeader title="Created Date" column={column} />,
-      cell: ({ row }) => {
-        const role = row.original;
-        const name = formatDate(role?.created_date) || '-';
-        return (
-          <div className="flex items-center gap-3">
-
-            <div className="font-medium capitalize text-sm">
-              {name}
-            </div>
-          </div>
-        );
-      },
-      size: 160,
-      meta: {
-        skeleton: (
-          <div className="flex items-center gap-3">
-            <Skeleton className="size-9 rounded-full" />
-            <Skeleton className="h-4 w-40" />
-          </div>
-        ),
-      },
-    },
-    {
-      id: 'actions',
-      header: 'Actions',
+    // 🔥 ACTION COLUMN ADD
+    const actionCol: ColumnDef<any> = {
+      id: "actions",
+      header: "Actions",
       enableSorting: false,
-      enableResizing: false,
       cell: ({ row }) => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button className="h-7 w-7" mode="icon" variant="ghost">
+            <Button className="h-7 w-7" variant="ghost">
               <EllipsisVertical />
             </Button>
           </DropdownMenuTrigger>
+
           <DropdownMenuContent>
-            <>
-              <DropdownMenuItem
-                onClick={() => router.push(`/masterModule/createChild/${row.original.id}`)}
-              >
-                Edit
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-            </>
-            <DropdownMenuItem
-              onClick={() => router.push(`/masterModule/${row.original.id}`)}
+
+            {/* 🔍 VIEW */}
+            {/* <DropdownMenuItem
+              onClick={() => {
+                setEditData(row.original);
+                setViewDialogOpen(true);
+              }}
             >
               View
             </DropdownMenuItem>
-            <DropdownMenuSeparator />
+
+            <DropdownMenuSeparator /> */}
+
+            {/* ✏️ EDIT */}
             <DropdownMenuItem
-              onClick={() => handleDelete(row.original.id)}
+              onClick={() => {
+                setEditData(row.original);
+                setIsEdit(true);
+                setInviteDialogOpen(true);
+              }}
+            >
+              Edit
+            </DropdownMenuItem>
+
+            <DropdownMenuSeparator />
+
+            {/* 🗑 DELETE */}
+            <DropdownMenuItem
+              onClick={() => {
+                setDeleteData(row.original);
+                setDeleteDialogOpen(true);
+              }}
             >
               Delete
             </DropdownMenuItem>
+
           </DropdownMenuContent>
         </DropdownMenu>
       ),
-      size: 160,
-      meta: {
-        skeleton: <Skeleton className="size-5" />,
-      },
+      size: 100,
+    };
 
-    },
+    return [...dynamicCols, actionCol];
 
-  ], []);
-
+  }, [moduleData]);
 
   /* =========================
      COLUMN ORDER
@@ -667,6 +529,12 @@ const MasterModuleList = ({ slug }: { slug: string }) => {
 
       )}
 
+      <DeleteDialog
+        open={deleteDialogOpen}
+        closeDialog={() => setDeleteDialogOpen(false)}
+        data={deleteData}
+        onConfirm={handleConfirmDelete}
+      />
     </>
   );
 
