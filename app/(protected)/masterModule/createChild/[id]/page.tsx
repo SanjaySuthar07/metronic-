@@ -47,7 +47,7 @@ export default async function EditPage({
                                 </BreadcrumbItem>
                                 <BreadcrumbSeparator />
                                 <BreadcrumbItem>
-                                    <BreadcrumbPage>Edit Child Module</BreadcrumbPage>
+                                    <BreadcrumbPage>Edit Module</BreadcrumbPage>
                                 </BreadcrumbItem>
                             </BreadcrumbList>
                         </Breadcrumb>

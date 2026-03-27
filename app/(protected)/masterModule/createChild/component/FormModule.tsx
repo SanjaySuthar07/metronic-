@@ -739,7 +739,7 @@ export default function FormModule({ mode, id }: Props) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{mode === "edit" ? "Edit" : "Create"} Child Module</CardTitle>
+        <CardTitle>{mode === "edit" ? "Edit" : "Create"} Module</CardTitle>
       </CardHeader>
 
       <CardContent className="p-6">

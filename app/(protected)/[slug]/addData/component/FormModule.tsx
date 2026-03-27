@@ -25,18 +25,23 @@ import { useDispatch, useSelector } from "react-redux";
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
-import { menuSchema, MenuSchemaType } from "../forms/menuSchema.ts";
-import { addDataApi, getDetailApi, moduleDetailsApi } from '@/store/thunk/dynamicModule.thunk';
+// import { menuSchema, MenuSchemaType } from "../forms/menuSchema.ts";
+import { addDataApi, getDetailApi, moduleDetailsApi, putFormApi } from '@/store/thunk/dynamicModule.thunk';
 
-function FormModule({ slug, id }: { slug: string, id: string }) {
+type Props = {
+  mode: "create" | "edit";
+  id?: any;
+};
+
+function FormModule({ slug, id, mode }: { slug: string, id: string, mode: string }) {
   const dispatch = useDispatch();
   const { moduleList, getModuleDetailTableData } = useSelector((state: any) => state.dynamicModule);
 
   useEffect(() => {
-    if (id) {
+    if (mode === "edit" && id) {
       dispatch(getDetailApi({ slug, id }));
     }
-  }, [id]);
+  }, [mode, id, slug]);
 
   // 🔥 FETCH MODULE
   useEffect(() => {
@@ -116,9 +121,7 @@ function FormModule({ slug, id }: { slug: string, id: string }) {
 
   const [loading, setLoading] = useState(false);
 
-
   const onSubmit = async (values: any) => {
-
     const formattedData: any = {};
 
     moduleList?.fields?.forEach((field: any) => {
@@ -154,7 +157,7 @@ function FormModule({ slug, id }: { slug: string, id: string }) {
 
       let res;
 
-      if (id) {
+      if (mode === "edit" && id) {
         // 🔥 UPDATE
         res = await dispatch(
           putFormApi({
@@ -164,8 +167,7 @@ function FormModule({ slug, id }: { slug: string, id: string }) {
           })
         ).unwrap();
 
-        toast.success("Updated Successfully");
-
+        toast.success("Updated "+slug+" successfully");
       } else {
         // 🔥 CREATE
         res = await dispatch(
@@ -175,9 +177,8 @@ function FormModule({ slug, id }: { slug: string, id: string }) {
           })
         ).unwrap();
 
-        toast.success("Created Successfully");
+        toast.success("Created "+slug+" successfully");
       }
-
     } catch (err: any) {
       toast.error(err?.message || "Error");
     } finally {
@@ -193,7 +194,7 @@ function FormModule({ slug, id }: { slug: string, id: string }) {
     <Card>
       <CardHeader className="py-3">
         <CardHeading>
-          <CardTitle>Dynamic Form</CardTitle>
+          <CardTitle>{mode === "edit" ? "Edit" : "Add"} Form</CardTitle>
         </CardHeading>
       </CardHeader>
 
@@ -304,7 +305,6 @@ function FormModule({ slug, id }: { slug: string, id: string }) {
                 }
 
                 // RADIO
-
                 if (inputType === "radio") {
                   return (
                     <FormField
@@ -386,8 +386,6 @@ function FormModule({ slug, id }: { slug: string, id: string }) {
                   );
                 }
 
-
-
                 // FILE / IMAGE
                 if (["file", "photo"].includes(inputType)) {
                   return (
@@ -413,7 +411,6 @@ function FormModule({ slug, id }: { slug: string, id: string }) {
                     />
                   );
                 }
-
 
                 return null;
               })}

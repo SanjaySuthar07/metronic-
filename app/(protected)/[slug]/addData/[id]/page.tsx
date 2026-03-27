@@ -46,7 +46,7 @@ export default async function Page({ params,
                                 </BreadcrumbItem>
                                 <BreadcrumbSeparator />
                                 <BreadcrumbItem>
-                                    <BreadcrumbPage className='capitalize'>Add {slug}</BreadcrumbPage>
+                                    <BreadcrumbPage className='capitalize'>Edit {slug}</BreadcrumbPage>
                                 </BreadcrumbItem>
                             </BreadcrumbList>
                         </Breadcrumb>
@@ -62,7 +62,7 @@ export default async function Page({ params,
                 </Toolbar>
             </Container>
             <Container>
-                <FormModule slug={slug} id={id}></FormModule>
+                <FormModule slug={slug} id={id} mode="edit"></FormModule>
             </Container>
         </>
     );

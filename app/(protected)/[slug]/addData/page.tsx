@@ -62,7 +62,7 @@ export default async function Page({ params,
                 </Toolbar>
             </Container>
             <Container>
-                <FormModule slug={slug}></FormModule>
+                <FormModule slug={slug} mode="create" />
             </Container>
         </>
     );

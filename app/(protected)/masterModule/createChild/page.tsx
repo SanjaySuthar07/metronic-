@@ -41,7 +41,7 @@ export default async function Page() {
                                 </BreadcrumbItem>
                                 <BreadcrumbSeparator />
                                 <BreadcrumbItem>
-                                    <BreadcrumbPage>Child Module</BreadcrumbPage>
+                                    <BreadcrumbPage>Create Module</BreadcrumbPage>
                                 </BreadcrumbItem>
                             </BreadcrumbList>
                         </Breadcrumb>
