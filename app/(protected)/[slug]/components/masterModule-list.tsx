@@ -214,6 +214,7 @@ const MasterModuleList = ({ slug }: { slug: string }) => {
     setModuleData(formattedData);
   }, [getModuleTableData]);
 
+
   const handleConfirmDelete = async (id: number) => {
     await dispatch(deleteDataApi({ slug, id })).unwrap();
 
