@@ -192,23 +192,27 @@ const MasterModuleList = ({ slug }: { slug: string }) => {
   };
 
   useEffect(() => {
-    if (getModuleTableData?.data) {
-
-      const formattedData = getModuleTableData.data.map((item: any) => ({
-        id: item.id,
-        name: item.name || "-",
-        email: item.email || "-",
-        address: item.address || "-",
-        gender: item.gender || "-",
-        country: item.country || "-",
-        term: item.term || "-",
-        created_at: item.created_at,
-      }));
-
-      setModuleData(formattedData);
+    let data = getModuleTableData?.data;
+ 
+    if (data?.data) {
+      data = data.data;
     }
+ 
+    const finalData = Array.isArray(data) ? data : [];
+ 
+    const formattedData = finalData.map((item: any) => ({
+      id: item?.id,
+      name: item?.name || "-",
+      email: item?.email || "-",
+      address: item?.address || "-",
+      gender: item?.gender || "-",
+      country: item?.country || "-",
+      term: item?.term || "-",
+      created_at: item?.created_at || "-",
+    }));
+ 
+    setModuleData(formattedData);
   }, [getModuleTableData]);
-
 
   const handleConfirmDelete = async (id: number) => {
     await dispatch(deleteDataApi({ slug, id })).unwrap();
