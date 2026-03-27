@@ -129,7 +129,8 @@ const BasicSettings = ({ title }: IGeneralSettingsProps) => {
             {/* 🔥 DYNAMIC FIELDS */}
             {form.watch("settings")?.map((item: any, index: number) => {
               const isFileField = item.key === 'logo' || item.key === 'favicon_icon';
-
+              const NEXT_PUBLIC_BACKEND_URL  = process.env.NEXT_PUBLIC_BACKEND_URL;
+              
               return (
                 <div
                   key={item.key}
@@ -157,7 +158,7 @@ const BasicSettings = ({ title }: IGeneralSettingsProps) => {
                                 name: item.key,
                                 size: 0,
                                 type: "image/png",
-                                url: item.value,
+                                url: `${NEXT_PUBLIC_BACKEND_URL}/${item?.value}`,
                               },
                             ]
                             : []

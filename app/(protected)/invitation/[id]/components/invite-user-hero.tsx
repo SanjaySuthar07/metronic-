@@ -53,12 +53,12 @@ const InviteUserHero = ({ inviteUser, isLoading }: InviteUserProfileProps) => {
             <AvatarImage src={inviteUser.avatar} alt={inviteUser.name || ''} />
           ) : (
             <AvatarFallback className="text-xl">
-              {getInitials(inviteUser.name || inviteUser.email)}
+              {getInitials(inviteUser.first_name+' '+inviteUser.last_name || inviteUser.email)}
             </AvatarFallback>
           )}
         </Avatar>
         <div className="space-y-px">
-          <div className="font-medium text-base capitalize">{inviteUser.name}</div>
+          <div className="font-medium text-base capitalize">{inviteUser.first_name} {inviteUser.last_name}</div>
           <div className="text-muted-foreground text-sm">{inviteUser.email}</div>
           <div>
             <TooltipProvider>

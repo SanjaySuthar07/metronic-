@@ -89,10 +89,11 @@ const InviteAddDialog = ({
   const form = useForm<InviteAddSchemaType>({
     resolver: zodResolver(InviteAddSchema),
     defaultValues: {
-      name: '',
+      first_name: '',
+      last_name: '',
       email: '',
-      password: '',
-      confirmPassword: '',
+      // password: '',
+      // confirmPassword: '',
       user_type: '',
       tenant_id: '',
     },
@@ -102,10 +103,11 @@ const InviteAddDialog = ({
   useEffect(() => {
     if (open) {
       form.reset({
-        name: '',
+        first_name: '',
+        last_name: '',
         email: '',
-        password: '',
-        confirmPassword: '',
+        // password: '',
+        // confirmPassword: '',
         user_type: '',
         tenant_id: '',
       })
@@ -135,9 +137,10 @@ const InviteAddDialog = ({
     setIsSubmit(true)
 
     const payload = {
-      name: values.name,
+      first_name: values.first_name,
+      last_name: values.last_name,
       email: values.email,
-      password: values.password,
+      // password: values.password,
       user_type: values.user_type,
       tenant_id: values.tenant_id,
     }
@@ -279,21 +282,47 @@ const InviteAddDialog = ({
 
               )}
 
-              {/* NAME */}
+              {/* FRIST NAME */}
               <FormField
                 control={form.control}
-                name="name"
+                first_name="first_name"
                 render={({ field }) => (
 
                   <FormItem>
 
                     <FormLabel>
-                      Name <span className="text-red-500">*</span>
+                      First Name <span className="text-red-500">*</span>
                     </FormLabel>
 
                     <FormControl>
                       <Input
-                        placeholder="Enter Your Name"
+                        placeholder="Enter Your First Name"
+                        {...field}
+                      />
+                    </FormControl>
+
+                    <FormMessage />
+
+                  </FormItem>
+
+                )}
+              />
+              
+              {/* LAST NAME */}
+              <FormField
+                control={form.control}
+                last_name="last_name"
+                render={({ field }) => (
+
+                  <FormItem>
+
+                    <FormLabel>
+                      Last Name <span className="text-red-500">*</span>
+                    </FormLabel>
+
+                    <FormControl>
+                      <Input
+                        placeholder="Enter Your Last Name"
                         {...field}
                       />
                     </FormControl>
@@ -335,7 +364,7 @@ const InviteAddDialog = ({
               />
 
               {/* PASSWORD */}
-              <FormField
+              {/* <FormField
                 control={form.control}
                 name="password"
                 render={({ field }) => (
@@ -382,10 +411,10 @@ const InviteAddDialog = ({
                   </FormItem>
 
                 )}
-              />
+              /> */}
 
               {/* CONFIRM PASSWORD */}
-              <FormField
+              {/* <FormField
                 control={form.control}
                 name="confirmPassword"
                 render={({ field }) => (
@@ -427,7 +456,7 @@ const InviteAddDialog = ({
                   </FormItem>
 
                 )}
-              />
+              /> */}
 
             </DialogBody>
 

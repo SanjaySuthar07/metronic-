@@ -221,12 +221,12 @@ const InviteList = () => {
 
             <Avatar className="size-9">
               <AvatarFallback>
-                {getInitials(user.name)}
+                {getInitials(user.first_name+' '+user.last_name)}
               </AvatarFallback>
             </Avatar>
 
             <div>
-              <div className="font-medium text-sm">{user.name}</div>
+              <div className="font-medium text-sm">{user.first_name} {user.last_name}</div>
               <div className="text-xs text-muted-foreground">{user.email}</div>
             </div>
 

@@ -3,19 +3,25 @@ import { z } from "zod";
 
 export const InviteAddSchema = z
   .object({
-    name: z
+    first_name: z
       .string()
-      .nonempty({ message: "Name is required." })
-      .min(2, { message: "Name must be at least 2 characters long." })
-      .max(50, { message: "Name must not exceed 50 characters." }),
+      .nonempty({ message: "First Name is required." })
+      .min(2, { message: "Last Name must be at least 2 characters long." }),
+      // .max(50, { message: "Name must not exceed 50 characters." }),
+
+    last_name: z
+      .string()
+      .nonempty({ message: "First Name is required." })
+      .min(2, { message: "First Name must be at least 2 characters long." }),
+      // .max(50, { message: "Name must not exceed 50 characters." }),
 
     email: z.string().email({
       message: "Please enter a valid email address.",
     }),
 
-    password: getPasswordSchema(),
+    // password: getPasswordSchema(),
 
-    confirmPassword: getPasswordSchema(),
+    // confirmPassword: getPasswordSchema(),
 
     user_type: z.string().nonempty({
       message: "Type is required.",
@@ -24,10 +30,10 @@ export const InviteAddSchema = z
     tenant_id: z.string().optional(),
   })
 
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords do not match.",
-    path: ["confirmPassword"],
-  })
+  // .refine((data) => data.password === data.confirmPassword, {
+  //   message: "Passwords do not match.",
+  //   path: ["confirmPassword"],
+  // })
 
   .refine(
     (data) => {

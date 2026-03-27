@@ -16,8 +16,8 @@ import {
 } from '@/components/common/toolbar';
 import MasterModule from './components/masterModule-list';
 export const metadata: Metadata = {
-  title: 'Roles',
-  description: 'Manage Roles.',
+  title: 'Master Module',
+  description: 'Manage Master Module.',
 };
 export default async function Page() {
   return (

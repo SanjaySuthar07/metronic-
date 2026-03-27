@@ -38,9 +38,10 @@ export const fetchAgency = createAsyncThunk(
 );
 
 interface InviteUserPayload {
-    name: string
+    first_name: string
+    last_name: string
     email: string
-    password: string
+    // password: string
     user_type: string
     tenant_id?: string
 }
