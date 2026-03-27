@@ -56,8 +56,8 @@ function FormModule({ slug, id, mode }: { slug: string, id: string, mode: string
       moduleList.fields.forEach((f: any) => {
         let value: any = "";
 
-        if (id && getModuleDetailTableData) {
-          const apiValue = getModuleDetailTableData[f.name];
+        if (id && getModuleDetailTableData.data) {
+          const apiValue = getModuleDetailTableData.data[f.name];
 
           // ✅ OBJECT (radio/select)
           if (

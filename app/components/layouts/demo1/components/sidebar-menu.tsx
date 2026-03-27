@@ -90,7 +90,7 @@ console.log("dynamicMenu", dynamicMenu);
         <AccordionMenuSub key={index} value={item.path || `root-${index}`}>
           <AccordionMenuSubTrigger className="text-sm font-medium">
             {item.icon && <item.icon data-slot="accordion-menu-icon" />}
-            <span data-slot="accordion-menu-title">{item.title}</span>
+            <span data-slot="accordion-menu-title"   className="capitalize">{item.title}</span>
           </AccordionMenuSubTrigger>
           <AccordionMenuSubContent
             type="single"
@@ -116,7 +116,7 @@ console.log("dynamicMenu", dynamicMenu);
             className="flex items-center  grow gap-2"
           >
             {item.icon && <item.icon data-slot="accordion-menu-icon" />}
-            <span data-slot="accordion-menu-title">{item.title}</span>
+            <span data-slot="accordion-menu-title"  className="capitalize">{item.title}</span>
           </Link>
         </AccordionMenuItem>
       );
@@ -134,7 +134,7 @@ console.log("dynamicMenu", dynamicMenu);
         className="text-sm font-medium"
       >
         {item.icon && <item.icon data-slot="accordion-menu-icon" />}
-        <span data-slot="accordion-menu-title">{item.title}</span>
+        <span data-slot="accordion-menu-title"  className="capitalize">{item.title}</span>
         {item.disabled && (
           <Badge variant="secondary" size="sm" className="ms-auto me-[-10px]">
             Soon
@@ -225,7 +225,7 @@ console.log("dynamicMenu", dynamicMenu);
         value={`disabled-child-${level}-${index}`}
         className="text-[13px]"
       >
-        <span data-slot="accordion-menu-title">{item.title}</span>
+        <span data-slot="accordion-menu-title" className="capitalize">{item.title}</span>
         {item.disabled && (
           <Badge variant="secondary" size="sm" className="ms-auto me-[-10px]">
             Soon
