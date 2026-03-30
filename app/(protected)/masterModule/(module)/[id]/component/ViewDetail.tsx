@@ -19,10 +19,19 @@ import { DataGridColumnHeader } from "@/components/ui/data-grid-column-header";
 import { moduleDetailsApi } from "@/store/thunk/masterModule.thunk";
 import { Badge } from "@/components/ui/badge";
 import { removeModuleDetails } from "@/store/slice/masterModule.slice";
+import { getColumnTypes, getAllModels } from "@/store/thunk/masterModule.thunk";
 
 function View({ id }: { id: string }) {
     const dispatch = useDispatch() as any;
     const { moduleDetails } = useSelector((s: any) => s.masterModule);
+        const { inputTypes, loading, inputModel } = useSelector((s: any) => s.masterModule);
+    
+      /* FETCH TYPES */
+        useEffect(() => {
+            dispatch(getColumnTypes());
+            dispatch(getAllModels());
+        }
+        , [dispatch]);
 
     useEffect(() => {
         if (!id) return;
@@ -123,13 +132,12 @@ function View({ id }: { id: string }) {
     // All Fields with Enhanced Processing
     const allFields = useMemo(() => {
         if (!moduleDetails?.fields) return [];
-
+        console.log("input types", moduleDetails?.fields);
         return moduleDetails.fields.map((field: any) => {
             const isChecked = field.default_value?.toLowerCase() === "checked" ||
                 field.default_value === true;
-
             return {
-                type: field.column_type?.name || "-",
+                type: inputTypes.find((t: any) => t.id === field.column_type_id)?.name || "Unknown",
                 database_column: field.db_column,
                 label: field.label,
                 validation: field.validation || "-",
