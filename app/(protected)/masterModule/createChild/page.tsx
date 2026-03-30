@@ -49,7 +49,7 @@ export default async function Page() {
                 </Toolbar>
             </Container>
             <Container>
-                <FormModule></FormModule>
+                <FormModule mode="create" />
             </Container>
         </>
     );

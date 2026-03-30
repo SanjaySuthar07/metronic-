@@ -477,27 +477,27 @@ export default function AddFieldDialog({
                         )}
 
                         {/* Date Picker */}
-                        {selectedType === "Date Picker" && (
+                        {/* {selectedType === "Date Picker" && (
                             <div className="flex gap-6">
                                 <div className="flex items-center gap-2"><Checkbox /> <span>Allow past dates</span></div>
                                 <div className="flex items-center gap-2"><Checkbox /> <span>Allow future dates</span></div>
                             </div>
-                        )}
+                        )} */}
 
                         {/* Date/Time Picker */}
-                        {selectedType === "Date/Time Picker" && (
+                        {/* {selectedType === "Date/Time Picker" && (
                             <div className="flex gap-6">
                                 <div className="flex items-center gap-2"><Checkbox /> <span>Enable Time</span></div>
                                 <div className="flex items-center gap-2"><Checkbox /> <span>24 Hour Format</span></div>
                             </div>
-                        )}
+                        )} */}
 
                         {/* Time Picker */}
-                        {selectedType === "Time Picker" && (
+                        {/* {selectedType === "Time Picker" && (
                             <div className="flex gap-6">
                                 <div className="flex items-center gap-2"><Checkbox /> <span>24 Hour Format</span></div>
                             </div>
-                        )}
+                        )} */}
 
                         {/* Relationship */}
                         {(selectedType === "BelongsTo Relationship" || selectedType === "BelongsToMany Relationship") && (

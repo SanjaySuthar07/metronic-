@@ -47,7 +47,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-import RoleInviteDialog from './masterModule-form-dialog';
 import RoleViewDialog from './masterModule-view-dialog';
 
 import { hasPermission } from '@/lib/permissions';
@@ -66,57 +65,41 @@ import DeleteDialog from './masterModule-delete-dialog';
 const DataGridToolbar = ({
   inputValue,
   onInputChange,
-  onAddUser,
+  canCreate,
   slug,
 }: {
   inputValue: string;
   onInputChange: (value: string) => void;
-  onAddUser: () => void;
+  canCreate: boolean;
   slug: string;
 }) => {
-  const [parentMenu, setParentMenu] = useState('');
-  const [createdBy, setCreatedBy] = useState('');
-  const [statusdata, setStatusdata] = useState('');
   const router = useRouter()
-  const [moduleData, setModuleData] = useState<any[]>([]);
-
-
-
-  const dispatch = useDispatch<AppDispatch>();
-  useEffect(() => {
-    dispatch(removeCreateModuleMessage());
-  }, []);
-
-
 
   return (
-    <div className="py-4 px-5 flex  flex-row items-center justify-between gap-3 border-b border-gray-100">
-
+    <div className="py-4 px-5 flex flex-row items-center justify-between gap-3 border-b border-gray-100">
       <div className="flex flex-wrap items-center gap-3 w-full">
-
         <div className="relative">
           <Search className="size-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
           <Input
-            placeholder="Search users"
+            placeholder={`Search ${slug}...`}
             value={inputValue}
             onChange={(e) => onInputChange(e.target.value)}
             className="pl-9 w-[220px] h-9 rounded-md"
           />
         </div>
-
-
       </div>
 
-      {/* RIGHT SIDE BUTTONS */}
-      <div className="flex items-center gap-2">
-        <Button
-          onClick={() => router.push(`/${slug}/addData`)}
-          className="bg-blue-600 hover:bg-blue-700 text-white h-9 px-4 capitalize"
-        >
-          <Plus className="mr-1 size-4 " />
-          Add {slug}
-        </Button>
-      </div>
+      {canCreate && (
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={() => router.push(`/${slug}/addData`)}
+            className="bg-blue-600 hover:bg-blue-700 text-white h-9 px-4 capitalize"
+          >
+            <Plus className="mr-1 size-4 " />
+            Add {slug}
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
@@ -136,10 +119,6 @@ const MasterModuleList = ({ slug }: { slug: string }) => {
   // const dispatch = useDispatch<AppDispatch>();
 
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
-
-  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
-
-  const [isEdit, setIsEdit] = useState(false);
 
   const [editData, setEditData] = useState<any>(null);
 
@@ -173,46 +152,29 @@ const MasterModuleList = ({ slug }: { slug: string }) => {
     dispatch(getDataApi({ slug }));
   }, [dispatch, slug]);
 
-  const fetchModuleData = useSelector(
-    (state: RootState) => state.masterModule.moduleList
-  );
   const [moduleData, setModuleData] = useState<any[]>([]);
-  const formatDate = (dateString: string) => {
-
-    const date = new Date(dateString);
-
-    const day = String(date.getDate()).padStart(2, '0');
-
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-
-    const year = String(date.getFullYear()).slice(-2);
-
-    return `${day}-${month}-${year}`;
-
-  };
 
   useEffect(() => {
-    let data = getModuleTableData?.data;
- 
-    if (data?.data) {
-      data = data.data;
+    let rawData = getModuleTableData?.data;
+
+    if (rawData?.data) {
+      rawData = rawData.data;
     }
- 
-    const finalData = Array.isArray(data) ? data : [];
- 
-    const formattedData = finalData.map((item: any) => ({
-      id: item?.id,
-      name: item?.name || "-",
-      email: item?.email || "-",
-      address: item?.address || "-",
-      gender: item?.gender || "-",
-      country: item?.country || "-",
-      term: item?.term || "-",
-      created_at: item?.created_at || "-",
-    }));
- 
-    setModuleData(formattedData);
+
+    const finalData = Array.isArray(rawData) ? rawData : [];
+    console.log("this is finalData", finalData)
+    setModuleData(finalData);
   }, [getModuleTableData]);
+
+  const permissions = useMemo(() => {
+    const perms = getModuleTableData?.module_permission || [];
+    return {
+      canCreate: perms.some((p: any) => p.permission_name === `${slug}_create`),
+      canEdit: perms.some((p: any) => p.permission_name === `${slug}_edit`),
+      canDelete: perms.some((p: any) => p.permission_name === `${slug}_delete`),
+      canView: perms.some((p: any) => p.permission_name === `${slug}_show`),
+    };
+  }, [getModuleTableData, slug]);
 
 
   const handleConfirmDelete = async (id: number) => {
@@ -310,10 +272,11 @@ const MasterModuleList = ({ slug }: { slug: string }) => {
     }
   };
   const columns = useMemo<ColumnDef<any>[]>(() => {
-
     if (!moduleData || moduleData.length === 0) return [];
 
-    const keys = Object.keys(moduleData[0]);
+    // Filter out internal keys that shouldn't be main columns
+    const excludeKeys = ['updated_at', 'deleted_at', 'tenant_id'];
+    const keys = Object.keys(moduleData[0]).filter(key => !excludeKeys.includes(key));
 
     const dynamicCols = keys.map((key) => ({
       accessorKey: key,
@@ -329,72 +292,87 @@ const MasterModuleList = ({ slug }: { slug: string }) => {
 
         if (value === null || value === undefined) return "-";
 
-        if (key.includes("date") || key.includes("created_at")) {
+        // Dynamic date detection
+        if (typeof value === 'string' && (key.includes("date") || key.includes("created_at") || /^\d{4}-\d{2}-\d{2}/.test(value))) {
           const date = new Date(value);
-          return `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`;
+          if (!isNaN(date.getTime())) {
+            return `${String(date.getDate()).padStart(2, '0')}-${String(date.getMonth() + 1).padStart(2, '0')}-${date.getFullYear()}`;
+          }
         }
 
         return String(value);
       },
+      meta: {
+        skeleton: <Skeleton className="h-4 w-full max-w-[100px]" />,
+      },
     }));
 
-    // 🔥 ACTION COLUMN ADD
     const actionCol: ColumnDef<any> = {
       id: "actions",
       header: "Actions",
       enableSorting: false,
-      cell: ({ row }) => (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button className="h-7 w-7" variant="ghost">
-              <EllipsisVertical />
-            </Button>
-          </DropdownMenuTrigger>
+      cell: ({ row }) => {
+        const hasActions = permissions.canEdit || permissions.canDelete || permissions.canView;
+        if (!hasActions) return "-";
 
-          <DropdownMenuContent>
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button className="h-7 w-7" variant="ghost">
+                <EllipsisVertical className="size-4" />
+              </Button>
+            </DropdownMenuTrigger>
 
-            {/* 🔍 VIEW */}
-            {/* <DropdownMenuItem
-              onClick={() => {
-                setEditData(row.original);
-                setViewDialogOpen(true);
-              }}
-            >
-              View
-            </DropdownMenuItem>
+            <DropdownMenuContent align="end">
+              {/* {permissions.canView && (
+                <DropdownMenuItem
+                  onClick={() => {
+                    setEditData(row.original);
+                    setViewDialogOpen(true);
+                  }}
+                >
+                  View
+                </DropdownMenuItem>
+              )} */}
 
-            <DropdownMenuSeparator /> */}
+              {permissions.canEdit && (
+                <DropdownMenuItem
+                  onClick={() => {
+                    router.push(`/${slug}/addData/${row.original.id}`);
+                  }}
+                >
+                  Edit
+                </DropdownMenuItem>
+              )}
 
-            {/* ✏️ EDIT */}
-            <DropdownMenuItem
-              onClick={() => {
-                router.push(`/${slug}/addData/${row.original.id}`);
-              }}
-            >
-              Edit
-            </DropdownMenuItem>
+              {permissions.canDelete && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    className="text-red-600 focus:text-red-700"
+                    onClick={() => {
+                      setDeleteData(row.original);
+                      setDeleteDialogOpen(true);
+                    }}
+                  >
+                    Delete
+                  </DropdownMenuItem>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        );
 
-            <DropdownMenuSeparator />
-
-            {/* 🗑 DELETE */}
-            <DropdownMenuItem
-              onClick={() => {
-                setDeleteData(row.original);
-                setDeleteDialogOpen(true);
-              }}
-            >
-              Delete
-            </DropdownMenuItem>
-
-          </DropdownMenuContent>
-        </DropdownMenu>
-      ),
+      },
       size: 100,
+      meta: {
+        skeleton: <Skeleton className="size-5" />,
+      },
     };
 
     return [...dynamicCols, actionCol];
 
-  }, [moduleData]);
+  }, [moduleData, permissions, slug, router]);
 
   /* =========================
      COLUMN ORDER
@@ -413,9 +391,7 @@ const MasterModuleList = ({ slug }: { slug: string }) => {
 
     data: moduleData || [],
 
-    pageCount: fetchModuleData?.total
-      ? Math.ceil(fetchModuleData.total / pagination.pageSize)
-      : -1,
+    pageCount: getModuleTableData?.data?.last_page || -1,
 
     manualPagination: true,
 
@@ -457,7 +433,8 @@ const MasterModuleList = ({ slug }: { slug: string }) => {
 
       <DataGrid
         table={table}
-        recordCount={fetchModuleData?.total || 0}
+        recordCount={getModuleTableData?.data?.total || 0}
+        isLoading={getModuleTableDataLoading}
         tableLayout={{
           columnsResizable: true,
           columnsPinnable: true,
@@ -469,15 +446,10 @@ const MasterModuleList = ({ slug }: { slug: string }) => {
         <Card>
 
           <DataGridToolbar
-            pagination={pagination}
-            slug={slug}
             inputValue={inputValue}
             onInputChange={setInputValue}
-            onAddUser={() => {
-              setIsEdit(false);
-              setEditData(null);
-              setInviteDialogOpen(true);
-            }}
+            canCreate={permissions.canCreate}
+            slug={slug}
           />
 
           <CardTable>
@@ -504,32 +476,14 @@ const MasterModuleList = ({ slug }: { slug: string }) => {
 
 
       {viewDialogOpen && (
-
         <RoleViewDialog
           open={viewDialogOpen}
           closeDialog={() => {
             setViewDialogOpen(false);
           }}
-          // isEdit={isEdit}
           editData={editData}
+          slug={slug}
         />
-
-      )}
-
-
-      {inviteDialogOpen && (
-
-        <RoleInviteDialog
-          open={inviteDialogOpen}
-          closeDialog={() => {
-            setInviteDialogOpen(false);
-            setIsEdit(false);
-            setEditData(null);
-          }}
-          isEdit={isEdit}
-          editData={editData}
-        />
-
       )}
 
       <DeleteDialog

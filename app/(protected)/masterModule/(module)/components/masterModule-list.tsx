@@ -69,11 +69,15 @@ const DataGridToolbar = ({
   onInputChange,
   onAddUser,
   statusdata,
-  setStatusdata
+  setStatusdata,
+  pagination,
 }: {
   inputValue: string;
   onInputChange: (value: string) => void;
   onAddUser: () => void;
+  statusdata: string;
+  setStatusdata: (value: string) => void;
+  pagination: any;
 }) => {
   const [parentMenu, setParentMenu] = useState('');
   const [createdBy, setCreatedBy] = useState('');
@@ -235,8 +239,8 @@ const MasterModuleList = () => {
     statusdata   // ⚡ IMPORTANT
   ]);
 
-  const fetchModuleData = useSelector(
-    (state: RootState) => state.masterModule.moduleList
+  const { moduleList: fetchModuleData, mastmoduleloading } = useSelector(
+    (state: RootState) => state.masterModule as any
   );
   const [moduleData, setModuleData] = useState<any[]>([]);
   const formatDate = (dateString: string) => {
@@ -255,9 +259,8 @@ const MasterModuleList = () => {
 
   useEffect(() => {
 
-    if (fetchModuleData?.data) {
-
-      const formattedData = fetchModuleData.data.map((item: any) => ({
+    if ((fetchModuleData as any)?.data) {
+      const formattedData = (fetchModuleData as any).data.map((item: any) => ({
         id: item.id,
         name: item.main_model_name || "-",
 
@@ -561,6 +564,7 @@ const MasterModuleList = () => {
 
             <DropdownMenuSeparator />
             <DropdownMenuItem
+            className="text-red-600 bg-red focus:text-red-700"
               onClick={() => handleDelete(row.original)}
             >
               Delete
@@ -603,9 +607,7 @@ const MasterModuleList = () => {
 
     data: moduleData || [],
 
-    pageCount: fetchModuleData?.total
-      ? Math.ceil(fetchModuleData.total / pagination.pageSize)
-      : -1,
+    pageCount: (fetchModuleData as any)?.last_page || -1,
 
     manualPagination: true,
 
@@ -670,7 +672,8 @@ const MasterModuleList = () => {
 
       <DataGrid
         table={table}
-        recordCount={fetchModuleData?.total || 0}
+        recordCount={(fetchModuleData as any)?.total || 0}
+        isLoading={mastmoduleloading}
         tableLayout={{
           columnsResizable: true,
           columnsPinnable: true,
@@ -732,18 +735,18 @@ const MasterModuleList = () => {
 
 
       {inviteDialogOpen && (
-
         <RoleInviteDialog
           open={inviteDialogOpen}
-          closeDialog={() => {
+          closeDialog={() => setInviteDialogOpen(false)}
+          id={editData?.id || null}
+          onDeleted={() => {
             setInviteDialogOpen(false);
-            setIsEdit(false);
-            setEditData(null);
+            dispatch(fetchmodule({
+              page: pagination.pageIndex + 1,
+              limit: pagination.pageSize,
+            }));
           }}
-          isEdit={isEdit}
-          editData={editData}
         />
-
       )}
 
       <DeleteDialog

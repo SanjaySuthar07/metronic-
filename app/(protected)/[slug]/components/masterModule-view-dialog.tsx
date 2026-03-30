@@ -1,8 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
-
 import {
   Dialog,
   DialogContent,
@@ -12,85 +9,67 @@ import {
 } from '@/components/ui/dialog';
 
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { X } from 'lucide-react';
 
 const RoleViewDialog = ({
   open,
   closeDialog,
   editData,
+  slug,
 }: {
   open: boolean;
   closeDialog: () => void;
   editData: any;
+  slug?: string;
 }) => {
-  const [selectedPermissions, setSelectedPermissions] = useState<number[]>([]);
-  const [roleName, setRoleName] = useState('');
-  useEffect(() => {
-    if (open && editData) {
-      const permissionIds =
-        editData?.permissions?.map((p: any) => p.name) ?? [];
-      setSelectedPermissions(permissionIds);
-      setRoleName(editData?.name || '');
-    }
-  }, [open, editData]);
+  const excludeKeys = ['id', 'updated_at', 'deleted_at', 'tenant_id', 'created_at', 'deleted_by', 'created_by'];
+  const keys = editData ? Object.keys(editData).filter(key => !excludeKeys.includes(key)) : [];
 
-  useEffect(() => {
-    if (!open) {
-      setSelectedPermissions([]);
-      setRoleName('');
+  const formatValue = (key: string, value: any) => {
+    if (value === null || value === undefined) return "-";
+    if (typeof value === 'string' && (key.includes("date") || key.includes("created_at") || /^\d{4}-\d{2}-\d{2}/.test(value))) {
+      const date = new Date(value);
+      if (!isNaN(date.getTime())) {
+        return `${String(date.getDate()).padStart(2, '0')}-${String(date.getMonth() + 1).padStart(2, '0')}-${date.getFullYear()}`;
+      }
     }
-  }, [open]);
+    return String(value);
+  };
 
   return (
     <Dialog open={open} onOpenChange={closeDialog}>
-      <DialogContent showCloseButton={false}>
+      <DialogContent showCloseButton={false} className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>View Role</DialogTitle>
-          <DialogDescription></DialogDescription>
+          <DialogTitle className="capitalize">View {slug || 'Details'}</DialogTitle>
+          <DialogDescription>
+            Detailed information for the selected {slug || 'record'}.
+          </DialogDescription>
         </DialogHeader>
-        <X onClick={closeDialog} className='absolute right-4 top-4 cursor-pointer'  ></X>
-        <div className="space-y-6">
+        <X onClick={closeDialog} className='absolute right-4 top-4 cursor-pointer text-muted-foreground hover:text-foreground transition-colors' />
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium leading-none">
-              Role Name
-            </label>
-
-            <Input
-              value={roleName}
-              readOnly
-              placeholder="Enter role name"
-            />
+        <ScrollArea className="max-h-[70vh] pr-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+            {keys.length > 0 ? (
+              keys.map((key) => (
+                <div key={key} className="space-y-1.5">
+                  <label className="text-sm font-semibold capitalize text-muted-foreground">
+                    {key.replaceAll("_", " ")}
+                  </label>
+                  <Input
+                    value={formatValue(key, editData[key])}
+                    readOnly
+                    className="bg-muted/50 border-muted-foreground/20"
+                  />
+                </div>
+              ))
+            ) : (
+              <div className="col-span-full py-10 text-center text-muted-foreground">
+                No displayable data found.
+              </div>
+            )}
           </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium leading-none">
-              Permissions
-            </label>
-
-            <div className="flex flex-wrap gap-1.5 text-sm text-muted-foreground border border-input rounded-md px-3 py-3 max-h-100 overflow-y-auto">
-              {selectedPermissions.length > 0 ? (
-                selectedPermissions.map((permission, i) => {
-                  return (
-                    <Badge
-                      className="p-4 m-1"
-                      key={i}
-                      variant="secondary"
-                    >
-                      {permission}
-                    </Badge>
-                  );
-                })
-              ) : (
-                <span className="text-sm text-muted-foreground">
-                  No permissions assigned.
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   );

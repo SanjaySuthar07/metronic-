@@ -256,7 +256,7 @@ export function FilesUpload({
       {/* Upload Area */}
       <div
         className={cn(
-          'relative rounded-lg border border-dashed p-8 text-center transition-colors',
+          'relative rounded-lg border border-dashed p-4 text-center transition-colors',
           isDragging ? 'border-primary bg-primary/5' : 'border-muted-foreground/25 hover:border-muted-foreground/50',
         )}
         onDragEnter={handleDragEnter}
@@ -269,17 +269,17 @@ export function FilesUpload({
         <div className="flex flex-col items-center gap-4">
           <div
             className={cn(
-              'flex h-16 w-16 items-center justify-center rounded-full',
+              'flex h-12 w-12 items-center justify-center rounded-full',
               isDragging ? 'bg-primary/10' : 'bg-muted',
             )}
           >
             <UploadIcon className={cn('h-6', isDragging ? 'text-primary' : 'text-muted-foreground')} />
           </div>
 
-          <div className="space-y-2">
-            <h3 className="text-lg font-semibold">Upload your files</h3>
-            <p className="text-sm text-muted-foreground">Drag and drop files here or click to browse</p>
-            <p className="text-xs text-muted-foreground">
+          <div className="space-y-1">
+            <h3 className="text-base font-semibold text-muted-foreground/80">Upload your files</h3>
+            <p className="text-xs text-muted-foreground">Drag and drop files here or click to browse</p>
+            <p className="text-[10px] text-muted-foreground/60 leading-tight">
               Support for multiple file types up to {formatBytes(maxSize)} each
             </p>
           </div>

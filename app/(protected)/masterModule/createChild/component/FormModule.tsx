@@ -452,11 +452,13 @@ export default function FormModule({ mode, id }: Props) {
 
         // Condition for Relationships
         if (["BelongsTo Relationship", "BelongsToMany Relationship"].includes(type)) {
+
           field.model_name = f.relationModel;
           field.model_field_name = "id";
         }
         // Extra model info if present
         if (f.main_model_name) {
+          field.model_name = f.relationModel;
           field.main_model_name = f.main_model_name;
           field.model_field_name = f.model_field_name;
         }
@@ -465,6 +467,7 @@ export default function FormModule({ mode, id }: Props) {
       }),
     };
 
+    console.log("this is payload", payload)
     if (mode === "edit" && id) {
       dispatch(updateModule({ id, payload }));
       dispatch(getMenu())
