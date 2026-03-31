@@ -95,6 +95,31 @@ export const deleteUser = createAsyncThunk(
   }
 );
 
+export const mrfresetUser = createAsyncThunk(
+  "users/mrfresetUser",
+  async (
+    payload: { user_id: any; tenant_id: any },
+    { rejectWithValue }
+  ) => {
+    console.log("MFA Reset payload:", payload);
+
+    try {
+      const response = await api.post(`/reset-mfa`, {
+        user_id: payload?.user_id,
+        tenant_id: payload?.tenant_id, // include if API needs it
+      });
+
+      return response.data;
+
+    } catch (error: any) {
+      const message =
+        error.response?.data?.message || "Failed to reset user MFA";
+
+      return rejectWithValue(message);
+    }
+  }
+);
+
 // ----------------------------
 // Roles api 
 // ----------------------------

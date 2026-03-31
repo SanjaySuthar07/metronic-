@@ -45,6 +45,7 @@ import {
 import { useRouter } from 'next/navigation';
 import AgentAddDialog from './agent-add-dialog';
 import AgentDeleteDialog from './agent-delete-dialog';
+import UserMfaResetDialog from '../../../components/user-mfa-reset-dialog';
 const DataGridToolbar = ({
   inputValue,
   onInputChange,
@@ -128,6 +129,14 @@ const AgentList = () => {
     setDeleteUserObj(user);
     setDeleteDialogOpen(true);
   };
+
+  const [mrfDialogOpen, setMrfDialogOpen] = useState(false);
+  const [mrfUserObj, setMrfUserObj] = useState<any>(null);
+  const handleMfaReset = (user: any) => {
+    setMrfUserObj(user);
+    setMrfDialogOpen(true);
+  }
+
 
   const refreshUsers = () => {
     if (!userDetail?.tenant_id) return;
@@ -354,6 +363,12 @@ const AgentList = () => {
             <DropdownMenuItem variant="destructive" onClick={() => handleDeleteUser(row.original)}>
               Delete
             </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={() => handleMfaReset(row.original)}
+            >
+              Mfa Reset
+              </DropdownMenuItem>
           </DropdownMenuContent>
 
         </DropdownMenu>
@@ -456,6 +471,21 @@ const AgentList = () => {
               setDeleteDialogOpen(false);
               refreshUsers();
             }}
+          />
+        )
+      }
+      {
+        mrfDialogOpen && (
+          <UserMfaResetDialog
+            open={mrfDialogOpen}
+            closeDialog={() => setMrfDialogOpen(false)}
+            user={mrfUserObj}
+            onMfaReset={() => {
+              setMrfDialogOpen(false);
+              refreshUsers();
+            }}
+          tenant_id={userDetail?.tenant_id}
+
           />
         )
       }

@@ -56,6 +56,7 @@ import {
 
 import { useRouter } from 'next/navigation';
 import { hasPermission } from '@/lib/permissions';
+import UserMfaResetDialog from './user-mfa-reset-dialog';
 
 
 /* =============================
@@ -168,6 +169,9 @@ const UserList = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteUserObj, setDeleteUserObj] = useState<any>(null);
 
+  const [mrfDialogOpen, setMrfDialogOpen] = useState(false);
+  const [mrfUserObj, setMrfUserObj] = useState<any>(null);
+
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
 
   const [isEdit, setIsEdit] = useState(false);
@@ -241,6 +245,11 @@ const UserList = () => {
   const handleDeleteUser = (user: any) => {
     setDeleteUserObj(user);
     setDeleteDialogOpen(true);
+  };
+
+   const handleMfaReset = (user: any ) => {
+    setMrfUserObj(user);
+    setMrfDialogOpen(true);
   };
 
 
@@ -495,6 +504,12 @@ const UserList = () => {
                 Delete
               </DropdownMenuItem>
 
+                <DropdownMenuItem
+                onClick={() => handleMfaReset(row.original)}
+              >
+                Mfa Reset
+              </DropdownMenuItem>
+
             </DropdownMenuContent>
 
           </DropdownMenu>
@@ -610,6 +625,20 @@ const UserList = () => {
           user={deleteUserObj}
           onDeleted={() => {
             setDeleteDialogOpen(false);
+            refreshUsers();
+          }}
+        />
+
+      )}
+
+       {mrfUserObj && (
+
+        <UserMfaResetDialog
+          open={mrfDialogOpen}
+          closeDialog={() => setMrfDialogOpen(false)}
+          user={mrfUserObj}
+          onDeleted={() => {
+            setMrfDialogOpen(false);
             refreshUsers();
           }}
         />
