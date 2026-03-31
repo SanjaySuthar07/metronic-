@@ -185,6 +185,7 @@ const MasterModuleList = () => {
 
   const canEdit = isSpecialRole || hasPermission(user, ["master-module-edit"])
   const canView = isSpecialRole || hasPermission(user, ["master-module-show"])
+  const canDelete = isSpecialRole || hasPermission(user, ["master-module-delete"])
   // const dispatch = useDispatch<AppDispatch>();
 
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
@@ -574,13 +575,19 @@ const MasterModuleList = () => {
                 <DropdownMenuSeparator />
               </>
             )}
-            <DropdownMenuItem
-              className="text-red-600 bg-red focus:text-red-700"
-              onClick={() => handleDelete(row.original)}
-            >
-              Delete
-              {/* slug */}
-            </DropdownMenuItem>
+            {
+              canDelete && (
+                <>
+                  <DropdownMenuItem
+                    className="text-red-600 bg-red focus:text-red-700"
+                    onClick={() => handleDelete(row.original)}
+                  >
+                    Delete
+                    {/* slug */}
+                  </DropdownMenuItem></>
+              )
+            }
+
 
           </DropdownMenuContent>
         </DropdownMenu>

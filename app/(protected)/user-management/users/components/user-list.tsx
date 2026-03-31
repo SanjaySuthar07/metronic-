@@ -508,11 +508,18 @@ const UserList = () => {
                 </>
               )}
 
-              <DropdownMenuItem
-                onClick={() => handleMfaReset(row.original)}
-              >
-                Mfa Reset
-              </DropdownMenuItem>
+              {
+                row.original.google2fa_secret && (
+                  <>
+                  <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => handleMfaReset(row.original)}
+                    >
+                      MFA Verification Reset
+                    </DropdownMenuItem></>
+                )
+              }
+
 
             </DropdownMenuContent>
 

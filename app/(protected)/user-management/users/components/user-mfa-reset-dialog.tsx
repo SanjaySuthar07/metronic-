@@ -53,7 +53,7 @@ const UserMfaResetDialog = ({
                             <AlertIcon>
                                 <RiCheckboxCircleFill />
                             </AlertIcon>
-                            <AlertTitle>MFA reset successfully</AlertTitle>
+                            <AlertTitle>MFA Verification reset successfully</AlertTitle>
                         </Alert>
                     ),
                     { position: 'top-center' }
@@ -82,7 +82,7 @@ const UserMfaResetDialog = ({
     <Dialog open={open} onOpenChange={closeDialog}>
       <DialogContent showCloseButton={false}>
         <DialogHeader>
-          <DialogTitle>Confirm MFA Reset</DialogTitle>
+          <DialogTitle>Confirm MFA Verification Reset</DialogTitle>
         </DialogHeader>
         <DialogDescription>
           Are you sure you want to reset MFA for the user <strong>{user?.name}</strong>?
