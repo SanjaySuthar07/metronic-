@@ -35,13 +35,18 @@ export default function AccountDetails() {
   const form = useForm<ProfileSchemaType>({
     resolver: zodResolver(getProfileSchema()),
     defaultValues: {
-      name: user?.name || '',
+      firstName: user?.first_name || '',
+      lastName: user?.last_name || '',
     },
   });
 
   async function onSubmit(values: ProfileSchemaType) {
     try {
-      const resultAction = await dispatch(updateProfile(values));
+      const payload = {
+        first_name: values.firstName,
+        last_name: values.lastName,
+      };
+      const resultAction = await dispatch(updateProfile(payload));
       if (updateProfile.fulfilled.match(resultAction)) {
         toast.success('Profile updated successfully');
         const resultActions = await dispatch(getProfile());
@@ -76,11 +81,32 @@ export default function AccountDetails() {
           >
             <FormField
               control={form.control}
-              name="name"
+              name="firstName"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    Name <span className="text-red-500">*</span>
+                    First Name <span className="text-red-500">*</span>
+                  </FormLabel>
+
+                  <FormControl>
+                    <Input
+                      placeholder="Enter your name"
+                      {...field}
+                    />
+                  </FormControl>
+
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="lastName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Last Name <span className="text-red-500">*</span>
                   </FormLabel>
 
                   <FormControl>

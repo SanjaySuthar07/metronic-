@@ -158,11 +158,11 @@ export function Header() {
                   <img
                     className="w-9 h-9 rounded-full border border-border object-cover"
                     src={user.avatar}
-                    alt={user?.name}
+                    alt={user?.first_name + " " + user?.last_name}
                   />
                 ) : (
                   <div className="capitalize w-9 h-9 rounded-full bg-primary text-white flex items-center justify-center text-sm font-semibold">
-                    {getInitials(user?.name || user?.email || 'U')}
+                    {getInitials(user?.first_name + " " + user?.last_name || user?.email || 'U')}
                   </div>
                 )
               }

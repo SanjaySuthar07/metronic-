@@ -55,7 +55,8 @@ export default function Page() {
     const form = useForm<SignupSchemaType>({
         resolver: zodResolver(getSignupSchema()),
         defaultValues: {
-            name: '',
+            firstName: '',
+            lastName: '',
             email: '',
             password: '',
             passwordConfirmation: '',
@@ -104,9 +105,11 @@ export default function Page() {
         }
 
         const values = form.getValues();
+        // const fullName = `${values.firstName} ${values.lastName}`.trim();
 
         const payload = {
-            name: values.name,
+            first_name: values.firstName,
+            last_name: values.lastName,
             email: values.email,
             password: values.password,
             recaptcha_token: token,
@@ -115,16 +118,12 @@ export default function Page() {
         const resultAction = await dispatch(registerUser(payload));
 
         if (registerUser.fulfilled.match(resultAction)) {
-
             const data = resultAction.payload;
-
             if (data.status) {
                 setMessage(data.message);
             }
-
             setShowSuccess(true);
             form.reset();
-
         } else {
             setError(resultAction.payload as string);
         }
@@ -160,21 +159,38 @@ export default function Page() {
                             <AlertTitle>{error}</AlertTitle>
                         </Alert>
                     )}
-                    <FormField
-                        control={form.control}
-                        name="name"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>
-                                    Name <span className="text-red-500">*</span>
-                                </FormLabel>
-                                <FormControl>
-                                    <Input placeholder="Enter your name" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField
+                            control={form.control}
+                            name="firstName"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>
+                                        First Name <span className="text-red-500">*</span>
+                                    </FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="John" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="lastName"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>
+                                        Last Name <span className="text-red-500">*</span>
+                                    </FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Doe" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
                     <FormField
                         control={form.control}
                         name="email"

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 // import { useDispatch, useSelector } from 'react-redux';
-
+import parse from "html-react-parser";
 import {
   ColumnDef,
   getCoreRowModel,
@@ -300,7 +300,9 @@ const MasterModuleList = ({ slug }: { slug: string }) => {
           }
         }
 
-        return String(value);
+        return <div className="ck-content">
+          {parse(String(value))}
+        </div>
       },
       meta: {
         skeleton: <Skeleton className="h-4 w-full max-w-[100px]" />,
@@ -324,7 +326,7 @@ const MasterModuleList = ({ slug }: { slug: string }) => {
             </DropdownMenuTrigger>
 
             <DropdownMenuContent align="end">
-              {/* {permissions.canView && (
+              {permissions.canView && (
                 <DropdownMenuItem
                   onClick={() => {
                     setEditData(row.original);
@@ -333,7 +335,7 @@ const MasterModuleList = ({ slug }: { slug: string }) => {
                 >
                   View
                 </DropdownMenuItem>
-              )} */}
+              )}
 
               {permissions.canEdit && (
                 <DropdownMenuItem

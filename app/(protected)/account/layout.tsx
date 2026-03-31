@@ -74,15 +74,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <div className="flex items-center gap-3">
             <Avatar className="size-12">
               {user?.avatar && (
-                <AvatarImage src={user.avatar} alt={user?.name} />
+                <AvatarImage src={user.avatar} alt={user?.first_name + " " + user?.last_name} />
               )}
               <AvatarFallback className="text-lg">
-                {getInitials(user?.name || user?.email || 'U')}
+                {getInitials(user?.first_name + " " + user?.last_name || user?.email || 'U')}
               </AvatarFallback>
             </Avatar>
             <div>
               <div className="capitalize font-semibold text-base">
-                {user?.name || ''}
+                {user?.first_name + " " + user?.last_name || ''}
               </div>
               <div className="capitalize text-muted-foreground text-xs">
                 {user?.user_type || "Agent"}

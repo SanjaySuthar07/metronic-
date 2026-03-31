@@ -17,37 +17,37 @@ import {
   AccordionMenuSubTrigger,
 } from '@/components/ui/accordion-menu';
 import { Badge } from '@/components/ui/badge';
-import { useSelector , useDispatch} from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { filterMenu } from '@/lib/menu-filter';
 import { getMenu } from '@/store/thunk/menu.thunk';
 import { mapMenu } from '@/config/menu.config';
 
 export function SidebarMenu() {
   const pathname = usePathname();
- 
+
   const dispatch: any = useDispatch();
 
-useEffect(() => {
-  dispatch(getMenu());
-}, [dispatch]);
+  useEffect(() => {
+    dispatch(getMenu());
+  }, [dispatch]);
 
-// API response
-const MenuResponse = useSelector(
-  (s: any) => s.menu.menu
-);
+  // API response
+  const MenuResponse = useSelector(
+    (s: any) => s.menu.menu
+  );
 
-// Extract array
-const MenuData =
-  MenuResponse?.data || [];
+  // Extract array
+  const MenuData =
+    MenuResponse?.data || [];
 
-// 🔥 CALL mapMenu HERE
-const dynamicMenu = useMemo(() => {
+  // 🔥 CALL mapMenu HERE
+  const dynamicMenu = useMemo(() => {
 
-  return mapMenu(MenuData);
+    return mapMenu(MenuData);
 
-}, [MenuData]);
+  }, [MenuData]);
 
-console.log("dynamicMenu", dynamicMenu);
+  console.log("dynamicMenu", dynamicMenu);
 
 
   // Memoize matchPath to prevent unnecessary re-renders
@@ -90,7 +90,7 @@ console.log("dynamicMenu", dynamicMenu);
         <AccordionMenuSub key={index} value={item.path || `root-${index}`}>
           <AccordionMenuSubTrigger className="text-sm font-medium">
             {item.icon && <item.icon data-slot="accordion-menu-icon" />}
-            <span data-slot="accordion-menu-title"   className="capitalize">{item.title}</span>
+            <span data-slot="accordion-menu-title" className="capitalize">{item.title}</span>
           </AccordionMenuSubTrigger>
           <AccordionMenuSubContent
             type="single"
@@ -116,7 +116,7 @@ console.log("dynamicMenu", dynamicMenu);
             className="flex items-center  grow gap-2"
           >
             {item.icon && <item.icon data-slot="accordion-menu-icon" />}
-            <span data-slot="accordion-menu-title"  className="capitalize">{item.title}</span>
+            <span data-slot="accordion-menu-title" className="capitalize">{item.title}</span>
           </Link>
         </AccordionMenuItem>
       );
@@ -134,7 +134,7 @@ console.log("dynamicMenu", dynamicMenu);
         className="text-sm font-medium"
       >
         {item.icon && <item.icon data-slot="accordion-menu-icon" />}
-        <span data-slot="accordion-menu-title"  className="capitalize">{item.title}</span>
+        <span data-slot="accordion-menu-title" className="capitalize">{item.title}</span>
         {item.disabled && (
           <Badge variant="secondary" size="sm" className="ms-auto me-[-10px]">
             Soon
@@ -241,7 +241,7 @@ console.log("dynamicMenu", dynamicMenu);
   const { user } = useSelector((s) => s.auth)
   const mainmenu = filterMenu(MENU_SIDEBAR, user)
   const menu = filterMenu(dynamicMenu, user)
-  
+
 
   return (
     <div className="kt-scrollable-y-hover flex grow shrink-0 py-5 px-5 lg:max-h-[calc(100vh-5.5rem)]">
@@ -256,6 +256,6 @@ console.log("dynamicMenu", dynamicMenu);
         {buildMenu(menu)}
       </AccordionMenu>
     </div>
-    
+
   );
 }

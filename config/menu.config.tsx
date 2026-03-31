@@ -25,7 +25,7 @@ import {
   Gift,
   Grid,
   Heart,
-   Box,
+  Box,
   HelpCircle,
   Kanban,
   Key,
@@ -51,6 +51,11 @@ import {
   Briefcase as WorkIcon,
   Zap,
   Puzzle,
+  Type,
+  Circle,
+  Square,
+  Layers,
+  Bookmark,
 } from 'lucide-react';
 
 
@@ -66,54 +71,59 @@ import {
 
 const getIconComponent = (iconName: string) => {
   const icons: { [key: string]: any } = {
-   AlertCircle,
-  Award,
-  Badge,
-  Bell,
-  Bitcoin,
-  Bolt,
-  Book,
-  Briefcase,
-  Building,
-  CalendarCheck,
-  Captions,
-  CheckCircle,
-  Code,
-  Coffee,
-  Euro,
-  Eye,
-  File,
-  FileQuestion,
-  FileText,
-  Flag,
-  Ghost,
-  Gift,
-  Grid,
-  Heart,
-   Box,
-  HelpCircle,
-  Kanban,
-  Key,
-  Layout,
-  LayoutGrid,
-  LifeBuoy,
-  MessageSquare,
-  Monitor,
-  Network,
-  Plug,
-  Settings,
-  Share2,
-  Shield,
-  ShieldUser,
-  ShoppingCart,
-  SquareMousePointer,
-  Star,
-  TrendingUp,
-  UserCheck,
-  UserCircle,
-  Users,
-  Zap,
-  Puzzle,
+    AlertCircle,
+    Award,
+    Badge,
+    Bell,
+    Bitcoin,
+    Bolt,
+    Book,
+    Briefcase,
+    Building,
+    CalendarCheck,
+    Captions,
+    CheckCircle,
+    Code,
+    Coffee,
+    Euro,
+    Eye,
+    File,
+    FileQuestion,
+    FileText,
+    Flag,
+    Ghost,
+    Gift,
+    Grid,
+    Heart,
+    Box,
+    HelpCircle,
+    Kanban,
+    Key,
+    Layout,
+    LayoutGrid,
+    LifeBuoy,
+    MessageSquare,
+    Monitor,
+    Network,
+    Plug,
+    Settings,
+    Share2,
+    Shield,
+    ShieldUser,
+    ShoppingCart,
+    SquareMousePointer,
+    Star,
+    TrendingUp,
+    UserCheck,
+    UserCircle,
+    Users,
+    Zap,
+    Puzzle,
+    Type,
+    Circle,
+    Square,
+    Layers,
+    Bookmark,
   };
 
   return icons[iconName] || null;
@@ -127,21 +137,21 @@ export const mapMenu = (data: any[]) => {
   if (!Array.isArray(data)) return [];
 
   return data.map((item: any) => {
-    
-    
-  
+
+
+
     return {
 
       title: item.menu_title,
 
       path: `/${item.slug}`,
 
-    icon: item.icon ? getIconComponent(item.icon) : null, // Convert string to icon component
-    
+      icon: item.icon ? getIconComponent(item.icon) : null, // Convert string to icon component
+
 
       children:
         item.children &&
-        item.children.length > 0
+          item.children.length > 0
           ? mapMenu(item.children)
           : undefined,
 

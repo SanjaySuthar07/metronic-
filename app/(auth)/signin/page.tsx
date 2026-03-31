@@ -1,6 +1,7 @@
-'use client';
+"use client"
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AlertCircle, Eye, EyeOff, LoaderCircleIcon } from 'lucide-react';
 import { useForm } from 'react-hook-form';
@@ -35,7 +36,7 @@ import VerifyOtpPage from '../modal/VerifyOtpPage';
 export default function Page() {
 
   const recaptchaRef = useRef<any>(null);
-
+  const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const { loading, rememberUser } = useSelector((state: RootState) => state.auth);
   const [isLoading, setIsLoading] = useState(false)
@@ -107,12 +108,19 @@ export default function Page() {
 
     if (loginUser.fulfilled.match(result)) {
       const data = result.payload;
-      setQrCode(data.qr_code);
-      setUserId(data.user_id);
-      setOppenQR(true);
-      setMessage(data?.message);
-      setUserType(data?.user_type);
-      setTenant_id(data?.tenant_id)
+
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("refresh_token", data.refresh_token);
+        router.push("/");
+      } else {
+        setQrCode(data.qr_code);
+        setUserId(data.user_id);
+        setOppenQR(true);
+        setMessage(data?.message);
+        setUserType(data?.user_type);
+        setTenant_id(data?.tenant_id)
+      }
     } else {
       setError(result.payload as string);
     }

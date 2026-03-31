@@ -42,20 +42,20 @@ export function UserDropdownMenu({ trigger }: { trigger: ReactNode }) {
               <img
                 className="w-9 h-9 rounded-full border border-border object-cover"
                 src={user.avatar}
-                alt={user?.name}
+                alt={user?.first_name + " " + user?.last_name}
               />
             ) : (
               <div className="capitalize w-9 h-9 rounded-full bg-primary text-white flex items-center justify-center text-sm font-semibold">
-                {getInitials(user?.name || user?.email || 'U')}
+                {getInitials(user?.first_name + " " + user?.last_name || user?.email || 'U')}
               </div>
             )}
 
             <div className="flex flex-col">
               <Link
                 href="/account/home/get-started"
-                className="text-sm text-mono hover:text-primary font-semibold"
+                className="text-sm text-mono capitalize hover:text-primary font-semibold"
               >
-                {user?.name || 'User'}
+                {user?.first_name + " " + user?.last_name || 'User'}
               </Link>
               <Link
                 href={`mailto:${user?.email}`}

@@ -4,10 +4,14 @@ import { getPasswordSchema } from './password-schema';
 export const getSignupSchema = () => {
   return z
     .object({
-      name: z
+      firstName: z
         .string()
-        .min(2, { message: 'Name must be at least 2 characters long.' })
-        .min(1, { message: 'Name is required.' }),
+        .min(2, { message: 'First name must be at least 2 characters long.' })
+        .min(1, { message: 'First name is required.' }),
+      lastName: z
+        .string()
+        .min(2, { message: 'Last name must be at least 2 characters long.' })
+        .min(1, { message: 'Last name is required.' }),
       email: z
         .string()
         .email({ message: 'Please enter a valid email address.' })

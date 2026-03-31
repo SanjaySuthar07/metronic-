@@ -174,8 +174,18 @@ export default function FormModule({ mode, id }: Props) {
   }, [id, mode]);
   const { moduleDetails, parentMenuList } = useSelector((s: any) => s.masterModule);
   const [editIndex, setEditIndex] = React.useState<number | null>(null);
-  const handleDelete = (index: number) => {
-    setDynamicFields((prev) => prev.filter((_, i) => i !== index));
+  const handleDelete = (index: number, row: any) => {
+    setSelectedRow(row);
+    setEditIndex(index);
+    setDeleteOpen(true);
+  };
+
+  const onDeleteConfirm = () => {
+    if (editIndex !== null) {
+      setDynamicFields((prev) => prev.filter((_, i) => i !== editIndex));
+      setEditIndex(null);
+      setSelectedRow(null);
+    }
   };
   const togglePermission = (id: number) => {
     setSelectedPermissions((prev) =>
@@ -261,7 +271,7 @@ export default function FormModule({ mode, id }: Props) {
             <Button
               size="icon"
               variant="ghost"
-              onClick={() => handleDelete(index)}
+              onClick={() => handleDelete(index, row.original)}
             >
               <Trash2 className="h-4 w-4 text-red-600" />
             </Button>
@@ -978,8 +988,13 @@ export default function FormModule({ mode, id }: Props) {
       </CardContent>
       <RoleDeleteDialog
         open={deleteOpen}
-        closeDialog={() => setDeleteOpen(false)}
+        closeDialog={() => {
+          setDeleteOpen(false);
+          setEditIndex(null);
+          setSelectedRow(null);
+        }}
         role={selectedRow}
+        onConfirm={onDeleteConfirm}
       />
       <AddFieldDialog
         open={openModal}

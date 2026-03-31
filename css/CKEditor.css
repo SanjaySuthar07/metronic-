@@ -1,0 +1,45 @@
+.ck-content {
+    line-height: 1.6;
+}
+
+.ck-content h1 {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.ck-content h2 {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.ck-content h3 {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.ck-content ul {
+    list-style: disc;
+    margin-left: 20px;
+}
+
+.ck-content ol {
+    list-style: decimal;
+    margin-left: 20px;
+}
+
+.custom-block-indent-a {
+    margin-left: 10%;
+}
+
+.custom-block-indent-b {
+    margin-left: 20%;
+}
+
+.custom-block-indent-c {
+    margin-left: 30%;
+}
+
+.ck-editor__editable_inline:not(.ck-comment__input *) {
+    height: 250px;
+    overflow-y: auto;
+}

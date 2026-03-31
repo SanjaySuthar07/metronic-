@@ -74,7 +74,8 @@ export const putFormApi = createAsyncThunk(
     "putForm",
     async ({ slug, id, data }: any, { rejectWithValue }) => {
         try {
-            const response = await api.put(`/dynamic/${slug}/${id}`, data);
+            data.id = id;
+            const response = await api.post(`/dynamic/update/${slug}`, data);
             return response.data;
         } catch (error: any) {
             if (error.response && error.response.data) {

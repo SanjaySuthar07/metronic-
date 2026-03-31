@@ -1,6 +1,7 @@
 "use client"
 import { Geist, Geist_Mono } from "next/font/google";
 import '@/css/styles.css'
+import '@/css/CKEditor.css'
 import '@/components/keenicons/assets/styles.css';
 import { Provider } from "react-redux";
 import { store } from "@/store";

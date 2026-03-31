@@ -1,9 +1,5 @@
 'use client';
 
-import { RiCheckboxCircleFill, RiErrorWarningFill } from '@remixicon/react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
-import { Alert, AlertIcon, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -13,18 +9,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { LoaderCircleIcon } from 'lucide-react';
 
 const RoleDeleteDialog = ({
   open,
   closeDialog,
   role,
+  onConfirm,
 }: {
   open: boolean;
   closeDialog: () => void;
   role: any;
+  onConfirm: () => void;
 }) => {
-  const queryClient = useQueryClient();
   return (
     <Dialog open={open} onOpenChange={closeDialog}>
       <DialogContent showCloseButton={false}>
@@ -32,7 +28,7 @@ const RoleDeleteDialog = ({
           <DialogTitle>Confirm Delete</DialogTitle>
         </DialogHeader>
         <DialogDescription>
-          Are you sure you want to delete the role <strong>{role?.dbColumn}</strong>?
+          Are you sure you want to delete the field <strong>{role?.label}</strong>?
         </DialogDescription>
         <DialogFooter>
           <Button variant="outline" onClick={closeDialog}>
@@ -40,12 +36,11 @@ const RoleDeleteDialog = ({
           </Button>
           <Button
             variant="destructive"
-          // onClick={() => mutation.mutate()}
-          // disabled={mutation.status === 'pending'}
+            onClick={() => {
+              onConfirm();
+              closeDialog();
+            }}
           >
-            {/* {mutation.status === 'pending' && ( */}
-            {/* <LoaderCircleIcon className="animate-spin" /> */}
-            {/* )} */}
             Delete
           </Button>
         </DialogFooter>

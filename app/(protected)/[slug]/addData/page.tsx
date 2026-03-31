@@ -27,7 +27,7 @@ export default async function Page({ params,
 }: {
     params: Promise<{ slug: string }>;
 }) {
-    const { slug } = await params; // ✅ IMPORTANT
+    const { slug } = await params;
     console.log("this is slug", slug)
     return (
         <>
