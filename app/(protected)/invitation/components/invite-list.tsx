@@ -86,7 +86,7 @@ const DataGridToolbar = ({
           />
         </div>
 
-        <Select value={selectedRole} onValueChange={onRoleChange}>
+        {/* <Select value={selectedRole} onValueChange={onRoleChange}>
           <SelectTrigger className="w-full sm:w-40">
             <SelectValue placeholder="All types" />
           </SelectTrigger>
@@ -102,7 +102,7 @@ const DataGridToolbar = ({
               </Fragment>
             ))}
           </SelectContent>
-        </Select>
+        </Select> */}
 
         <Select value={selectedStatus} onValueChange={onStatusChange}>
           <SelectTrigger className="w-full sm:w-40">
@@ -123,20 +123,20 @@ const DataGridToolbar = ({
         </Select>
 
       </div>
-      {
+      {/* {
         (
           user?.user_type === "super_admin" ||
           (user?.user_type === "admin" &&
             hasPermission(user, ["agency-create", "agent-create"])) ||
           (user?.user_type === "agency" &&
             hasPermission(user, "agent-create"))
-        ) && (
+        ) && ( */}
           <Button onClick={onAddUser}>
             <Plus />
             Invite
           </Button>
-        )
-      }
+        {/* )
+      } */}
     </CardHeader>
   );
 };

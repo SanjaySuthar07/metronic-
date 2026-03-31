@@ -84,12 +84,12 @@ const DataGridToolbar = ({
 
       <div className="flex items-center gap-3">
 
-        {hasPermission(user, ["tenant-role-create"]) && (
-          <Button onClick={onAddUser}>
-            <Plus />
-            Add Role
-          </Button>
-        )}
+        {/* {hasPermission(user, ["tenant-role-create"]) && ( */}
+        <Button onClick={onAddUser}>
+          <Plus />
+          Add Role
+        </Button>
+        {/* )} */}
 
       </div>
 

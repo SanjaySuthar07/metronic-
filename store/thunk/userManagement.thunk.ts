@@ -146,11 +146,12 @@ export const fetchRoleDetail = createAsyncThunk(
 
 export const fetchRolesDropdown = createAsyncThunk(
   "users/fetchRolesDropdown",
-  async (payload: FetchUsersPayload, { rejectWithValue }) => {
+  async (payload: any, { rejectWithValue }) => {
     try {
       const response = await api.get("/roles", {
         params: {
-          select: true
+          select: true,
+          tenant_id: payload
         },
       });
       return response.data;

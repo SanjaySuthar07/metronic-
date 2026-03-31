@@ -159,17 +159,17 @@ export const MENU_SIDEBAR: any = [
       {
         title: 'Users',
         path: '/user-management/users',
-        permission: ['agent-access', 'agency-access'],
+        permission: ['agent-access', 'agency-access', 'user-access'],
       },
       {
         title: 'Roles',
         path: '/user-management/roles',
-        permission: ['tenant-role-access'],
+        role: ['super_admin', "agency"]
       },
       {
         title: 'Permissions',
         path: '/user-management/permissions',
-        permission: ['tenant-permission-access'],
+        role: ['super_admin', "agency"]
       },
       {
         title: 'Invitation',
@@ -182,7 +182,7 @@ export const MENU_SIDEBAR: any = [
     title: 'setting',
     icon: Settings,
     path: '/settings',
-    role: ['super_admin', "agency", "admin"]
+    role: ['super_admin']
   },
   {
     title: 'master module',
