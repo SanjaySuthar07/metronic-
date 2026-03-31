@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
-import { Eye, EyeOff, LoaderCircleIcon } from 'lucide-react'
+import { Eye, EyeOff, LetterText, LoaderCircleIcon } from 'lucide-react'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { Button } from '@/components/ui/button'
@@ -62,7 +62,12 @@ const InviteAddDialog = ({
 
   useEffect(() => {
     const getRoles = async () => {
-      const res: any = await dispatch(fetchRolesDropdown())
+      let id;
+      console.log(user?.tenant_id, "user in invite add dialog")
+      if (user?.tenant_id) {
+        id = user?.tenant_id
+      }
+      const res: any = await dispatch(fetchRolesDropdown(user?.tenant_id))
       setRoles(res?.payload?.roles || [])
     }
     getRoles()
@@ -106,7 +111,7 @@ const InviteAddDialog = ({
       role_id: values.role,
       tenant_id: user?.tenant_id,
     }
-    if (user.user_type == "agency") {
+    if (user?.tenant_id) {
       payload.tenant_id = user?.tenant_id
     }
 

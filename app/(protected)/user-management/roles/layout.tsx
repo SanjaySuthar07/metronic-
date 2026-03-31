@@ -11,8 +11,8 @@ export default function RolesLayout({
     if (!user) {
         return null
     }
-    if (!hasPermission(user, "tenant-role-access")) {
-        notFound()
-    }
+    // if (!hasPermission(user, "tenant-role-access")) {
+    //     notFound()
+    // }
     return children
 }

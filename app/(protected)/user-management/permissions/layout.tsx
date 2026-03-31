@@ -11,8 +11,8 @@ export default function PermissionLayout({
     if (!user) {
         return null
     }
-    if (!hasPermission(user, "tenant-permission-access")) {
-        notFound()
-    }
+    // if (!hasPermission(user, "tenant-permission-access")) {
+    //     notFound()
+    // }
     return children
 }

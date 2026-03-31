@@ -11,7 +11,7 @@ export default function UserLayout({
     if (!user) {
         return null
     }
-    if (!hasPermission(user, "agent-access")) {
+    if (!hasPermission(user, "user-access")) {
         notFound()
     }
     return children

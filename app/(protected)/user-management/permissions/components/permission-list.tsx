@@ -101,18 +101,18 @@ const DataGridToolbar = ({
         </Select> */}
       </div>
       <CardToolbar>
-        {
-          hasPermission(user, ["tenant-permission-create"]) ? (
-            <>
-              <Button
-                onClick={onAddPermission}
-              >
-                <Plus />
-                Add Permission
-              </Button>
-            </>
-          ) : ""
-        }
+        {/* {
+          hasPermission(user, ["tenant-permission-create"]) ? ( */}
+        <>
+          <Button
+            onClick={onAddPermission}
+          >
+            <Plus />
+            Add Permission
+          </Button>
+        </>
+        {/* ) : ""
+        } */}
       </CardToolbar>
     </CardHeader>
   );
