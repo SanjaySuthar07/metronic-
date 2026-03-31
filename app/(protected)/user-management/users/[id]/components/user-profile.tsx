@@ -88,7 +88,7 @@ const UserProfile = ({
 
             <div className="grid grid-cols-subgrid capitalize col-span-2 items-baseline">
               <dt className="flex md:w-64 ">Full name:</dt>
-              <dd>{user?.name || 'Not available'}</dd>
+              <dd>{user?.first_name +" " +user?.last_name || 'Not available'}</dd>
             </div>
 
             <div className="grid  grid-cols-subgrid col-span-2 items-baseline">

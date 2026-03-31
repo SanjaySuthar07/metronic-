@@ -9,11 +9,12 @@ import { toAbsoluteUrl, toBackendUrl } from '@/lib/helpers';
 
 export function SidebarHeader() {
   const { settings, storeOption } = useSettings();
+  const { user } = useSelector((s: any) => s.auth)
   const dispatch = useDispatch<any>();
   const { setting } = useSelector((s: any) => s.settings);
 
   useEffect(() => {
-    if (!setting || setting.length === 0) {
+    if (!setting || setting.length === 0 && user?.user_type == "super_admin") {
       dispatch(fetchSettings());
     }
   }, [dispatch, setting]);

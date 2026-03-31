@@ -70,7 +70,8 @@ const AgentAddDialog = ({
   const form = useForm<UserAddSchemaType>({
     // resolver: zodResolver(UserAddSchema),
     defaultValues: {
-      name: '',
+      first_name: '',
+      last_name: '',
       email: '',
     },
   });
@@ -94,7 +95,8 @@ const AgentAddDialog = ({
       );
 
       form.reset({
-        name: editData.name || '',
+        first_name: editData.first_name || '',
+        last_name: editData.last_name || '',
         email: editData.email || '',
         roleId: role?.id?.toString() || '',
       });

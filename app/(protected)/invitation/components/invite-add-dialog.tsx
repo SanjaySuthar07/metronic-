@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { Eye, EyeOff, LoaderCircleIcon } from 'lucide-react'
@@ -39,9 +39,9 @@ import {
 } from '@/components/ui/select'
 
 import { InviteAddSchema, InviteAddSchemaType } from '../forms/invite-add-schema'
-import { createInviteUser, fetchAgency } from '@/store/thunk/invite.thunk'
+import { createInviteUser } from '@/store/thunk/invite.thunk'
 import { toast } from 'sonner'
-import { hasPermission } from '@/lib/permissions'
+import { fetchRolesDropdown } from '@/store/thunk/userManagement.thunk'
 
 
 const InviteAddDialog = ({
@@ -52,39 +52,21 @@ const InviteAddDialog = ({
   onSuccess
 }: any) => {
   const { user } = useSelector((s: any) => s.auth)
-
-  const type = useMemo(() => {
-    if (!user) return [];
-    if (user.user_type === "super_admin") {
-      return [
-        { id: 'admin', name: 'Admin' },
-        { id: 'agency', name: 'Agency' },
-        { id: 'agent', name: 'Agent' },
-      ];
-    }
-    if (user.user_type === "admin") {
-      const result = [];
-      if (hasPermission(user, "agency-create")) {
-        result.push({ id: 'agency', name: 'Agency' });
-      }
-      if (hasPermission(user, "agent-create")) {
-        result.push({ id: 'agent', name: 'Agent' });
-      }
-      return result;
-    }
-
-    if (user.user_type === "agency") {
-      return [{ id: 'agent', name: 'Agent' }];
-    }
-    return [];
-  }, [user]);
+  // const { roles } = useSelector((s: any) => s.userManagement)
   const dispatch = useDispatch()
 
   const [passwordVisible, setPasswordVisible] = useState(false)
   const [CpasswordVisible, setCPasswordVisible] = useState(false)
-  const [isAgencyDropDownOpen, setIsAgencyDropDownOpen] = useState(false)
-  const [agency, setAgency] = useState<any[]>([])
+  const [roles, setRoles] = useState<any[]>([])
   const [isSubmit, setIsSubmit] = useState(false)
+
+  useEffect(() => {
+    const getRoles = async () => {
+      const res: any = await dispatch(fetchRolesDropdown())
+      setRoles(res?.payload?.roles || [])
+    }
+    getRoles()
+  }, [dispatch])
 
   const form = useForm<InviteAddSchemaType>({
     resolver: zodResolver(InviteAddSchema),
@@ -94,7 +76,7 @@ const InviteAddDialog = ({
       email: '',
       // password: '',
       // confirmPassword: '',
-      user_type: '',
+      role: '',
       tenant_id: '',
     },
   })
@@ -108,43 +90,27 @@ const InviteAddDialog = ({
         email: '',
         // password: '',
         // confirmPassword: '',
-        user_type: '',
+        role: '',
         tenant_id: '',
       })
-      setIsAgencyDropDownOpen(false)
     }
   }, [open])
 
-  useEffect(() => {
-    if (user?.user_type === 'agency') {
-      form.setValue('tenant_id', user.tenant_id)
-      form.setValue('user_type', 'agent')
-    }
-  }, [user, form])
-
-  // fetch agency list
-  useEffect(() => {
-    const getAgency = async () => {
-      const res: any = await dispatch(fetchAgency())
-      setAgency(res?.payload?.agency || [])
-    }
-
-    getAgency()
-  }, [dispatch])
-
   const handleSubmit = async (values: InviteAddSchemaType) => {
-
     setIsSubmit(true)
-
     const payload = {
       first_name: values.first_name,
       last_name: values.last_name,
       email: values.email,
       // password: values.password,
-      user_type: values.user_type,
-      tenant_id: values.tenant_id,
+      role_id: values.role,
+      tenant_id: user?.tenant_id,
+    }
+    if (user.user_type == "agency") {
+      payload.tenant_id = user?.tenant_id
     }
 
+    console.log(payload, "payload", user)
     const res: any = await dispatch(createInviteUser(payload))
 
     if (createInviteUser.fulfilled.match(res)) {
@@ -181,108 +147,44 @@ const InviteAddDialog = ({
 
             <DialogBody className="pt-2.5 space-y-6">
 
-              {user?.user_type !== "agency" && (
-                <FormField
-                  control={form.control}
-                  name="user_type"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Type <span className="text-red-500">*</span>
-                      </FormLabel>
-                      <FormControl>
-                        <Select
-                          value={field.value || ''}
-                          onValueChange={(value) => {
-                            field.onChange(value)
-                            if (value === 'agent') {
-                              setIsAgencyDropDownOpen(true)
-                            } else {
-                              setIsAgencyDropDownOpen(false)
-                              form.setValue('tenant_id', '')
-                            }
-                          }}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select Type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectGroup>
-                              {type.map((item) => (
-                                <SelectItem
-                                  key={item.id}
-                                  value={item.id}
-                                >
-                                  {item.name || "No Agency Found"}
-                                </SelectItem>
-                              ))}
+              {/* {user?.user_type !== "agency" && ( */}
+              <FormField
+                control={form.control}
+                name="role"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Role <span className="text-red-500">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Select
+                        value={field.value || ''}
+                        onValueChange={field.onChange}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select Role" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            {roles.map((item) => (
+                              <SelectItem
+                                key={item.id}
+                                value={String(item.id)}
+                              >
+                                {item.name}
+                              </SelectItem>
+                            ))}
 
-                            </SelectGroup>
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              )}
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              {/* )} */}
 
-              {/* AGENCY DROPDOWN */}
-              {isAgencyDropDownOpen && user?.user_type !== "agency" && (
-
-                <FormField
-                  control={form.control}
-                  name="tenant_id"
-                  render={({ field }) => (
-
-                    <FormItem>
-
-                      <FormLabel>
-                        Agency <span className="text-red-500">*</span>
-                      </FormLabel>
-
-                      <FormControl>
-
-                        <Select
-                          value={field.value || ''}
-                          onValueChange={field.onChange}
-                        >
-
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select Agency" />
-                          </SelectTrigger>
-
-                          <SelectContent>
-
-                            <SelectGroup>
-
-                              {agency.map((item: any) => (
-                                <SelectItem
-                                  key={item.id}
-                                  value={item.id}
-                                >
-                                  {item.agency_name}
-                                </SelectItem>
-                              ))}
-
-                            </SelectGroup>
-
-                          </SelectContent>
-
-                        </Select>
-
-                      </FormControl>
-
-                      <FormMessage />
-
-                    </FormItem>
-
-                  )}
-                />
-
-              )}
-
-              {/* FRIST NAME */}
               <FormField
                 control={form.control}
                 name="first_name"
@@ -311,7 +213,7 @@ const InviteAddDialog = ({
               {/* LAST NAME */}
               <FormField
                 control={form.control}
-                name="last_name"   
+                name="last_name"
                 render={({ field }) => (
 
                   <FormItem>

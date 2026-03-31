@@ -317,7 +317,7 @@ const UserList = () => {
 
           const userRow = row.original;
 
-          const name = userRow?.name || '-';
+          const name = userRow?.first_name + " " + userRow?.last_name || '-';
 
           const email = userRow?.email || '-';
 

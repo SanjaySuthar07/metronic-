@@ -70,7 +70,8 @@ const UserAddDialog = ({
   const form = useForm<UserAddSchemaType>({
     resolver: zodResolver(UserAddSchema),
     defaultValues: {
-      name: '',
+      first_name: '',
+      last_name: '',
       email: '',
       roleId: '',
     },
@@ -95,13 +96,15 @@ const UserAddDialog = ({
       );
 
       form.reset({
-        name: editData.name || '',
+        first_name: editData.first_name || '',
+        last_name: editData.last_name || '',
         email: editData.email || '',
         roleId: role?.id?.toString() || '',
       });
     } else {
       form.reset({
-        name: '',
+        first_name: '',
+        last_name: '',
         email: '',
         roleId: '',
       });
@@ -181,10 +184,23 @@ const UserAddDialog = ({
 
               <FormField
                 control={form.control}
-                name="name"
+                name="first_name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Name</FormLabel>
+                    <FormLabel>First Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="last_name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Last Name</FormLabel>
                     <FormControl>
                       <Input placeholder="Enter name" {...field} />
                     </FormControl>

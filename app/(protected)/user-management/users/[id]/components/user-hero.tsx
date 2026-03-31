@@ -50,15 +50,15 @@ const UserHero = ({ user, isLoading }: UserProfileProps) => {
       <div className="flex items-center gap-5 mb-5">
         <Avatar className="h-14 w-14">
           {user.avatar ? (
-            <AvatarImage src={user.avatar} alt={user.name || ''} />
+            <AvatarImage src={user.avatar} alt={user.first_name + " " + user.last_name || ''} />
           ) : (
             <AvatarFallback className="text-xl">
-              {getInitials(user.name || user.email)}
+              {getInitials(user.first_name + " " + user.last_name || user.email)}
             </AvatarFallback>
           )}
         </Avatar>
         <div className="space-y-px">
-          <div className="font-medium text-base capitalize">{user.name}</div>
+          <div className="font-medium text-base capitalize">{user.first_name + " " + user.last_name}</div>
           <div className="text-muted-foreground text-sm">{user.email}</div>
           <div>
             <TooltipProvider>

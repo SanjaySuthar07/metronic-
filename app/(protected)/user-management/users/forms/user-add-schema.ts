@@ -1,7 +1,12 @@
 import { z } from 'zod';
 
 export const UserAddSchema = z.object({
-  name: z
+  first_name: z
+    .string()
+    .nonempty({ message: 'Name is required.' })
+    .min(2, { message: 'Name must be at least 2 characters long.' })
+    .max(50, { message: 'Name must not exceed 50 characters.' }),
+  last_name: z
     .string()
     .nonempty({ message: 'Name is required.' })
     .min(2, { message: 'Name must be at least 2 characters long.' })

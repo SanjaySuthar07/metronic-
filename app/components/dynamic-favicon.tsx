@@ -8,10 +8,11 @@ import { toBackendUrl } from '@/lib/helpers';
 export function DynamicFavicon() {
     const dispatch = useDispatch<any>();
     const { setting } = useSelector((s: any) => s.settings);
+    const { user } = useSelector((s: any) => s.auth)
 
     useEffect(() => {
         // Fetch settings if not already loaded to get the latest favicon
-        if (!setting || setting.length === 0) {
+        if (!setting || setting.length === 0 && user?.user_type == "super_admin") {
             dispatch(fetchSettings());
         }
     }, [dispatch, setting]);

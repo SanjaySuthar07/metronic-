@@ -7,13 +7,13 @@ export const InviteAddSchema = z
       .string()
       .nonempty({ message: "First Name is required." })
       .min(2, { message: "Last Name must be at least 2 characters long." }),
-      // .max(50, { message: "Name must not exceed 50 characters." }),
+    // .max(50, { message: "Name must not exceed 50 characters." }),
 
     last_name: z
       .string()
       .nonempty({ message: "First Name is required." })
       .min(2, { message: "First Name must be at least 2 characters long." }),
-      // .max(50, { message: "Name must not exceed 50 characters." }),
+    // .max(50, { message: "Name must not exceed 50 characters." }),
 
     email: z.string().email({
       message: "Please enter a valid email address.",
@@ -23,7 +23,7 @@ export const InviteAddSchema = z
 
     // confirmPassword: getPasswordSchema(),
 
-    user_type: z.string().nonempty({
+    role: z.string().nonempty({
       message: "Type is required.",
     }),
 

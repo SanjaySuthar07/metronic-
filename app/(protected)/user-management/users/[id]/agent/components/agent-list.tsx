@@ -233,7 +233,7 @@ const AgentList = () => {
       cell: ({ row }) => {
 
         const user = row.original;
-        const name = user?.name || '-';
+        const name = user?.first_name + " " + user?.last_name || '-';
         const email = user?.email || '-';
 
         return (
