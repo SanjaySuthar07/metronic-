@@ -137,28 +137,17 @@ export const mapMenu = (data: any[]) => {
   if (!Array.isArray(data)) return [];
 
   return data.map((item: any) => {
-
-
-
     return {
-
       title: item.menu_title,
-
       path: `/${item.slug}`,
-
       icon: item.icon ? getIconComponent(item.icon) : null, // Convert string to icon component
-
-
       children:
         item.children &&
           item.children.length > 0
           ? mapMenu(item.children)
           : undefined,
-
     };
-
   });
-
 };
 
 export const MENU_SIDEBAR: any = [
@@ -182,12 +171,17 @@ export const MENU_SIDEBAR: any = [
         path: '/user-management/permissions',
         permission: ['tenant-permission-access'],
       },
+      {
+        title: 'Invitation',
+        path: '/invitation',
+        role: ['super_admin', "agency", "admin"]
+      },
     ],
   },
   {
-    title: 'invitation',
-    icon: Users,
-    path: '/invitation',
+    title: 'setting',
+    icon: Settings,
+    path: '/settings',
     role: ['super_admin', "agency", "admin"]
   },
   {

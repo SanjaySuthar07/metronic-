@@ -13,6 +13,7 @@ import { AuthProvider } from "@/providers/auth-provider";
 import { QueryProvider } from "@/providers/query-provider";
 import { Suspense } from "react";
 import { Toaster } from "@/components/ui/sonner";
+import { DynamicFavicon } from "@/app/components/dynamic-favicon";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -40,6 +41,7 @@ export default function RootLayout({
                 <I18nProvider>
                   <TooltipsProvider>
                     <Provider store={store}>
+                      <DynamicFavicon />
                       <Suspense>{children}</Suspense>
                     </Provider>
                     <Toaster />

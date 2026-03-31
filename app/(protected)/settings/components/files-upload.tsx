@@ -71,19 +71,28 @@ export function FilesUpload({
 
   useEffect(() => {
     if (initialFiles.length > 0) {
-      setUploadFiles(
-        initialFiles.map((image) => ({
-          id: image.id,
-          file: {
-            name: image.name,
-            size: image.size,
-            type: image.type,
-          } as File,
-          preview: image.url,
-          progress: 100,
-          status: 'completed' as const,
-        }))
-      );
+      // Avoid unnecessary resets if the data is same
+      const currentPreviews = uploadFiles.map(f => f.preview).join('|');
+      const newPreviews = initialFiles.map(f => f.url).join('|');
+
+      if (currentPreviews !== newPreviews) {
+        setUploadFiles(
+          initialFiles.map((image) => ({
+            id: image.id,
+            file: {
+              name: image.name,
+              size: image.size,
+              type: image.type,
+            } as File,
+            preview: image.url,
+            progress: 100,
+            status: 'completed' as const,
+          }))
+        );
+      }
+    } else if (uploadFiles.length > 0) {
+      // Only clear if we actually have files and initialFiles is now empty
+      setUploadFiles([]);
     }
   }, [initialFiles]);
 
@@ -107,9 +116,10 @@ export function FilesUpload({
     initialFiles,
     onFilesChange: (newFiles) => {
       // In single file mode, we'll handle cropping first if it's an image
+      // Skip cropping for SVGs to preserve vector quality
       if (maxFiles === 1 && newFiles.length > 0) {
         const file = newFiles[0].file;
-        if (file instanceof File && file.type.startsWith('image/')) {
+        if (file instanceof File && file.type.startsWith('image/') && file.type !== 'image/svg+xml') {
           setFileToCrop(newFiles[0]);
           setShowCropper(true);
           return; // Wait for crop
@@ -333,7 +343,7 @@ export function FilesUpload({
                     <img
                       src={fileItem.preview}
                       alt={fileItem.file.name}
-                      className="h-12 w-12 rounded-lg border object-cover"
+                      className="h-12 w-12 rounded-lg border"
                     />
                   ) : (
                     <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-border text-muted-foreground">
@@ -351,7 +361,7 @@ export function FilesUpload({
                     </p>
                     <div className="flex items-center gap-2">
                       {/* Remove Button */}
-                      <Button
+                      {/* <Button
                         onClick={() => removeUploadFile(fileItem.id)}
                         variant="ghost"
                         type="button"
@@ -359,19 +369,19 @@ export function FilesUpload({
                         className="size-6 text-muted-foreground hover:opacity-100 hover:bg-transparent"
                       >
                         <XIcon className="size-4" />
-                      </Button>
+                      </Button> */}
                     </div>
                   </div>
 
                   {/* Progress Bar */}
-                  {fileItem.status === 'uploading' && (
+                  {/* {fileItem.status === 'uploading' && (
                     <div className="mt-2">
                       <Progress value={fileItem.progress} className="h-1" />
                     </div>
-                  )}
+                  )} */}
 
                   {/* Error Message */}
-                  {fileItem.status === 'error' && fileItem.error && (
+                  {/* {fileItem.status === 'error' && fileItem.error && (
                     <Alert variant="destructive" appearance="light" className="items-center gap-1.5 mt-2 px-2 py-1">
                       <AlertIcon>
                         <TriangleAlert className="size-4!" />
@@ -389,7 +399,7 @@ export function FilesUpload({
                         </Button>
                       </AlertToolbar>
                     </Alert>
-                  )}
+                  )} */}
                 </div>
               </div>
             </div>

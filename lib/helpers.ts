@@ -75,6 +75,19 @@ export function toAbsoluteUrl(pathname: string): string {
   }
 }
 
+export function toBackendUrl(pathname: string): string {
+  if (!pathname) return "";
+  if (pathname.startsWith("data:") || pathname.startsWith("http") || pathname.startsWith("blob:")) {
+    return pathname;
+  }
+
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || (process.env.NEXT_PUBLIC_API_URL ? process.env.NEXT_PUBLIC_API_URL.replace(/\/api\/?$/, "") : "");
+  const cleanBase = backendUrl.endsWith("/") ? backendUrl.slice(0, -1) : backendUrl;
+  const cleanPath = pathname.startsWith("/") ? pathname.substring(1) : pathname;
+
+  return `${cleanBase}/${cleanPath}`;
+}
+
 export function timeAgo(date: Date | string): string {
   const now = new Date();
   const inputDate = typeof date === 'string' ? new Date(date) : date;

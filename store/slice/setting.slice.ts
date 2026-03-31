@@ -4,8 +4,8 @@ import { fetchSettings, updateSettings } from "../thunk/setting.thunk";
 
 
 const initialState = {
- setting:[],
- loading:false
+  setting: [],
+  loading: false
 };
 
 const settingsSlice = createSlice({
@@ -15,14 +15,15 @@ const settingsSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchSettings.pending, (state) => {
-       state.loading =true
+        state.loading = true
       })
       .addCase(fetchSettings.fulfilled, (state, action) => {
-        state.setting = action.payload.settings
+        state.loading = false;
+        state.setting = action.payload.settings;
       })
 
       .addCase(fetchSettings.rejected, (state, action) => {
-       state.loading =false
+        state.loading = false
       })
       .addCase(updateSettings.pending, (state) => {
         state.loading = true;

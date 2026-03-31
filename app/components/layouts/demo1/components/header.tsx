@@ -130,15 +130,15 @@ export function Header() {
 
           <>
             {/* {user?.user_type == "super_admin" && ( */}
-            <Button
-              onClick={() => router.push("/settings-plain")}
+            {/* <Button
+              onClick={() => router.push("/z-plain")}
               variant="ghost"
               mode="icon"
               shape="circle"
               className="size-9 hover:bg-primary/10 hover:[&_svg]:text-primary"
             >
               <Settings className="size-4.5!" />
-            </Button>
+            </Button> */}
             {/* )} */}
             {/* <NotificationsSheet
               trigger={

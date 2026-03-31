@@ -285,7 +285,7 @@ const InviteAddDialog = ({
               {/* FRIST NAME */}
               <FormField
                 control={form.control}
-                first_name="first_name"
+                name="first_name"
                 render={({ field }) => (
 
                   <FormItem>
@@ -307,11 +307,11 @@ const InviteAddDialog = ({
 
                 )}
               />
-              
+
               {/* LAST NAME */}
               <FormField
                 control={form.control}
-                last_name="last_name"
+                name="last_name"   
                 render={({ field }) => (
 
                   <FormItem>
