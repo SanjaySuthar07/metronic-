@@ -11,8 +11,9 @@ export default function RolesLayout({
     if (!user) {
         return null
     }
-    // if (!hasPermission(user, "tenant-role-access")) {
-    //     notFound()
-    // }
+    const isSpecialRole = ['super_admin', 'agency'].includes(user.user_type)
+    if (!isSpecialRole && !hasPermission(user, "role-access")) {
+        notFound()
+    }
     return children
 }

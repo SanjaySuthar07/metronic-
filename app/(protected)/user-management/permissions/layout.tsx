@@ -11,8 +11,10 @@ export default function PermissionLayout({
     if (!user) {
         return null
     }
-    // if (!hasPermission(user, "tenant-permission-access")) {
-    //     notFound()
-    // }
+    const isSpecialRole = ['super_admin', 'agency'].includes(user.user_type)
+    if (!isSpecialRole && !hasPermission(user, "permission-access")) {
+        notFound()
+    }
+
     return children
 }

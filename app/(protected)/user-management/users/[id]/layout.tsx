@@ -144,7 +144,8 @@ export default function UserLayout({
               if (userDetail?.user_type === "admin" && key !== "general") {
                 return false;
               }
-              return hasPermission(user, route.permission);
+              const isSpecialRole = ['super_admin', 'agency'].includes(user.user_type)
+              return isSpecialRole || hasPermission(user, route.permission);
             })
             .map(([key, { title, icon: Icon, path }]) => (
               <TabsTrigger

@@ -61,7 +61,8 @@ const DataGridToolbar = ({
 }) => {
 
   const { user } = useSelector((s: any) => s.auth);
-
+  const isSpecialRole = ['super_admin', 'agency'].includes(user?.user_type)
+  const canCreate = isSpecialRole || hasPermission(user, ["role-create"])
   return (
     <CardHeader className="py-5">
 
@@ -84,12 +85,13 @@ const DataGridToolbar = ({
 
       <div className="flex items-center gap-3">
 
-        {/* {hasPermission(user, ["tenant-role-create"]) && ( */}
-        <Button onClick={onAddUser}>
-          <Plus />
-          Add Role
-        </Button>
-        {/* )} */}
+        {
+          canCreate && (
+            <Button onClick={onAddUser}>
+              <Plus />
+              Add Role
+            </Button>
+          )}
 
       </div>
 
@@ -212,7 +214,9 @@ const RolesList = () => {
   /* =========================
      TABLE COLUMNS
   ========================= */
-
+  const isSpecialRole = ['super_admin', 'agency'].includes(user?.user_type)
+  const canEdit = isSpecialRole || hasPermission(user, ["role-edit"])
+  const canView = isSpecialRole || hasPermission(user, ["role-show"])
   const columns = useMemo<ColumnDef<any>[]>(() => [
 
     {
@@ -328,8 +332,7 @@ const RolesList = () => {
 
           <DropdownMenuContent>
 
-            {hasPermission(user, ["tenant-role-edit"]) && (
-
+            {canEdit && (
               <>
                 <DropdownMenuItem
                   onClick={() => handleEditUser(row.original.id, "edit")}
@@ -342,7 +345,7 @@ const RolesList = () => {
 
             )}
 
-            {hasPermission(user, ["tenant-role-show"]) && (
+            {canView && (
 
               <DropdownMenuItem
                 onClick={() => handleEditUser(row.original.id, "view")}

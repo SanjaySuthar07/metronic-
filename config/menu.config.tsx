@@ -164,17 +164,20 @@ export const MENU_SIDEBAR: any = [
       {
         title: 'Roles',
         path: '/user-management/roles',
-        role: ['super_admin', "agency"]
+        role: ['super_admin', "agency"],
+        permission: 'role-access'
       },
       {
         title: 'Permissions',
         path: '/user-management/permissions',
-        role: ['super_admin', "agency"]
+        role: ['super_admin', "agency"],
+        permission: 'permission-access'
       },
       {
         title: 'Invitation',
         path: '/invitation',
-        role: ['super_admin', "agency", "admin"]
+        role: ['super_admin'],
+        permission: ['invitation-access']
       },
     ],
   },
@@ -188,6 +191,8 @@ export const MENU_SIDEBAR: any = [
     title: 'master module',
     icon: Puzzle,
     path: '/masterModule',
+    role: ['super_admin'],
+    permission: 'master-module-access'
   },
 ];
 

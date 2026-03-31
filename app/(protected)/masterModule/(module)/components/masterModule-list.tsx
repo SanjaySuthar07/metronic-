@@ -84,14 +84,16 @@ const DataGridToolbar = ({
   const router = useRouter()
   const [moduleData, setModuleData] = useState<any[]>([]);
 
-
+  const { user } = useSelector((s: any) => s.auth)
 
   const dispatch = useDispatch<AppDispatch>();
   useEffect(() => {
     dispatch(removeCreateModuleMessage());
   }, []);
 
+  const isSpecialRole = ['super_admin'].includes(user?.user_type)
 
+  const canCreate = isSpecialRole || hasPermission(user, ["master-module-create"])
 
   return (
     <div className="py-4 px-5 flex  flex-row items-center justify-between gap-3 border-b border-gray-100">
@@ -153,13 +155,15 @@ const DataGridToolbar = ({
           Create Parent Menu
         </Button> */}
 
-        <Button
-          onClick={() => router.push("/masterModule/createChild")}
-          className="bg-blue-600 hover:bg-blue-700 text-white h-9 px-4"
-        >
-          <Plus className="mr-1 size-4" />
-          Create Module
-        </Button>
+        {canCreate && (
+          <Button
+            onClick={() => router.push("/masterModule/createChild")}
+            className="bg-blue-600 hover:bg-blue-700 text-white h-9 px-4"
+          >
+            <Plus className="mr-1 size-4" />
+            Create Module
+          </Button>
+        )}
 
       </div>
     </div>
@@ -176,8 +180,11 @@ const MasterModuleList = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteData, setDeleteData] = useState<any>(null);
 
-  // const { user } = useSelector((s: any) => s.auth);
+  const { user } = useSelector((s: any) => s.auth);
+  const isSpecialRole = ['super_admin', 'agency'].includes(user?.user_type)
 
+  const canEdit = isSpecialRole || hasPermission(user, ["master-module-edit"])
+  const canView = isSpecialRole || hasPermission(user, ["master-module-show"])
   // const dispatch = useDispatch<AppDispatch>();
 
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
@@ -547,24 +554,28 @@ const MasterModuleList = () => {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
-            <>
-              <DropdownMenuItem
-                onClick={() => router.push(`/masterModule/createChild/${row.original.id}`)}
-              >
-                Edit
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-            </>
+            {canEdit && (
+              <>
+                <DropdownMenuItem
+                  onClick={() => router.push(`/masterModule/createChild/${row.original.id}`)}
+                >
+                  Edit
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+              </>
+            )}
+            {canView && (
+              <>
+                <DropdownMenuItem
+                  onClick={() => router.push(`/masterModule/${row.original.id}`)}
+                >
+                  View
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+              </>
+            )}
             <DropdownMenuItem
-              onClick={() => router.push(`/masterModule/${row.original.id}`)}
-            // onClick={() => router.push(`/${row.original.slug}`)}
-            >
-              View
-            </DropdownMenuItem>
-
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-            className="text-red-600 bg-red focus:text-red-700"
+              className="text-red-600 bg-red focus:text-red-700"
               onClick={() => handleDelete(row.original)}
             >
               Delete

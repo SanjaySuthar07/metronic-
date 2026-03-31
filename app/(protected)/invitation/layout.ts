@@ -2,6 +2,7 @@
 
 import { useSelector } from "react-redux"
 import { notFound } from "next/navigation"
+import { hasPermission } from "@/lib/permissions"
 
 export default function InviteLayout({
   children
@@ -15,7 +16,7 @@ export default function InviteLayout({
     return null
   }
 
-  if (user.user_type !== "super_admin" && user.user_type !== "agency" && user.user_type !== "admin") {
+  if (user.user_type !== "super_admin" && !hasPermission(user, ["invitation-access"])) {
     notFound()
   }
 

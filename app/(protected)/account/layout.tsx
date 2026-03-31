@@ -85,7 +85,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 {user?.first_name + " " + user?.last_name || ''}
               </div>
               <div className="capitalize text-muted-foreground text-xs">
-                {user?.user_type || "Agent"}
+                {user?.user_type === "agency" ? "Customer" : user?.user_type === "agent" ? "User" : user?.user_type}
               </div>
             </div>
           </div>

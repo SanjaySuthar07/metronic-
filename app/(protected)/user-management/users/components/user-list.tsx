@@ -144,7 +144,7 @@ const DataGridToolbar = ({
         )}
       </div>
       <div className="flex items-center justify-end">
-        {hasPermission(user, ["agent-create"]) && (
+        {hasPermission(user, ["user-create"]) && (
           <Button onClick={onAddUser}>
             <Plus />
             Add User
@@ -247,7 +247,7 @@ const UserList = () => {
     setDeleteDialogOpen(true);
   };
 
-   const handleMfaReset = (user: any ) => {
+  const handleMfaReset = (user: any) => {
     setMrfUserObj(user);
     setMrfDialogOpen(true);
   };
@@ -400,7 +400,7 @@ const UserList = () => {
 
             <Badge variant="secondary" className="capitalize">
 
-              {type}
+              {type == "agency" ? "Customer" : type == "agent" ? "User" : type}
 
             </Badge>
 
@@ -467,7 +467,7 @@ const UserList = () => {
 
             <DropdownMenuContent align="end">
 
-              {hasPermission(user, ["agent-edit"]) && (
+              {hasPermission(user, ["user-edit"]) && (
 
                 <>
                   <DropdownMenuItem
@@ -481,7 +481,7 @@ const UserList = () => {
 
               )}
 
-              {hasPermission(user, ["agent-show"]) && (
+              {hasPermission(user, ["user-show"]) && (
 
                 <>
                   <DropdownMenuItem
@@ -497,14 +497,18 @@ const UserList = () => {
 
               )}
 
-              <DropdownMenuItem
-                variant="destructive"
-                onClick={() => handleDeleteUser(row.original)}
-              >
-                Delete
-              </DropdownMenuItem>
+              {hasPermission(user, ["user-delete"]) && (
+                <>
+                  <DropdownMenuItem
+                    variant="destructive"
+                    onClick={() => handleDeleteUser(row.original)}
+                  >
+                    Delete
+                  </DropdownMenuItem>
+                </>
+              )}
 
-                <DropdownMenuItem
+              <DropdownMenuItem
                 onClick={() => handleMfaReset(row.original)}
               >
                 Mfa Reset
@@ -631,7 +635,7 @@ const UserList = () => {
 
       )}
 
-       {mrfUserObj && (
+      {mrfUserObj && (
 
         <UserMfaResetDialog
           open={mrfDialogOpen}

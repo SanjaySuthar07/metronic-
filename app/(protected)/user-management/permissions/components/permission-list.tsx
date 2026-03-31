@@ -69,7 +69,8 @@ const DataGridToolbar = ({
     fetch();
   }, [dispatch]);
   const { user } = useSelector((s) => s.auth)
-
+  const isSpecialRole = ['super_admin', 'agency'].includes(user?.user_type)
+  const canCreate = isSpecialRole || hasPermission(user, ["permission-create"])
   return (
     <CardHeader className="flex-col flex-wrap sm:flex-row items-end items-stretch sm:items-center py-5">
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
@@ -101,18 +102,13 @@ const DataGridToolbar = ({
         </Select> */}
       </div>
       <CardToolbar>
-        {/* {
-          hasPermission(user, ["tenant-permission-create"]) ? ( */}
-        <>
-          <Button
-            onClick={onAddPermission}
-          >
+
+        {canCreate && (
+          <Button onClick={onAddPermission}>
             <Plus />
             Add Permission
           </Button>
-        </>
-        {/* ) : ""
-        } */}
+        )}
       </CardToolbar>
     </CardHeader>
   );
@@ -219,6 +215,9 @@ const PermissionList = () => {
     }
   };
 
+  const isSpecialRole = ['super_admin', 'agency'].includes(user?.user_type)
+  const canEdit = isSpecialRole || hasPermission(user, ["permission-edit"])
+  const canDelete = isSpecialRole || hasPermission(user, ["permission-delete"])
   const columns = useMemo<ColumnDef<any>[]>(() => [
     {
       accessorKey: 'name',
@@ -314,7 +313,7 @@ const PermissionList = () => {
 
           <DropdownMenuContent align="end">
             {
-              hasPermission(user, ["tenant-permission-edit"]) ? (
+              canEdit ? (
                 <>
                   <DropdownMenuItem
                     onClick={() => handleEditPermissions(row.original.id)}
@@ -328,7 +327,7 @@ const PermissionList = () => {
             }
 
             {
-              hasPermission(user, ["tenant-permission-delete"]) ? (
+              canDelete ? (
                 <>
                   <DropdownMenuItem variant="destructive" onClick={() => handleDeleteUser(row.original)}>
                     Delete
