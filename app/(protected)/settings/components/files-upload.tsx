@@ -164,20 +164,15 @@ export function FilesUpload({
           type: 'image/jpeg',
         });
 
-        // Convert blob to base64 for persistent storage in form
-        const reader = new FileReader();
-        reader.readAsDataURL(croppedImageBlob);
-        reader.onloadend = () => {
-          const base64data = reader.result as string;
-          const newFile = {
-            id: fileToCrop.id,
-            file: croppedFile,
-            preview: base64data, // Use base64 instead of blob URL
-          };
-
-          setUploadFiles([{ ...newFile, progress: 100, status: 'completed' as const }]);
-          onFilesChange?.([newFile]);
+        const previewUrl = URL.createObjectURL(croppedImageBlob);
+        const newFile = {
+          id: fileToCrop.id,
+          file: croppedFile,
+          preview: previewUrl,
         };
+
+        setUploadFiles([{ ...newFile, progress: 100, status: 'completed' as const }]);
+        onFilesChange?.([newFile]);
       }
       setShowCropper(false);
       setFileToCrop(null);

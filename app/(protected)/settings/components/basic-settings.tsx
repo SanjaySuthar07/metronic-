@@ -105,6 +105,7 @@ const BasicSettings = ({ title }: IGeneralSettingsProps) => {
         value: item.value,
       })),
     };
+    console.log("Submitting payload:", payload);
 
     try {
       const result = await dispatch(updateSettings(payload)).unwrap();
@@ -162,42 +163,35 @@ const BasicSettings = ({ title }: IGeneralSettingsProps) => {
                           maxFiles={1}
                           initialFiles={initialFiles}
                           onFilesChange={async (files) => {
-                            setTimeout(async () => {
-                              if (files.length > 0) {
-                                const f = files[0];
-                                let finalValue = "";
+                            if (files.length > 0) {
+                              const f = files[0];
+                              let finalValue = "";
 
-                                // 1. Handle existing files (extract relative path)
-                                if (f.file && !(f.file instanceof File)) {
-                                  const url = (f.file as any).url || "";
-                                  // If it's already a data/blob URL, keep it as is
-                                  if (url.startsWith("data:") || url.startsWith("blob:")) {
-                                    finalValue = url;
-                                  } else {
-                                    // Extract relative path by removing the backend base URL
-                                    const baseUrl = NEXT_PUBLIC_BACKEND_URL || "";
-                                    const cleanBase = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
-                                    finalValue = url.replace(cleanBase, "").replace(/^\//, "");
-                                  }
-                                }
-                                // 2. Handle Base64 previews (already converted by cropper)
-                                else if (f.preview?.startsWith("data:")) {
-                                  finalValue = f.preview;
-                                }
-                                // 3. Handle new Files (e.g. SVGs that skipped cropping)
-                                else if (f.file instanceof File) {
-                                  finalValue = await new Promise((resolve) => {
-                                    const reader = new FileReader();
-                                    reader.onloadend = () => resolve(reader.result as string);
-                                    reader.readAsDataURL(f.file as File);
-                                  });
-                                }
-
-                                form.setValue(`settings.${index}.value`, finalValue);
-                              } else {
-                                form.setValue(`settings.${index}.value`, "");
+                              // 1. Handle Base64 previews (already converted by cropper or already in state)
+                              if (f.preview?.startsWith("data:")) {
+                                finalValue = f.preview;
                               }
-                            }, 0);
+                              // 2. Handle new Files (e.g. SVGs that skipped cropping)
+                              else if (f.file instanceof File) {
+                                finalValue = await new Promise((resolve) => {
+                                  const reader = new FileReader();
+                                  reader.onloadend = () => resolve(reader.result as string);
+                                  reader.readAsDataURL(f.file as File);
+                                });
+                              }
+                              // 3. Handle existing files (extract relative path)
+                              else if (f.preview) {
+                                const url = f.preview;
+                                // Extract relative path by removing the backend base URL
+                                const baseUrl = NEXT_PUBLIC_BACKEND_URL || "";
+                                const cleanBase = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
+                                finalValue = url.replace(cleanBase, "").replace(/^\//, "");
+                              }
+
+                              form.setValue(`settings.${index}.value`, finalValue);
+                            } else {
+                              form.setValue(`settings.${index}.value`, "");
+                            }
                           }}
                         />
                       ) : (

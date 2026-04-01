@@ -44,14 +44,6 @@ export function Header() {
   const headerSticky: boolean = scrollPosition > 0;
 
   const { user } = useSelector((s) => s.auth)
-  // const { setting } = useSelector((s) => s.settings)
-  // const dispatch = useDispatch()
-  // useEffect(() => {
-  //   setIsMegaMenuSheetOpen(false);
-  //   dispatch(fetchSettings())
-  // }, [pathname]);
-
-  // console.log(setting)
   return (
     <header
       className={cn(

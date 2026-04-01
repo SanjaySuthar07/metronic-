@@ -1,5 +1,4 @@
 'use client';
-
 import { JSX, useCallback, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { usePathname, useSelectedLayoutSegment } from 'next/navigation';

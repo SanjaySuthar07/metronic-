@@ -188,12 +188,18 @@ export const MENU_SIDEBAR: any = [
     role: ['super_admin']
   },
   {
+    title: 'setting2',
+    icon: Settings,
+    path: '/setting2',
+  },
+  {
     title: 'master module',
     icon: Puzzle,
     path: '/masterModule',
     role: ['super_admin'],
     permission: 'master-module-access'
   },
+
 ];
 
 export const MENU_SIDEBAR_CUSTOM: MenuConfig = [
