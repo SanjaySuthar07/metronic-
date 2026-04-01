@@ -28,16 +28,43 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   const navRoutes = useMemo<NavRoutes>(
     () => ({
-      profile: {
-        title: 'setting2',
+      general: {
+        title: 'General',
         icon: UserPen,
-        path: '/setting2/my-profile',
+        path: '/setting2/general',
       },
-      security: {
-        title: 'Change Password',
+      site_setting: {
+        title: 'Site Setting',
         icon: SquarePen,
-        path: '/setting2/change-password',
+        path: '/setting2/siteSetting',
       },
+         email: {
+        title: 'Email',
+        icon: SquarePen,
+        path: '/setting2/email',
+      },
+        email_templates: {
+        title: 'Email templates',
+        icon: SquarePen,
+        path: '/setting2/emailTemplates',
+      },
+      cache: {
+        title: 'Cache',
+        icon: SquarePen,
+        path: '/setting2/cache',
+      },
+      datatables: {
+        title: 'Datatables',
+        icon: SquarePen,
+        path: '/setting2/datatables',
+      },  
+       captcha: {
+        title: 'Captcha',
+        icon: SquarePen,
+        path: '/setting2/captcha',
+      },
+
+
     }),
     [],
   );

@@ -89,17 +89,17 @@ const DataGridToolbar = ({
         </div>
       </div>
 
-      {canCreate && (
-        <div className="flex items-center gap-2">
-          <Button
-            onClick={() => router.push(`/${slug}/addData`)}
-            className="bg-blue-600 hover:bg-blue-700 text-white h-9 px-4 capitalize"
-          >
-            <Plus className="mr-1 size-4 " />
-            Add {slug}
-          </Button>
-        </div>
-      )}
+      {/* {canCreate && ( */}
+      <div className="flex items-center gap-2">
+        <Button
+          onClick={() => router.push(`/${slug}/addData`)}
+          className="bg-blue-600 hover:bg-blue-700 text-white h-9 px-4 capitalize"
+        >
+          <Plus className="mr-1 size-4 " />
+          Add {slug}
+        </Button>
+      </div>
+      {/* )} */}
     </div>
   );
 };
@@ -166,6 +166,8 @@ const MasterModuleList = ({ slug }: { slug: string }) => {
     setModuleData(finalData);
   }, [getModuleTableData]);
 
+  // ---------------------------------------------------------------------------------------------
+  // ---------------------------------------------------------------------------------------------
   const permissions = useMemo(() => {
     const perms = getModuleTableData?.module_permission || [];
     return {
