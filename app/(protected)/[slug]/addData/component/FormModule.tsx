@@ -30,7 +30,7 @@ import { Tooltip } from 'react-tooltip';
 import { Info } from 'lucide-react';
 
 import { addDataApi, getDetailApi, moduleDetailsApi, putFormApi } from '@/store/thunk/dynamicModule.thunk';
-import { FilesUpload } from '@/app/(protected)/settings-plain/components/files-upload';
+import { FilesUpload } from '../../../settings/components/files-upload';
 
 // Dynamic import for CKEditor
 const CKEditor = dynamic(
@@ -558,8 +558,3 @@ function FormModule({ slug, id, mode }: { slug: string; id: string; mode: string
 
 export default FormModule;
 
-// today update
-// 1. all dynamic table and dynamic form add skaltone
-// 2. in dynamic modue  img and file uplaod and other issue solve
-// 3. implemet  ckeditor(bold , img ,heading  order table ) this type functionality add
-// 4. add dynamic module validation 
