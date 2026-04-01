@@ -10,6 +10,7 @@ import {
     CardHeading,
     CardTitle,
 } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { DashboardHeader } from "../components/dashboardHeader";
 import { getDashboard } from "@/store/thunk/dashboard.thunk";
 import CountBox from "../components/count";
@@ -24,6 +25,22 @@ interface IChannelStatsItem {
 }
 
 type IChannelStatsItems = Array<IChannelStatsItem>;
+
+function SkeletonCountBox() {
+    return (
+        <Card className="rounded-xl overflow-hidden">
+            <CardContent className="p-0 flex flex-col justify-between h-[140px]">
+                <div className="pt-4 ps-5">
+                    <Skeleton className="w-7 h-7 rounded" />
+                </div>
+                <div className="pb-4 px-5 flex flex-col gap-2">
+                    <Skeleton className="h-8 w-16" />
+                    <Skeleton className="h-4 w-24" />
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
 
 function Dashboard() {
     const dispatch = useDispatch<any>();
@@ -129,41 +146,73 @@ function Dashboard() {
       `}
                 </style>
 
-                {filteredUsers.length > 0 ? !count?.status ? (
-                    <Card>
-                        <CardHeader className="py-3">
-                            <CardHeading>
-                                <CardTitle>Users</CardTitle>
-                            </CardHeading>
-                        </CardHeader>
+                {loading ? (
+                    <>
+                        <Card>
+                            <CardHeader className="py-3">
+                                <CardHeading>
+                                    <Skeleton className="h-5 w-20" />
+                                </CardHeading>
+                            </CardHeader>
+                            <CardContent className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                                {Array.from({ length: 3 }).map((_, i) => (
+                                    <SkeletonCountBox key={`user-skel-${i}`} />
+                                ))}
+                            </CardContent>
+                        </Card>
 
-                        <CardContent className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                            {filteredUsers.map((item, index) => (
-                                <CountBox key={index} item={item} />
-                            ))}
-                        </CardContent>
-                    </Card>
+                        <Card className="mt-3">
+                            <CardHeader className="py-3">
+                                <CardHeading>
+                                    <Skeleton className="h-5 w-28" />
+                                </CardHeading>
+                            </CardHeader>
+                            <CardContent className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                                {Array.from({ length: 7 }).map((_, i) => (
+                                    <SkeletonCountBox key={`inv-skel-${i}`} />
+                                ))}
+                            </CardContent>
+                        </Card>
+                    </>
                 ) : (
-                    ""
-                ) : ""}
+                    <>
+                        {filteredUsers.length > 0 ? !count?.status ? (
+                            <Card>
+                                <CardHeader className="py-3">
+                                    <CardHeading>
+                                        <CardTitle>Users</CardTitle>
+                                    </CardHeading>
+                                </CardHeader>
 
-                {filteredInvitation.length > 0 ? !count?.status ? (
-                    <Card className="mt-3">
-                        <CardHeader className="py-3">
-                            <CardHeading>
-                                <CardTitle>Invitation</CardTitle>
-                            </CardHeading>
-                        </CardHeader>
+                                <CardContent className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                                    {filteredUsers.map((item, index) => (
+                                        <CountBox key={index} item={item} />
+                                    ))}
+                                </CardContent>
+                            </Card>
+                        ) : (
+                            ""
+                        ) : ""}
 
-                        <CardContent className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                            {filteredInvitation.map((item, index) => (
-                                <CountBox key={index} item={item} />
-                            ))}
-                        </CardContent>
-                    </Card>
-                ) : (
-                    ""
-                ) : ""}
+                        {filteredInvitation.length > 0 ? !count?.status ? (
+                            <Card className="mt-3">
+                                <CardHeader className="py-3">
+                                    <CardHeading>
+                                        <CardTitle>Invitation</CardTitle>
+                                    </CardHeading>
+                                </CardHeader>
+
+                                <CardContent className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                                    {filteredInvitation.map((item, index) => (
+                                        <CountBox key={index} item={item} />
+                                    ))}
+                                </CardContent>
+                            </Card>
+                        ) : (
+                            ""
+                        ) : ""}
+                    </>
+                )}
             </Container>
         </>
     );

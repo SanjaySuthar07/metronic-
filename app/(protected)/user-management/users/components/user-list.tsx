@@ -507,24 +507,20 @@ const UserList = () => {
                   </DropdownMenuItem>
                 </>
               )}
-
               {
-                row.original.google2fa_secret && (
+                (user?.user_type === "super_admin" || row.original.created_by === user?.id) && (
                   <>
-                  <DropdownMenuSeparator />
+                    <DropdownMenuSeparator />
                     <DropdownMenuItem
                       onClick={() => handleMfaReset(row.original)}
                     >
                       MFA Verification Reset
-                    </DropdownMenuItem></>
+                    </DropdownMenuItem>
+                  </>
                 )
               }
-
-
             </DropdownMenuContent>
-
           </DropdownMenu>
-
         ),
 
         meta: {

@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Switch } from '@/components/ui/switch';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useDispatch, useSelector } from 'react-redux';
 import { getInitials } from '@/lib/helpers';
 import { logoutUser } from '@/store/thunk/auth.thunk';
@@ -38,7 +39,9 @@ export function UserDropdownMenu({ trigger }: { trigger: ReactNode }) {
       <DropdownMenuContent className="w-64" side="bottom" align="end">
         <div className="flex items-center justify-between p-3">
           <div className="flex items-center gap-2">
-            {user?.avatar ? (
+            {!user ? (
+              <Skeleton className="w-9 h-9 rounded-full" />
+            ) : user?.avatar ? (
               <img
                 className="w-9 h-9 rounded-full border border-border object-cover"
                 src={user.avatar}
@@ -51,18 +54,27 @@ export function UserDropdownMenu({ trigger }: { trigger: ReactNode }) {
             )}
 
             <div className="flex flex-col">
-              <Link
-                href="/account/home/get-started"
-                className="text-sm text-mono capitalize hover:text-primary font-semibold"
-              >
-                {user?.first_name + " " + user?.last_name || 'User'}
-              </Link>
-              <Link
-                href={`mailto:${user?.email}`}
-                className="text-xs text-muted-foreground hover:text-primary"
-              >
-                {user?.email || 'user@email.com'}
-              </Link>
+              {!user ? (
+                <>
+                  <Skeleton className="h-4 w-24 mb-1" />
+                  <Skeleton className="h-3 w-32" />
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/account/home/get-started"
+                    className="text-sm text-mono capitalize hover:text-primary font-semibold"
+                  >
+                    {user?.first_name + " " + user?.last_name || 'User'}
+                  </Link>
+                  <Link
+                    href={`mailto:${user?.email}`}
+                    className="text-xs text-muted-foreground hover:text-primary"
+                  >
+                    {user?.email || 'user@email.com'}
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>

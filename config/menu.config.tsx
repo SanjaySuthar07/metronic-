@@ -137,6 +137,7 @@ export const mapMenu = (data: any[]) => {
   if (!Array.isArray(data)) return [];
 
   return data.map((item: any) => {
+    console.log(item)
     return {
       title: item.menu_title,
       path: `/${item.slug}`,

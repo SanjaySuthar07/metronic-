@@ -63,9 +63,6 @@ const authSlice = createSlice({
             .addCase(getProfile.rejected, (state) => {
                 state.loading = false;
                 state.user = null;
-                localStorage.removeItem('token');
-                localStorage.removeItem('refresh_token');
-                state.user = null
             })
             .addCase(verifyMfa.pending, (state) => {
                 state.loading = true;

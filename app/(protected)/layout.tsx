@@ -23,10 +23,23 @@ export default function Layout({ children }: { children: ReactNode }) {
         router.replace("/signin");
         return;
       }
+
       const result = await dispatch(getProfile());
 
       if (getProfile.rejected.match(result)) {
-        router.replace("/signin");
+        // Check if token still exists — the interceptor may have refreshed it
+        const currentToken = localStorage.getItem("token");
+        if (!currentToken) {
+          // router.replace("/signin");
+        } else {
+          // Token was refreshed, retry profile fetch
+          const retryResult = await dispatch(getProfile());
+          if (getProfile.rejected.match(retryResult)) {
+            // router.replace("/signin");
+          } else {
+            setLoadingAuth(false);
+          }
+        }
       } else {
         setLoadingAuth(false);
       }
