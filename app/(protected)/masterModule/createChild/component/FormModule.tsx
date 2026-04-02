@@ -350,6 +350,11 @@ export default function FormModule({ mode, id }: Props) {
         status: moduleDetails.status ? "active" : "inactive",
         orderNumber: moduleDetails.order_number || 0,
         userType: moduleDetails.user_type || "",
+        ...(user.user_type == "agency" && {
+          tenant_user_type: moduleDetails.tenant_user_type
+            ? String(moduleDetails.tenant_user_type)
+            : "",
+        }),
         adminType:
           moduleDetails.assigned_admins?.map((a: any) => String(a.id)) || [],
         customerType:
