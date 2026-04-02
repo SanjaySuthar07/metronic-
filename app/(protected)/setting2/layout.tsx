@@ -10,7 +10,15 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Container } from '@/components/common/container';
 import { DashboardHeader } from '../components/dashboardHeader';
 import { Button } from '@/components/ui/button';
-
+import {
+  Settings,
+  Globe,
+  Mail,
+  FileText,
+  Database,
+  Table,
+  ShieldCheck
+} from "lucide-react";
 type NavRoutes = Record<
   string,
   {
@@ -30,41 +38,39 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     () => ({
       general: {
         title: 'General',
-        icon: UserPen,
+        icon: Settings, // ⚙️ general settings
         path: '/setting2/general',
       },
       site_setting: {
         title: 'Site Setting',
-        icon: SquarePen,
+        icon: Globe, // 🌐 website related
         path: '/setting2/siteSetting',
       },
-         email: {
+      email: {
         title: 'Email',
-        icon: SquarePen,
+        icon: Mail, // 📧 email
         path: '/setting2/email',
       },
-        email_templates: {
+      email_templates: {
         title: 'Email templates',
-        icon: SquarePen,
+        icon: FileText, // 📄 templates
         path: '/setting2/emailTemplates',
       },
       cache: {
         title: 'Cache',
-        icon: SquarePen,
+        icon: Database, // 🗄️ cache/storage
         path: '/setting2/cache',
       },
       datatables: {
         title: 'Datatables',
-        icon: SquarePen,
+        icon: Table, // 📊 table data
         path: '/setting2/datatables',
-      },  
-       captcha: {
+      },
+      captcha: {
         title: 'Captcha',
-        icon: SquarePen,
+        icon: ShieldCheck, // 🔐 security
         path: '/setting2/captcha',
       },
-
-
     }),
     [],
   );
@@ -87,17 +93,17 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <Container>
       <div className='flex justify-between'>
-        <DashboardHeader title={"Account"} description={""} />
-        <Button asChild variant="outline">
+        <DashboardHeader title={"Setting"} description={""} />
+        {/* <Button asChild variant="outline">
           <p onClick={() => window.history.back()}>
             <MoveLeft />
             Back
           </p>
-        </Button>
+        </Button> */}
       </div>
 
       <div className="flex flex-col gap-10 lg:flex-row lg:gap-14">
-        <div className="space-y-7 lg:w-[230px] shrink-0 pt-6">
+        <div className="space-y-7 lg:w-[230px] shrink-0 pt-6 lg:sticky lg:top-24 lg:self-start">
           <div className="flex items-center gap-3">
             <Avatar className="size-12">
               {user?.avatar && (

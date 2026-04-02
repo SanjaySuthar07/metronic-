@@ -37,6 +37,12 @@ export default function AccountDetails() {
     defaultValues: {
       firstName: user?.first_name || '',
       lastName: user?.last_name || '',
+      expiredLinkDuration: user?.expired_link_duration || '',
+      accessTokenExpires: user?.accessTokenExpires || '',
+      refreshTokenExpires: user?.refreshTokenExpires || '',
+      loginAttemptSeconds: user?.loginAttemptSeconds || '',
+      loginAttemptMinute: user?.loginAttemptMinute || '',
+      loginAttemptHour: user?.loginAttemptHour || '',
     },
   });
 
@@ -45,6 +51,13 @@ export default function AccountDetails() {
       const payload = {
         first_name: values.firstName,
         last_name: values.lastName,
+        expired_link_duration: values.expiredLinkDuration,
+        access_token_expires: values.accessTokenExpires,
+        refresh_token_expires: values.refreshTokenExpires,
+        login_attempt_seconds: values.loginAttemptSeconds,
+        login_attempt_minute: values.loginAttemptMinute,
+        login_attempt_hour: values.loginAttemptHour,
+
       };
       const resultAction = await dispatch(updateProfile(payload));
       if (updateProfile.fulfilled.match(resultAction)) {
@@ -66,31 +79,31 @@ export default function AccountDetails() {
     <Card>
       <CardHeader className="py-4">
         <CardHeading>
-          <CardTitle>Profile</CardTitle>
+          <CardTitle>General</CardTitle>
           <CardDescription>
             Manage profile information
           </CardDescription>
         </CardHeading>
       </CardHeader>
 
-      <CardContent className="py-8">
+      <CardContent className="py-8 ">
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-6 max-w-[520px]"
+            className="max-w-[520px] grid md:grid-cols-2 gap-6"
           >
             <FormField
               control={form.control}
-              name="firstName"
+              name="expiredLinkDuration"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    First Name <span className="text-red-500">*</span>
+                    Expired Link Duration <span className="text-red-500">*</span>
                   </FormLabel>
 
                   <FormControl>
                     <Input
-                      placeholder="Enter your name"
+                      placeholder="Enter expired link duration" type="number"
                       {...field}
                     />
                   </FormControl>
@@ -99,30 +112,8 @@ export default function AccountDetails() {
                 </FormItem>
               )}
             />
-
-            <FormField
-              control={form.control}
-              name="lastName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    Last Name <span className="text-red-500">*</span>
-                  </FormLabel>
-
-                  <FormControl>
-                    <Input
-                      placeholder="Enter your name"
-                      {...field}
-                    />
-                  </FormControl>
-
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
             <div>
-              <FormLabel>Email</FormLabel>
+              <FormLabel>Support Email</FormLabel>
 
               <Input
                 value={user?.email || ''}
@@ -131,14 +122,107 @@ export default function AccountDetails() {
               />
             </div>
 
-            <div className="flex justify-end gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => form.reset()}
-              >
-                Reset
-              </Button>
+            <FormField
+              control={form.control}
+              name="accessTokenExpires"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Access Token Expires In Minutes<span className="text-red-500">*</span>
+                  </FormLabel>
+
+                  <FormControl>
+                    <Input
+                      placeholder="Enter aceess Token Expires" type="number"
+                      {...field}
+                    />
+                  </FormControl>
+
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="refreshTokenExpires"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Refresh Token Expires In Minutes<span className="text-red-500">*</span>
+                  </FormLabel>
+
+                  <FormControl>
+                    <Input
+                      placeholder="Enter refresh token expires" type='number'
+                      {...field}
+                    />
+                  </FormControl>
+
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="loginAttemptSeconds"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Login Attempt Seconds<span className="text-red-500">*</span>
+                  </FormLabel>
+
+                  <FormControl>
+                    <Input
+                      placeholder="Enter login attempt in seconds" type="number"
+                      {...field}
+                    />
+                  </FormControl>
+
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="loginAttemptMinute"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Login Attempr Minute<span className="text-red-500">*</span>
+                  </FormLabel>
+
+                  <FormControl>
+                    <Input
+                      placeholder="Enter login attempt in Minute" type='number'
+                      {...field}
+                    />
+                  </FormControl>
+
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="loginAttemptHour"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Login Attempt Hour<span className="text-red-500">*</span>
+                  </FormLabel>
+
+                  <FormControl>
+                    <Input
+                      placeholder="Enter login attempt in hour" type='number'
+                      {...field}
+                    />
+                  </FormControl>
+
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <div className=" grid col-span-1 md:col-span-2 flex justify-end gap-3">
 
               <Button
                 type="submit"
@@ -146,14 +230,16 @@ export default function AccountDetails() {
               >
                 {loading && (
                   <LoaderCircleIcon
-                    className="animate-spin mr-2"
+                    className="animate-spin mr-2 "
                     size={16}
                   />
                 )}
 
-                Save Profile
+                Update
               </Button>
             </div>
+
+
           </form>
         </Form>
       </CardContent>

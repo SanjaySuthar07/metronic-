@@ -7,7 +7,7 @@ import settings from "./slice/setting.slice"
 import masterModuleSlice from "./slice/masterModule.slice"
 import menuReducer from "./slice/menu.slice"
 import dynamicModuleReducer from "./slice/dynamicModule.slice"
-import settingReducer from "./slice/setting.slice"
+import settingReducer from "./slice/settings.slice"
 
 import {
     persistStore,

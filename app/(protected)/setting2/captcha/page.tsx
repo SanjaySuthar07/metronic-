@@ -1,18 +1,12 @@
 'use client';
 
-import { useDispatch } from 'react-redux';
-import { useState } from 'react';
-import { Eye, EyeOff, LoaderCircleIcon } from 'lucide-react';
-import { AppDispatch } from '@/store';
-import { changePassword } from '@/store/thunk/auth.thunk';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState, AppDispatch } from '@/store';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import {
-  getChangePasswordSchema,
-  ChangePasswordSchemaType,
-} from '../forms/change-password-schema';
-
+import { generateSchemaFromConfig } from '../forms/email-schema';
 import { Button } from '@/components/ui/button';
+import * as z from "zod";
 import {
   Card,
   CardContent,
@@ -21,8 +15,8 @@ import {
   CardHeading,
   CardTitle,
 } from '@/components/ui/card';
-
 import { Input } from '@/components/ui/input';
+import { Eye, EyeOff } from "lucide-react";
 
 import {
   Form,
@@ -32,216 +26,198 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-
+import { Skeleton } from '@/components/ui/skeleton';
+import { LoaderCircleIcon } from 'lucide-react';
 import { toast } from 'sonner';
+import { fetchReceptchSettings, updateReceptchSettings } from "@/store/thunk/settings.thunk";
+import { useEffect, useState } from 'react';
 
-export default function ChangePassword() {
+export const recaptchaSettings = [
+  {
+    label: "Recaptcha Site",
+    name: "RECAPTCHA_SITE",
+    type: "text",
+    validation: { required: true },
+    message: "Recaptcha Site Key"
+  },
+  {
+    label: "Recaptcha Secret",
+    name: "RECAPTCHA_SECRET",
+    type: "text",
+    validation: { required: true },
+    message: "Recaptcha Secret Key"
+  },
+];
+export default function RecaptchaSetting() {
   const dispatch = useDispatch<AppDispatch>();
+  const [showPassword, setShowPassword] = useState<Record<string, boolean>>({});
 
-  const [showCurrent, setShowCurrent] = useState(false);
-  const [showNew, setShowNew] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
 
-  const [isLoading, setIsLoading] = useState(false);
+  const { recaptchaSetting } = useSelector((state: RootState) => state.setting);
+  const [loading, setLoading] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      await dispatch(fetchReceptchSettings());
+      setLoading(false);
+    };
+    fetchData();
+  }, [dispatch]);
 
-  const form = useForm<ChangePasswordSchemaType>({
-    resolver: zodResolver(getChangePasswordSchema()),
-    defaultValues: {
-      current_password: '',
-      new_password: '',
-      new_password_confirmation: '',
-    },
+  const schema = generateSchemaFromConfig(recaptchaSettings);
+  const form = useForm({
+    resolver: zodResolver(schema),
+    defaultValues: {},
   });
 
-  async function onSubmit(values: ChangePasswordSchemaType) {
+  useEffect(() => {
+    if (recaptchaSetting && Object.keys(recaptchaSetting).length > 0) {
+      const formatted = Object.fromEntries(
+        recaptchaSettings.map((field) => [
+          field.name,
+          recaptchaSetting[field.name]?.toString() ?? "",
+        ])
+      );
 
-    setIsLoading(true);
-
-    const resultAction = await dispatch(changePassword(values));
-
-    if (changePassword.fulfilled.match(resultAction)) {
-
-      toast.success('Password changed successfully');
-
-      form.reset();
-
-    } else {
-
-      toast.error(resultAction.payload as string);
-
+      form.reset(formatted);
     }
+  }, [recaptchaSetting]);
 
-    setIsLoading(false);
+  async function onSubmit(values: any) {
+    try {
+      setSubmitting(true);
+
+      const payload = Object.fromEntries(
+        recaptchaSettings.map((field) => [
+          field.name,
+          field.type === "number"
+            ? Number(values[field.name])
+            : values[field.name],
+        ])
+      );
+
+
+      const resultAction = await dispatch(updateReceptchSettings(payload));
+      if (updateReceptchSettings.fulfilled.match(resultAction)) {
+        toast.success(resultAction?.payload?.message);
+        await dispatch(fetchReceptchSettings());
+      }
+
+      if (updateReceptchSettings.rejected.match(resultAction)) {
+        toast.error(resultAction.payload as string);
+      }
+    } catch (error) {
+      toast.error("Something went wrong");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
     <Card>
       <CardHeader className="py-4">
         <CardHeading>
-          <CardTitle>Change Password</CardTitle>
+          <CardTitle>Captcha Settings</CardTitle>
           <CardDescription>
-            Update your account password
+            Manage Captcha configurations
           </CardDescription>
         </CardHeading>
       </CardHeader>
-      <CardContent>
+
+      <CardContent className="py-8 ">
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-6 max-w-[520px]"
+            className="max-w-[800px]"
           >
-            <FormField
-              control={form.control}
-              name="current_password"
-              render={({ field }) => (
-                <FormItem>
+            {loading ? (
+              Array.from({ length: recaptchaSettings.length }).map((_, i) => (
+                <div key={i} className="space-y-2">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-10 w-full" />
+                </div>
+              ))
+            ) : (
+              recaptchaSettings.map((field) => (
+                <div key={field.name} className="mb-6">
 
-                  <FormLabel>
-                    Current Password <span className="text-red-500">*</span>
-                  </FormLabel>
-                  <div className="relative">
-                    <FormControl>
-                      <Input
-                        type={showCurrent ? 'text' : 'password'}
-                        placeholder="Enter your current password"
-                        disabled={isLoading}
-                        {...field}
-                      />
-                    </FormControl>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      mode="icon"
-                      size="sm"
-                      onClick={() => setShowCurrent(!showCurrent)}
-                      className="absolute end-0 top-1/2 -translate-y-1/2 h-7 w-7 me-1.5 bg-transparent!"
-                    >
-                      {showCurrent ? (
-                        <Eye className="text-muted-foreground" />
-                      ) : (
-                        <EyeOff className="text-muted-foreground" />
-                      )}
-                    </Button>
+                  <FormField
+                    control={form.control}
+                    name={field.name}
+                    render={({ field: inputField }) => (
+                      <FormItem>
 
-                  </div>
+                        <FormLabel>
+                          {field.label}
+                          {field.validation?.required && (
+                            <span className="text-red-500">*</span>
+                          )}
+                        </FormLabel>
 
-                  <FormMessage />
+                        <FormControl>
+                          <div className="relative">
 
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="new_password"
-              render={({ field }) => (
-                <FormItem>
+                            <Input
+                              type={
+                                field.type === "password"
+                                  ? showPassword[field.name] ? "text" : "password"
+                                  : field.type
+                              }
+                              placeholder={`Enter ${field.label}`}
+                              className={field.type === "password" ? "pr-10" : ""}
+                              {...inputField}
+                            />
 
-                  <FormLabel>
-                    New Password <span className="text-red-500">*</span>
-                  </FormLabel>
+                            {field.type === "password" && (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setShowPassword((prev) => ({
+                                    ...prev,
+                                    [field.name]: !prev[field.name],
+                                  }))
+                                }
+                                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground"
+                              >
+                                {showPassword[field.name] ? (
+                                  <EyeOff size={18} />
+                                ) : (
+                                  <Eye size={18} />
+                                )}
+                              </button>
+                            )}
 
-                  <div className="relative">
+                          </div>
+                        </FormControl>
 
-                    <FormControl>
-                      <Input
-                        type={showNew ? 'text' : 'password'}
-                        placeholder="Enter your new password"
-                        disabled={isLoading}
-                        {...field}
-                      />
-                    </FormControl>
+                        <FormMessage />
 
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      mode="icon"
-                      size="sm"
-                      onClick={() => setShowNew(!showNew)}
-                      className="absolute end-0 top-1/2 -translate-y-1/2 h-7 w-7 me-1.5 bg-transparent!"
-                    >
-                      {showNew ? (
-                        <Eye className="text-muted-foreground" />
-                      ) : (
-                        <EyeOff className="text-muted-foreground" />
-                      )}
-                    </Button>
+                      </FormItem>
+                    )}
+                  />
 
-                  </div>
+                  <span className="text-xs text-muted-foreground">
+                    {field.message}
+                  </span>
 
-                  <FormMessage />
+                </div>
+              ))
+            )}
 
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="new_password_confirmation"
-              render={({ field }) => (
-                <FormItem>
-
-                  <FormLabel>
-                    Confirm New Password <span className="text-red-500">*</span>
-                  </FormLabel>
-
-                  <div className="relative">
-
-                    <FormControl>
-                      <Input
-                        type={showConfirm ? 'text' : 'password'}
-                        placeholder="Enter your confirm password"
-                        disabled={isLoading}
-                        {...field}
-                      />
-                    </FormControl>
-
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      mode="icon"
-                      size="sm"
-                      onClick={() => setShowConfirm(!showConfirm)}
-                      className="absolute end-0 top-1/2 -translate-y-1/2 h-7 w-7 me-1.5 bg-transparent!"
-                    >
-                      {showConfirm ? (
-                        <Eye className="text-muted-foreground" />
-                      ) : (
-                        <EyeOff className="text-muted-foreground" />
-                      )}
-                    </Button>
-
-                  </div>
-
-                  <FormMessage />
-
-                </FormItem>
-              )}
-            />
-            <div className="flex justify-end gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                disabled={isLoading}
-                onClick={() => form.reset()}
-              >
-                Reset
-              </Button>
-
+            <div className="grid col-span-1 md:col-span-2 flex justify-end gap-3 mt-4">
               <Button
                 type="submit"
-                disabled={isLoading}
+                disabled={submitting || !form.formState.isDirty}
               >
-                {isLoading && (
-                  <LoaderCircleIcon
-                    className="animate-spin mr-2"
-                    size={16}
-                  />
+                {submitting && (
+                  <LoaderCircleIcon className="animate-spin mr-2" size={16} />
                 )}
-                Update Password
+                Save Captcha
               </Button>
             </div>
           </form>
         </Form>
-
       </CardContent>
     </Card>
   );
