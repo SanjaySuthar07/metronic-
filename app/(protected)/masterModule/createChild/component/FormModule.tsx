@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
@@ -61,6 +61,7 @@ import { DataGridTable } from "@/components/ui/data-grid-table";
 import { DataGridColumnHeader } from "@/components/ui/data-grid-column-header";
 
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { Skeleton } from "@/components/ui/skeleton";
 
 import { menuSchema, MenuSchemaType } from "../forms/menuSchema";
 import { X, AlertTriangle } from "lucide-react";
@@ -73,6 +74,7 @@ import { childUserTypeAdmin, childUserTypeCustomer, createModule, getParentMenu,
 import { useDispatch, useSelector } from "react-redux";
 import { removeCreateModuleMessage } from '@/store/slice/masterModule.slice';
 import { getMenu } from '@/store/thunk/menu.thunk';
+import { fetchRoles } from '@/store/thunk/userManagement.thunk';
 /* =========================
    DROPDOWN OPTIONS
 ========================= */
@@ -165,11 +167,15 @@ export default function FormModule({ mode, id }: Props) {
   const [selectedPermissions, setSelectedPermissions] = React.useState<number[]>([]);
   const [selectedAction, setSelectedAction] = React.useState<number[]>([]);
   const dispatch = useDispatch() as any;
+  const [isFetchingData, setIsFetchingData] = React.useState(false);
 
   React.useEffect(() => {
     dispatch(getParentMenu())
     if (mode === "edit" && id) {
-      dispatch(moduleDetailsApi(id));
+      setIsFetchingData(true);
+      dispatch(moduleDetailsApi(id)).finally(() => {
+        setIsFetchingData(false);
+      });
     }
   }, [id, mode]);
   const { moduleDetails, parentMenuList } = useSelector((s: any) => s.masterModule);
@@ -294,7 +300,10 @@ export default function FormModule({ mode, id }: Props) {
       status: "",
       orderNumber: 0,
       ...(user.user_type != "agency" && {
-        user_type: "",
+        userType: "",
+      }),
+      ...(user.user_type == "agency" && {
+        tenant_user_type: "",
       }),
       adminType: [],       // ✅ array
       customerType: [],    // ✅ array
@@ -332,9 +341,8 @@ export default function FormModule({ mode, id }: Props) {
       default: return "Text";
     }
   };
-  React.useEffect(() => {
+  useEffect(() => {
     if (mode === "edit" && moduleDetails) {
-      // ✅ 1. Form values set
       form.reset({
         menuName: moduleDetails.main_model_name || "",
         menuTitle: moduleDetails.menu_title || "",
@@ -342,52 +350,38 @@ export default function FormModule({ mode, id }: Props) {
         status: moduleDetails.status ? "active" : "inactive",
         orderNumber: moduleDetails.order_number || 0,
         userType: moduleDetails.user_type || "",
-        adminType: moduleDetails.assigned_admins?.map((a: any) => String(a.id)) || [],
-        customerType: moduleDetails.assigned_agencies?.map((c: any) => String(c.id)) || [],
+        adminType:
+          moduleDetails.assigned_admins?.map((a: any) => String(a.id)) || [],
+        customerType:
+          moduleDetails.assigned_agencies?.map((c: any) => String(c.id)) || [],
       });
 
-      // ✅ 2. Dynamic Fields set
-      const mappedFields = moduleDetails.fields?.map((f: any) => ({
-        id: f.id,
-        column_type_id: f.column_type_id,
-        db_column: f.db_column,
-        label: f.label,
-        validation: f.validation,
-        status: f.status,
-        tooltip_text: f.tooltip_text,
-        visible: f.visibility, // 👈 IMPORTANT
-        type: mapColumnType(f.column_type_id), // helper banaenge niche
-        default_value: f.default_value,
-        options: f.options || [],
-        is_ckeditor: f.is_ckeditor,
-        is_multiple: f.is_multiple,
-        max_file_size: f.max_file_size,
-      })) || [];
+      // ✅ Dynamic fields
+      const mappedFields =
+        moduleDetails.fields?.map((f: any) => ({
+          id: f.id,
+          column_type_id: f.column_type_id,
+          db_column: f.db_column,
+          label: f.label,
+          validation: f.validation,
+          status: f.status,
+          tooltip_text: f.tooltip_text,
+          visible: f.visibility,
+          type: mapColumnType(f.column_type_id),
+          default_value: f.default_value,
+          options: f.options || [],
+          is_ckeditor: f.is_ckeditor,
+          is_multiple: f.is_multiple,
+          max_file_size: f.max_file_size,
+        })) || [];
 
       setDynamicFields(mappedFields);
 
-      // ✅ 3. Permissions set
-      const permissionIds = moduleDetails.permissions?.map((p: any) => {
-        if (p.permission_name.includes("access")) return 1;
-        if (p.permission_name.includes("create")) return 2;
-        if (p.permission_name.includes("edit")) return 3;
-        if (p.permission_name.includes("show")) return 4;
-        if (p.permission_name.includes("delete")) return 5;
-        return null;
-      }).filter(Boolean);
+      // ✅ ✅ NEW PERMISSION LOGIC
+      setSelectedPermissions(moduleDetails.permissions || []);
 
-      setSelectedPermissions(permissionIds);
-
-      // ✅ 4. Actions set (from visibility of fields OR custom logic)
-      const actionSet = new Set<number>();
-
-      moduleDetails.fields?.forEach((f: any) => {
-        f.visibility?.forEach((v: number) => {
-          actionSet.add(v);
-        });
-      });
-
-      setSelectedAction(moduleDetails.actions);
+      // ✅ Actions
+      setSelectedAction(moduleDetails.actions || []);
     }
   }, [moduleDetails, mode]);
 
@@ -407,6 +401,9 @@ export default function FormModule({ mode, id }: Props) {
         icon: selectedIcon,
         ...(user.user_type != "agency" && {
           user_type: values.userType ? values.userType : "all",
+        }),
+        ...(user.user_type == "agency" && {
+          tenant_user_type: values.tenant_user_type && values.tenant_user_type.length > 0 ? values.tenant_user_type : [],
         }),
         order_number: values.orderNumber,
         tenant_id: user?.tenant_id ?? null,
@@ -704,6 +701,7 @@ export default function FormModule({ mode, id }: Props) {
       }}
     />
   );
+
   const [iconSearch, setIconSearch] = React.useState("");
   const { adminList, customerList } = useSelector((s: any) => s.masterModule);
   // const { user } = useSelector((s: any) => s.auth);
@@ -755,6 +753,24 @@ export default function FormModule({ mode, id }: Props) {
       value: item.id.toString(),
     })) || [])
   ];
+
+  useEffect(() => {
+    if (user.user_type == "agency") {
+      dispatch(
+        fetchRoles({
+          tenant_id: user.tenant_id
+        })
+      );
+    }
+  }, [])
+  const { roles } = useSelector((s: any) => s.userManagement);
+  const roleOptionsFormatted = [
+    { label: "All", value: "all" }, // ✅ default option
+    ...(roles?.data?.map((item: any) => ({
+      label: item.name,
+      value: item.id.toString(),
+    })) || [])
+  ];
   return (
     <Card>
       <CardHeader>
@@ -762,212 +778,247 @@ export default function FormModule({ mode, id }: Props) {
       </CardHeader>
 
       <CardContent className="p-6">
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit, onError)} className="space-y-8">
-
-            {/* FORM FIELDS GRID */}
+        {isFetchingData ? (
+          <div className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <FormField
-                control={form.control}
-                name="menuName"
-                render={({ field, fieldState }) => (
-                  <FormItem className="space-y-1">
-                    <FormLabel className="font-medium text-gray-800">
-                      Menu Name <span className="text-red-500">*</span>
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Enter Menu Name"
-                        {...field}
-                        disabled={mode === "edit"}
-                        className={cn(
-                          "h-9 w-full disabled:bg-gray-200 disabled:cursor-not-allowed ",
-                          fieldState.error && "border-red-500 focus-visible:ring-red-500"
-                        )}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="menuTitle"
-                render={({ field, fieldState }) => {
-                  const icons = [
-                    { name: "Type", icon: Type },
-                    { name: "Circle", icon: Circle },
-                    { name: "Square", icon: Square },
-                    { name: "Box", icon: Box },
-                    { name: "Layout", icon: Layout },
-                    { name: "Grid", icon: Grid },
-                    { name: "Layers", icon: Layers },
-                    { name: "Bookmark", icon: Bookmark },
-                  ];
-
-
-                  const SelectedIcon =
-                    icons.find(i => i.name === selectedIcon)?.icon || Box;
-
-                  return (
-                    <FormItem className="space-y-1">
-                      <FormLabel>
-                        Menu Title and Icon <span className="text-red-500">*</span>
-                      </FormLabel>
-
-                      <div
-                        className={cn(
-                          "flex items-center border rounded-md overflow-hidden h-9 w-full",
-                          fieldState.error && "border-red-500"
-                        )}
-                      >
-                        {/* ✅ LEFT ICON CLICK ONLY */}
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <div className="bg-gray-100 px-3 cursor-pointer py-2 flex items-center justify-center border-r">
-                              <SelectedIcon className="h-5 w-5 text-gray-600" />
-                            </div>
-                          </PopoverTrigger>
-
-                          <PopoverContent align="start">
-                            <div className="grid grid-cols-3 gap-2 max-h-[180px] overflow-y-auto">
-                              {icons.map((item, idx) => {
-                                const IconComp = item.icon;
-
-                                return (
-                                  <button
-                                    key={idx}
-                                    type="button"
-                                    onClick={() => {
-                                      setSelectedIcon(item.name); // ✅ icon update
-                                    }}
-                                    className="p-2 hover:bg-gray-100 rounded"
-                                  >
-                                    <IconComp className="h-5 w-5" />
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          </PopoverContent>
-                        </Popover>
-
-                        {/* ✅ RIGHT SIDE INPUT (typing only) */}
-                        <input
-                          placeholder="Enter Menu Title"
-                          className="flex-1 px-3 py-2 text-sm outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
-                          value={field.value || ""}
-                          onChange={field.onChange}
-                          disabled={mode === "edit"}
-                        />
-
-                      </div>
-
-                      <FormMessage />
-                    </FormItem>
-                  );
-                }}
-              />
-
-              {renderDropdown("parentMenu", "Parent Menu", parentMenuOptions)}
-              {renderDropdown("status", "Status", statusOptions)}
-              {
-                user.user_type != "agency" ? renderDropdown("userType", "User Type", userTypeOptions) : ""
-              }
-
-              {selectedUserType === "admin" &&
-                renderMultiDropdown("adminType", "Admin", adminOptionsFormatted)}
-              {selectedUserType === "customer" &&
-                renderMultiDropdown("customerType", "Customer", customerOptionsFormatted)}
-
-              <FormField
-                control={form.control}
-                name="orderNumber"
-                render={({ field, fieldState }) => (
-                  <FormItem className="space-y-1">
-                    <FormLabel className="font-medium text-gray-800">
-                      Order Number <span className="text-red-500">*</span>
-                    </FormLabel>
-
-                    <FormControl>
-                      <Input
-                        type="number" // ✅ IMPORTANT
-                        placeholder="Enter Order Number"
-                        {...field}
-                        className={cn(
-                          "h-9 w-full",
-                          fieldState.error && "border-red-500 focus-visible:ring-red-500"
-                        )}
-                      />
-                    </FormControl>
-
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="space-y-2">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-9 w-full" />
+                </div>
+              ))}
             </div>
-            <div className="col-span-1  ">
-              <FormLabel className="font-medium text-gray-800">Action</FormLabel>
-              <div className="flex grid-cols-3  gap-6 mt-3  items-center">
-                {actionList.map((item) => (
-                  <div key={item.id} className="flex items-center gap-2">
-                    <Checkbox
-                      checked={selectedAction?.includes(item.id)} // ✅ state binding
-                      onCheckedChange={() => toggleAction(item.id)} // ✅ toggle call
-                    />
-                    <label className="text-sm cursor-pointer">
-                      {item.label}
-                    </label>
-                  </div>
-                ))}
+            <div>
+              <Skeleton className="h-4 w-20 mb-4" />
+              <div className="flex gap-4">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-4 w-24" />
               </div>
             </div>
             <div>
-              <FormLabel className="font-medium  text-gray-800">Permissions</FormLabel>
-              <div className="flex gap-6 mt-2 flex-wrap">
-                {permissionList.map((item) => (
-                  <div key={item.id} className="flex items-center gap-2">
-                    <Checkbox
-                      checked={selectedPermissions?.includes(item.id)} // ✅ state binding
-                      onCheckedChange={() => togglePermission(item.id)} // ✅ toggle call
-                    />
-                    <label className="text-sm cursor-pointer">
-                      {item.label}
-                    </label>
-                  </div>
-                ))}
+              <Skeleton className="h-4 w-24 mb-4" />
+              <div className="flex gap-4 flex-wrap">
+                <Skeleton className="h-4 w-28" />
+                <Skeleton className="h-4 w-28" />
+                <Skeleton className="h-4 w-28" />
               </div>
             </div>
+            <div className="mt-8 border rounded-md p-4">
+              <Skeleton className="h-6 w-32 mb-4" />
+              <Skeleton className="h-[200px] w-full" />
+            </div>
+          </div>
+        ) : (
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit, onError)} className="space-y-8">
 
-            {/* ─── MODERN TABLE SECTION ─── */}
-            <div className="mt-8 border rounded-md overflow-hidden">
-              <div className="flex justify-between items-center p-4 border-b bg-muted/40">
-                <span className="font-medium text-gray-800">Fields</span>
-                <Button type="button" onClick={() => setOpenModal(true)} size="sm" className="gap-1">
-                  <Plus className="h-4 w-4" />
-                  Add Field
+              {/* FORM FIELDS GRID */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <FormField
+                  control={form.control}
+                  name="menuName"
+                  render={({ field, fieldState }) => (
+                    <FormItem className="space-y-1">
+                      <FormLabel className="font-medium text-gray-800">
+                        Menu Name <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Enter Menu Name"
+                          {...field}
+                          disabled={mode === "edit"}
+                          className={cn(
+                            "h-9 w-full disabled:bg-gray-200 disabled:cursor-not-allowed ",
+                            fieldState.error && "border-red-500 focus-visible:ring-red-500"
+                          )}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="menuTitle"
+                  render={({ field, fieldState }) => {
+                    const icons = [
+                      { name: "Type", icon: Type },
+                      { name: "Circle", icon: Circle },
+                      { name: "Square", icon: Square },
+                      { name: "Box", icon: Box },
+                      { name: "Layout", icon: Layout },
+                      { name: "Grid", icon: Grid },
+                      { name: "Layers", icon: Layers },
+                      { name: "Bookmark", icon: Bookmark },
+                    ];
+
+
+                    const SelectedIcon =
+                      icons.find(i => i.name === selectedIcon)?.icon || Box;
+
+                    return (
+                      <FormItem className="space-y-1">
+                        <FormLabel>
+                          Menu Title and Icon <span className="text-red-500">*</span>
+                        </FormLabel>
+
+                        <div
+                          className={cn(
+                            "flex items-center border rounded-md overflow-hidden h-9 w-full",
+                            fieldState.error && "border-red-500"
+                          )}
+                        >
+                          {/* ✅ LEFT ICON CLICK ONLY */}
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <div className="bg-gray-100 px-3 cursor-pointer py-2 flex items-center justify-center border-r">
+                                <SelectedIcon className="h-5 w-5 text-gray-600" />
+                              </div>
+                            </PopoverTrigger>
+
+                            <PopoverContent align="start">
+                              <div className="grid grid-cols-3 gap-2 max-h-[180px] overflow-y-auto">
+                                {icons.map((item, idx) => {
+                                  const IconComp = item.icon;
+
+                                  return (
+                                    <button
+                                      key={idx}
+                                      type="button"
+                                      onClick={() => {
+                                        setSelectedIcon(item.name); // ✅ icon update
+                                      }}
+                                      className="p-2 hover:bg-gray-100 rounded"
+                                    >
+                                      <IconComp className="h-5 w-5" />
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </PopoverContent>
+                          </Popover>
+
+                          {/* ✅ RIGHT SIDE INPUT (typing only) */}
+                          <input
+                            placeholder="Enter Menu Title"
+                            className="flex-1 px-3 py-2 text-sm outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
+                            value={field.value || ""}
+                            onChange={field.onChange}
+                            disabled={mode === "edit"}
+                          />
+
+                        </div>
+
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
+                />
+
+                {renderDropdown("parentMenu", "Parent Menu", parentMenuOptions)}
+                {renderDropdown("status", "Status", statusOptions)}
+                {
+                  user.user_type != "agency" ? renderDropdown("userType", "User Type", userTypeOptions) : ""
+                }
+                {
+                  user.user_type == "agency" ? renderDropdown("tenant_user_type", "Role", roleOptionsFormatted) : ""
+                }
+
+                {selectedUserType === "admin" &&
+                  renderMultiDropdown("adminType", "Admin", adminOptionsFormatted)}
+                {selectedUserType === "customer" &&
+                  renderMultiDropdown("customerType", "Customer", customerOptionsFormatted)}
+
+                <FormField
+                  control={form.control}
+                  name="orderNumber"
+                  render={({ field, fieldState }) => (
+                    <FormItem className="space-y-1">
+                      <FormLabel className="font-medium text-gray-800">
+                        Order Number <span className="text-red-500">*</span>
+                      </FormLabel>
+
+                      <FormControl>
+                        <Input
+                          type="number" // ✅ IMPORTANT
+                          placeholder="Enter Order Number"
+                          {...field}
+                          className={cn(
+                            "h-9 w-full",
+                            fieldState.error && "border-red-500 focus-visible:ring-red-500"
+                          )}
+                        />
+                      </FormControl>
+
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div className="col-span-1  ">
+                <FormLabel className="font-medium text-gray-800">Action</FormLabel>
+                <div className="flex grid-cols-3  gap-6 mt-3  items-center">
+                  {actionList.map((item) => (
+                    <div key={item.id} className="flex items-center gap-2">
+                      <Checkbox
+                        checked={selectedAction?.includes(item.id)} // ✅ state binding
+                        onCheckedChange={() => toggleAction(item.id)} // ✅ toggle call
+                      />
+                      <label className="text-sm cursor-pointer">
+                        {item.label}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <FormLabel className="font-medium  text-gray-800">Permissions</FormLabel>
+                <div className="flex gap-6 mt-2 flex-wrap">
+                  {permissionList.map((item) => (
+                    <div key={item.id} className="flex items-center gap-2">
+                      <Checkbox
+                        checked={selectedPermissions?.includes(item.id)} // ✅ state binding
+                        onCheckedChange={() => togglePermission(item.id)} // ✅ toggle call
+                      />
+                      <label className="text-sm cursor-pointer">
+                        {item.label}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* ─── MODERN TABLE SECTION ─── */}
+              <div className="mt-8 border rounded-md overflow-hidden">
+                <div className="flex justify-between items-center p-4 border-b bg-muted/40">
+                  <span className="font-medium text-gray-800">Fields</span>
+                  <Button type="button" onClick={() => setOpenModal(true)} size="sm" className="gap-1">
+                    <Plus className="h-4 w-4" />
+                    Add Field
+                  </Button>
+                </div>
+
+                <DataGrid table={table} recordCount={dynamicFields.length} isLoading={false}>
+                  <ScrollArea >
+                    <DataGridTable />
+                    <ScrollBar orientation="horizontal" />
+                  </ScrollArea>
+                </DataGrid>
+              </div>
+
+              {/* SUBMIT */}
+              <div className="flex justify-end gap-3 mt-8">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => router.push("/masterModule")}
+                  disabled={loading}
+                >
+                  Cancel
                 </Button>
-              </div>
 
-              <DataGrid table={table} recordCount={dynamicFields.length} isLoading={false}>
-                <ScrollArea >
-                  <DataGridTable />
-                  <ScrollBar orientation="horizontal" />
-                </ScrollArea>
-              </DataGrid>
-            </div>
-
-            {/* SUBMIT */}
-            <div className="flex justify-end gap-3 mt-8">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => router.push("/masterModule")}
-                disabled={loading}
-              >
-                Cancel
-              </Button>
-
-              {/* <Button
+                {/* <Button
                 type="button"
                 variant="secondary"
                 onClick={() => form.reset()}
@@ -976,24 +1027,25 @@ export default function FormModule({ mode, id }: Props) {
                 Reset
               </Button> */}
 
-              <Button
-                type="submit"
-                className="px-8"
-              // disabled={!loading}
-              >
-                {/* {!loading ? (
+                <Button
+                  type="submit"
+                  className="px-8"
+                // disabled={!loading}
+                >
+                  {/* {!loading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Submitting...
                   </>
                 ) : ( */}
-                {mode === "edit" ? "Update" : "Submit"}
-                {/* )} */}
-              </Button>
-            </div>
+                  {mode === "edit" ? "Update" : "Submit"}
+                  {/* )} */}
+                </Button>
+              </div>
 
-          </form>
-        </Form>
+            </form>
+          </Form>
+        )}
       </CardContent>
       <RoleDeleteDialog
         open={deleteOpen}

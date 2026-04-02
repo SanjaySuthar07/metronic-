@@ -6,6 +6,7 @@ export const menuSchema = z.object({
   parentMenu: z.string().min(1, "Parent Menu is required"),
   status: z.string().min(1, "Status is required"),
   userType: z.string().optional(),
+  tenant_user_type: z.string().optional(),
 
   adminType: z.array(z.string()).optional(),
   customerType: z.array(z.string()).optional(),
