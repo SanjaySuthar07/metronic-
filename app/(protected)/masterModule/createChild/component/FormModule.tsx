@@ -280,6 +280,8 @@ export default function FormModule({ mode, id }: Props) {
       },
     },
   ];
+  const { user } = useSelector((s: any) => s.auth);
+
   const form = useForm<MenuSchemaType>({
     resolver: zodResolver(menuSchema) as any,
     mode: "onChange",          // ✅ ADD THIS
@@ -291,7 +293,9 @@ export default function FormModule({ mode, id }: Props) {
       parentMenu: "",
       status: "",
       orderNumber: 0,
-      userType: "",
+      ...(user.user_type != "agency" && {
+        user_type: "",
+      }),
       adminType: [],       // ✅ array
       customerType: [],    // ✅ array
     },
@@ -401,7 +405,9 @@ export default function FormModule({ mode, id }: Props) {
         parent_menu: values.parentMenu === "no-parent" ? null : values.parentMenu,
         status: values.status === "active",
         icon: selectedIcon,
-        user_type: values.userType,
+        ...(user.user_type != "agency" && {
+          user_type: values.userType ? values.userType : "all",
+        }),
         order_number: values.orderNumber,
         tenant_id: user?.tenant_id ?? null,
 
@@ -700,7 +706,7 @@ export default function FormModule({ mode, id }: Props) {
   );
   const [iconSearch, setIconSearch] = React.useState("");
   const { adminList, customerList } = useSelector((s: any) => s.masterModule);
-  const { user } = useSelector((s: any) => s.auth);
+  // const { user } = useSelector((s: any) => s.auth);
 
   const adminOptionsFormatted = adminList?.map((item: any) => ({
     label: item.name,
@@ -864,7 +870,10 @@ export default function FormModule({ mode, id }: Props) {
 
               {renderDropdown("parentMenu", "Parent Menu", parentMenuOptions)}
               {renderDropdown("status", "Status", statusOptions)}
-              {renderDropdown("userType", "User Type", userTypeOptions)}
+              {
+                user.user_type != "agency" ? renderDropdown("userType", "User Type", userTypeOptions) : ""
+              }
+
               {selectedUserType === "admin" &&
                 renderMultiDropdown("adminType", "Admin", adminOptionsFormatted)}
               {selectedUserType === "customer" &&

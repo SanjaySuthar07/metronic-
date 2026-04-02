@@ -172,20 +172,25 @@ const MasterModuleList = ({ slug }: { slug: string }) => {
     const modulePerms = getModuleTableData?.module_permission || [];
     const actionPerms = getModuleTableData?.action || [];
 
-    // normalize (safe: number ya object dono handle kare)
-    const moduleSet = new Set(
-      modulePerms.map((p: any) => (typeof p === "object" ? p.id : p))
-    );
-
+    const moduleSet = new Set(modulePerms);
     const actionSet = new Set(actionPerms);
 
     return {
-      canCreate: moduleSet.has(2) || actionSet.has(1),
-      canEdit: moduleSet.has(3) || actionSet.has(3),
-      canView: moduleSet.has(4) || actionSet.has(4),
-      canDelete: moduleSet.has(5) || actionSet.has(5),
+      canCreate:
+        moduleSet.has(`${slug}_create`) || actionSet.has(1),
+
+      canEdit:
+        moduleSet.has(`${slug}_edit`) || actionSet.has(2),
+
+      canView:
+        moduleSet.has(`${slug}_show`) ||
+        moduleSet.has(`${slug}_access`) ||
+        actionSet.has(3),
+
+      canDelete:
+        moduleSet.has(`${slug}_delete`) || actionSet.has(4),
     };
-  }, [getModuleTableData]);
+  }, [getModuleTableData, slug]);
 
 
   const handleConfirmDelete = async (id: number) => {
