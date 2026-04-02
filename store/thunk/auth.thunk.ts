@@ -67,6 +67,25 @@ export const verifyMfa = createAsyncThunk(
     }
 );
 
+interface ResendOtpPayload {
+    user_id: number;
+    user_type: string;
+}
+
+export const resendOtp = createAsyncThunk(
+    'auth/resend-otp',
+    async (payload: ResendOtpPayload, { rejectWithValue }) => {
+        try {
+            const response = await api.post('/resend-otp', payload);
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || "Failed to resend OTP";
+            return rejectWithValue(message);
+        }
+    }
+);
+
 interface ForgetPasswordPayload {
     email: string;
     recaptcha_token: string;

@@ -76,7 +76,7 @@ api.interceptors.response.use(
                     store.dispatch(removeData());
                     processQueue(error, null);
                     if (window.location.pathname !== '/signin') {
-                        // window.location.href = '/signin';
+                        window.location.href = '/signin';
                     }
                     return Promise.reject(error);
                 }
@@ -113,7 +113,7 @@ api.interceptors.response.use(
                 processQueue(refreshError, null);
                 store.dispatch(removeData());
                 if (window.location.pathname !== '/signin') {
-                    // window.location.href = '/signin';
+                    window.location.href = '/signin';
                 }
                 return Promise.reject(refreshError);
             } finally {

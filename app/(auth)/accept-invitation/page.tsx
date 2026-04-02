@@ -61,6 +61,7 @@ export default function Page() {
   const [userId, setUserId] = useState<number | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [userType, setUserType] = useState<string | null>(null);
+  const [type, setType] = useState<string | null>(null);
   const [tenant_id, setTenant_id] = useState<string | null>(null);
 
   const [userInfo, setUserInfo] = useState({
@@ -145,6 +146,7 @@ export default function Page() {
             setOppenQR(true);
             setMessage(data?.message);
             setUserType(data?.user_type);
+            setType(data?.type);
             setTenant_id(data?.tenant_id)
           }
         } else {
@@ -293,6 +295,7 @@ export default function Page() {
         tenant_id={tenant_id}
         message={message}
         userType={userType}
+        type={type}
       />
 
     </Suspense>

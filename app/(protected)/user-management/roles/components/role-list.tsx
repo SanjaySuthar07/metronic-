@@ -318,48 +318,51 @@ const RolesList = () => {
       enableSorting: false,
       enableResizing: false,
 
-      cell: ({ row }) => (
+      cell: ({ row }) => {
+        const hasActions = canEdit || canView;
+        if (!hasActions) return <span className="text-xs text-muted-foreground">No permission</span>;
 
-        <DropdownMenu>
+        return (
+          <DropdownMenu>
 
-          <DropdownMenuTrigger asChild>
+            <DropdownMenuTrigger asChild>
 
-            <Button className="h-7 w-7" mode="icon" variant="ghost">
-              <EllipsisVertical />
-            </Button>
+              <Button className="h-7 w-7" mode="icon" variant="ghost">
+                <EllipsisVertical />
+              </Button>
 
-          </DropdownMenuTrigger>
+            </DropdownMenuTrigger>
 
-          <DropdownMenuContent>
+            <DropdownMenuContent>
 
-            {canEdit && (
-              <>
+              {canEdit && (
+                <>
+                  <DropdownMenuItem
+                    onClick={() => handleEditUser(row.original.id, "edit")}
+                  >
+                    Edit
+                  </DropdownMenuItem>
+
+                  <DropdownMenuSeparator />
+                </>
+
+              )}
+
+              {canView && (
+
                 <DropdownMenuItem
-                  onClick={() => handleEditUser(row.original.id, "edit")}
+                  onClick={() => handleEditUser(row.original.id, "view")}
                 >
-                  Edit
+                  View
                 </DropdownMenuItem>
 
-                <DropdownMenuSeparator />
-              </>
+              )}
 
-            )}
+            </DropdownMenuContent>
 
-            {canView && (
-
-              <DropdownMenuItem
-                onClick={() => handleEditUser(row.original.id, "view")}
-              >
-                View
-              </DropdownMenuItem>
-
-            )}
-
-          </DropdownMenuContent>
-
-        </DropdownMenu>
-
-      ),
+          </DropdownMenu>
+        );
+      },
 
       size: 75,
 

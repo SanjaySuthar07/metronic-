@@ -547,51 +547,52 @@ const MasterModuleList = () => {
       header: 'Actions',
       enableSorting: false,
       enableResizing: false,
-      cell: ({ row }) => (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button className="h-7 w-7" mode="icon" variant="ghost">
-              <EllipsisVertical />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            {canEdit && (
-              <>
-                <DropdownMenuItem
-                  onClick={() => router.push(`/masterModule/createChild/${row.original.id}`)}
-                >
-                  Edit
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-              </>
-            )}
-            {canView && (
-              <>
-                <DropdownMenuItem
-                  onClick={() => router.push(`/masterModule/${row.original.id}`)}
-                >
-                  View
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-              </>
-            )}
-            {
-              canDelete && (
+      cell: ({ row }) => {
+        const hasActions = canEdit || canView || canDelete;
+        if (!hasActions) return <span className="text-xs text-muted-foreground">No permission</span>;
+
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button className="h-7 w-7" mode="icon" variant="ghost">
+                <EllipsisVertical />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              {canEdit && (
+                <>
+                  <DropdownMenuItem
+                    onClick={() => router.push(`/masterModule/createChild/${row.original.id}`)}
+                  >
+                    Edit
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                </>
+              )}
+              {canView && (
+                <>
+                  <DropdownMenuItem
+                    onClick={() => router.push(`/masterModule/${row.original.id}`)}
+                  >
+                    View
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                </>
+              )}
+              {canDelete && (
                 <>
                   <DropdownMenuItem
                     className="text-red-600 bg-red focus:text-red-700"
                     onClick={() => handleDelete(row.original)}
                   >
                     Delete
-                    {/* slug */}
-                  </DropdownMenuItem></>
-              )
-            }
-
-
-          </DropdownMenuContent>
-        </DropdownMenu>
-      ),
+                  </DropdownMenuItem>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        );
+      },
       size: 160,
       meta: {
         skeleton: <Skeleton className="size-5" />,

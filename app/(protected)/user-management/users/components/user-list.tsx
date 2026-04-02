@@ -451,64 +451,70 @@ const UserList = () => {
         enableSorting: false,
         size: 75,
 
-        cell: ({ row }) => (
+        cell: ({ row }) => {
+          const canEditUser = hasPermission(user, ["user-edit"]);
+          const canViewUser = hasPermission(user, ["user-show"]);
+          const canDeleteUser = hasPermission(user, ["user-delete"]);
+          const canMfaReset = user?.user_type === "super_admin" || row.original.created_by === user?.id;
+          const hasActions = canEditUser || canViewUser || canDeleteUser || canMfaReset;
+          if (!hasActions) return <span className="text-xs text-muted-foreground">No permission</span>;
 
-          <DropdownMenu>
+          return (
+            <DropdownMenu>
 
-            <DropdownMenuTrigger asChild>
+              <DropdownMenuTrigger asChild>
 
-              <Button className="h-7 w-7" mode="icon" variant="ghost">
+                <Button className="h-7 w-7" mode="icon" variant="ghost">
 
-                <EllipsisVertical />
+                  <EllipsisVertical />
 
-              </Button>
+                </Button>
 
-            </DropdownMenuTrigger>
+              </DropdownMenuTrigger>
 
-            <DropdownMenuContent align="end">
+              <DropdownMenuContent align="end">
 
-              {hasPermission(user, ["user-edit"]) && (
+                {canEditUser && (
 
-                <>
-                  <DropdownMenuItem
-                    onClick={() => handleEditUser(row.original.id)}
-                  >
-                    Edit
-                  </DropdownMenuItem>
+                  <>
+                    <DropdownMenuItem
+                      onClick={() => handleEditUser(row.original.id)}
+                    >
+                      Edit
+                    </DropdownMenuItem>
 
-                  <DropdownMenuSeparator />
-                </>
+                    <DropdownMenuSeparator />
+                  </>
 
-              )}
+                )}
 
-              {hasPermission(user, ["user-show"]) && (
+                {canViewUser && (
 
-                <>
-                  <DropdownMenuItem
-                    onClick={() =>
-                      router.push(`/user-management/users/${row.original.id}`)
-                    }
-                  >
-                    View
-                  </DropdownMenuItem>
+                  <>
+                    <DropdownMenuItem
+                      onClick={() =>
+                        router.push(`/user-management/users/${row.original.id}`)
+                      }
+                    >
+                      View
+                    </DropdownMenuItem>
 
-                  <DropdownMenuSeparator />
-                </>
+                    <DropdownMenuSeparator />
+                  </>
 
-              )}
+                )}
 
-              {hasPermission(user, ["user-delete"]) && (
-                <>
-                  <DropdownMenuItem
-                    variant="destructive"
-                    onClick={() => handleDeleteUser(row.original)}
-                  >
-                    Delete
-                  </DropdownMenuItem>
-                </>
-              )}
-              {
-                (user?.user_type === "super_admin" || row.original.created_by === user?.id) && (
+                {canDeleteUser && (
+                  <>
+                    <DropdownMenuItem
+                      variant="destructive"
+                      onClick={() => handleDeleteUser(row.original)}
+                    >
+                      Delete
+                    </DropdownMenuItem>
+                  </>
+                )}
+                {canMfaReset && (
                   <>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
@@ -517,11 +523,11 @@ const UserList = () => {
                       MFA Verification Reset
                     </DropdownMenuItem>
                   </>
-                )
-              }
-            </DropdownMenuContent>
-          </DropdownMenu>
-        ),
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          );
+        },
 
         meta: {
           skeleton: <Skeleton className="size-5" />,

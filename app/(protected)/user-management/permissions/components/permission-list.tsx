@@ -295,25 +295,27 @@ const PermissionList = () => {
       enableHiding: false,
       size: 75,
 
-      cell: ({ row }) => (
+      cell: ({ row }) => {
+        const hasActions = canEdit || canDelete;
+        if (!hasActions) return <span className="text-xs text-muted-foreground">No permission</span>;
 
-        <DropdownMenu>
+        return (
+          <DropdownMenu>
 
-          <DropdownMenuTrigger asChild>
+            <DropdownMenuTrigger asChild>
 
-            <Button
-              className="h-7 w-7"
-              mode="icon"
-              variant="ghost"
-            >
-              <EllipsisVertical />
-            </Button>
+              <Button
+                className="h-7 w-7"
+                mode="icon"
+                variant="ghost"
+              >
+                <EllipsisVertical />
+              </Button>
 
-          </DropdownMenuTrigger>
+            </DropdownMenuTrigger>
 
-          <DropdownMenuContent align="end">
-            {
-              canEdit ? (
+            <DropdownMenuContent align="end">
+              {canEdit && (
                 <>
                   <DropdownMenuItem
                     onClick={() => handleEditPermissions(row.original.id)}
@@ -323,22 +325,20 @@ const PermissionList = () => {
 
                   <DropdownMenuSeparator />
                 </>
-              ) : ""
-            }
+              )}
 
-            {
-              canDelete ? (
+              {canDelete && (
                 <>
                   <DropdownMenuItem variant="destructive" onClick={() => handleDeleteUser(row.original)}>
                     Delete
                   </DropdownMenuItem>
                 </>
-              ) : ""
-            }
-          </DropdownMenuContent>
+              )}
+            </DropdownMenuContent>
 
-        </DropdownMenu>
-      ),
+          </DropdownMenu>
+        );
+      },
 
       meta: {
         skeleton: <Skeleton className="size-5" />,

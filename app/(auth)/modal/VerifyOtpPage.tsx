@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { CheckCircle2, Loader2 } from 'lucide-react';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/store';
-import { verifyMfa } from '@/store/thunk/auth.thunk';
+import { verifyMfa, resendOtp } from '@/store/thunk/auth.thunk';
 import Image from 'next/image';
 import { RiCloseFill } from '@remixicon/react';
 
@@ -17,7 +17,8 @@ interface Props {
     userId: number | null;
     message: string;
     userType: string;
-    tenant_id: any
+    tenant_id: any;
+    type: any
 }
 
 export default function VerifyOtpPage({
@@ -27,13 +28,15 @@ export default function VerifyOtpPage({
     message,
     userId,
     userType,
-    tenant_id
+    tenant_id,
+    type
 }: Props) {
     const router = useRouter();
     const dispatch = useDispatch<AppDispatch>();
 
     const [otp, setOtp] = useState<string[]>(Array(6).fill(''));
     const [loading, setLoading] = useState(false);
+    const [resendLoading, setResendLoading] = useState(false);
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState('');
 
@@ -125,6 +128,28 @@ export default function VerifyOtpPage({
         }
     }
 
+    async function handleResend() {
+        if (!userId) return;
+        setResendLoading(true);
+        setError('');
+
+        const result = await dispatch(
+            resendOtp({
+                user_id: userId,
+                user_type: userType,
+            })
+        );
+
+        if (resendOtp.fulfilled.match(result)) {
+            setOtp(Array(6).fill(''));
+            setError('');
+            // Optional: you can show a success toast here if available.
+        } else {
+            setError(result.payload as string);
+        }
+        setResendLoading(false);
+    }
+
     if (!oppenQR) return null;
 
     return (
@@ -141,7 +166,7 @@ export default function VerifyOtpPage({
                     <div className="text-center flex flex-col justify-center items-center">
                         {!qrCode && (
                             <Image
-                                src="/assets/auth/2FAsmartphone.svg"
+                                src={type == "email_otp" ? "/assets/auth/Reminder.svg" : "/assets/auth/2FAsmartphone.svg"}
                                 alt="image"
                                 width={130}
                                 height={130}
@@ -150,7 +175,7 @@ export default function VerifyOtpPage({
                         )}
 
                         <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
-                            {qrCode ? 'Set up ' : ''}2FA Verification Code
+                            {qrCode ? 'Set up ' : ''}{type == "email_otp" ? "Email Otp" : "2FA"} Verification Code
                         </h1>
 
                         <p className="mt-5 mb-5 text-sm text-gray-600 dark:text-gray-300">
@@ -236,6 +261,27 @@ export default function VerifyOtpPage({
                                 'Continue'
                             )}
                         </Button>
+                        {type === "email_otp" && (
+                            <div className="text-sm text-muted-foreground text-center mt-4">
+                                Didn't receive the code?{' '}
+                                <span
+                                    onClick={resendLoading || loading ? undefined : handleResend}
+                                    className={`font-semibold transition-colors ${resendLoading || loading
+                                            ? 'text-primary/70 cursor-not-allowed'
+                                            : 'text-primary cursor-pointer hover:text-primary/90'
+                                        } inline-flex items-center`}
+                                >
+                                    {resendLoading ? (
+                                        <>
+                                            <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />
+                                            Resending...
+                                        </>
+                                    ) : (
+                                        'Resend'
+                                    )}
+                                </span>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

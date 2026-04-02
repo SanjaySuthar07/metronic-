@@ -89,17 +89,17 @@ const DataGridToolbar = ({
         </div>
       </div>
 
-      {/* {canCreate && ( */}
-      <div className="flex items-center gap-2">
-        <Button
-          onClick={() => router.push(`/${slug}/addData`)}
-          className="bg-blue-600 hover:bg-blue-700 text-white h-9 px-4 capitalize"
-        >
-          <Plus className="mr-1 size-4 " />
-          Add {slug}
-        </Button>
-      </div>
-      {/* )} */}
+      {canCreate && (
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={() => router.push(`/${slug}/addData`)}
+            className="bg-blue-600 hover:bg-blue-700 text-white h-9 px-4 capitalize"
+          >
+            <Plus className="mr-1 size-4 " />
+            Add {slug}
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
@@ -169,14 +169,23 @@ const MasterModuleList = ({ slug }: { slug: string }) => {
   // ---------------------------------------------------------------------------------------------
   // ---------------------------------------------------------------------------------------------
   const permissions = useMemo(() => {
-    const perms = getModuleTableData?.module_permission || [];
+    const modulePerms = getModuleTableData?.module_permission || [];
+    const actionPerms = getModuleTableData?.action || [];
+
+    // normalize (safe: number ya object dono handle kare)
+    const moduleSet = new Set(
+      modulePerms.map((p: any) => (typeof p === "object" ? p.id : p))
+    );
+
+    const actionSet = new Set(actionPerms);
+
     return {
-      canCreate: perms.some((p: any) => p.permission_name === `${slug}_create`),
-      canEdit: perms.some((p: any) => p.permission_name === `${slug}_edit`),
-      canDelete: perms.some((p: any) => p.permission_name === `${slug}_delete`),
-      canView: perms.some((p: any) => p.permission_name === `${slug}_show`),
+      canCreate: moduleSet.has(2) || actionSet.has(1),
+      canEdit: moduleSet.has(3) || actionSet.has(3),
+      canView: moduleSet.has(4) || actionSet.has(4),
+      canDelete: moduleSet.has(5) || actionSet.has(5),
     };
-  }, [getModuleTableData, slug]);
+  }, [getModuleTableData]);
 
 
   const handleConfirmDelete = async (id: number) => {
@@ -317,7 +326,7 @@ const MasterModuleList = ({ slug }: { slug: string }) => {
       enableSorting: false,
       cell: ({ row }) => {
         const hasActions = permissions.canEdit || permissions.canDelete || permissions.canView;
-        if (!hasActions) return "-";
+        if (!hasActions) return <span className="text-xs text-muted-foreground">No permission</span>;
 
         return (
           <DropdownMenu>
@@ -340,18 +349,25 @@ const MasterModuleList = ({ slug }: { slug: string }) => {
               )}
 
               {permissions.canEdit && (
-                <DropdownMenuItem
-                  onClick={() => {
-                    router.push(`/${slug}/addData/${row.original.id}`);
-                  }}
-                >
-                  Edit
-                </DropdownMenuItem>
-              )}
-
-              {permissions.canDelete && (
                 <>
                   <DropdownMenuSeparator />
+
+                  <DropdownMenuItem
+                    onClick={() => {
+                      router.push(`/${slug}/addData/${row.original.id}`);
+                    }}
+                  >
+                    Edit
+                  </DropdownMenuItem>
+                </>
+              )}
+
+              {console.log(permissions.canDelete, "canDelete")}
+              {permissions.canDelete && (
+
+                <>
+                  <DropdownMenuSeparator />
+
                   <DropdownMenuItem
                     className="text-red-600 focus:text-red-700"
                     onClick={() => {

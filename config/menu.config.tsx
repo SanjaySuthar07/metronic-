@@ -137,13 +137,11 @@ export const mapMenu = (data: any[]) => {
 
   return data
     .filter((item: any) => {
-      // check if permissions exist
+      // permissions exist check
       if (!item.permissions || item.permissions.length === 0) return false;
 
-      // check if any permission ends with _access
-      return item.permissions.some((perm: any) =>
-        perm.name.endsWith('_access')
-      );
+      // ✅ agar 1 mila → show
+      return item.permissions.includes(1);
     })
     .map((item: any) => {
       return {

@@ -30,8 +30,7 @@ import { Tooltip } from 'react-tooltip';
 import { Info } from 'lucide-react';
 
 import { addDataApi, getDetailApi, moduleDetailsApi, putFormApi } from '@/store/thunk/dynamicModule.thunk';
-import { FilesUpload } from '../../../settings/components/files-upload';
-
+import { FormFilesUpload } from './form-files-upload';
 // Dynamic import for CKEditor
 const CKEditor = dynamic(
   () => import("@ckeditor/ckeditor5-react").then((mod) => mod.CKEditor),
@@ -54,6 +53,18 @@ function FormModule({ slug, id, mode }: { slug: string; id: string; mode: string
   const form = useForm({ defaultValues: {} });
   const [loading, setLoading] = useState(false);
 
+  // Visibility IDs: 1 = Create form, 2 = Edit form, 3 = Show page, 4 = Delete action
+  const getVisibilityId = (): number => {
+    return mode === "create" ? 1 : 2; // 1 for create, 2 for edit
+  };
+
+  // Check if a field should be visible based on status and visibility array
+  const isFieldVisible = (field: any): boolean => {
+    if (field.status === false) return false;
+    const visibilityId = getVisibilityId();
+    return Array.isArray(field.visibility) && field.visibility.includes(visibilityId);
+  };
+
   // Fetch module structure
   useEffect(() => {
     dispatch(moduleDetailsApi(slug));
@@ -71,7 +82,7 @@ function FormModule({ slug, id, mode }: { slug: string; id: string; mode: string
     if (moduleList?.fields) {
       const defaultValues: any = {};
 
-      moduleList.fields.forEach((f: any) => {
+      moduleList.fields.filter((f: any) => isFieldVisible(f)).forEach((f: any) => {
         let value: any = "";
 
         if (id && getModuleDetailTableData?.data) {
@@ -103,8 +114,7 @@ function FormModule({ slug, id, mode }: { slug: string; id: string; mode: string
   const onSubmit = async (values: any) => {
     const formattedData: any = {};
 
-    moduleList?.fields?.forEach((field: any) => {
-      if (field.status === false) return;
+    moduleList?.fields?.filter((field: any) => isFieldVisible(field)).forEach((field: any) => {
       let value = values[field.name];
 
       if (value === "" || value === undefined) {
@@ -193,8 +203,8 @@ function FormModule({ slug, id, mode }: { slug: string; id: string; mode: string
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {[...(moduleList?.fields || [])]
                   .sort((a: any, b: any) => (Number(a.order_number) || 0) - (Number(b.order_number) || 0))
+                  .filter((field: any) => isFieldVisible(field))
                   .map((field: any, ind: number) => {
-                    if (field.status === false) return null;
 
                     const inputType = field.type;
                     const name = field.name;
@@ -501,7 +511,7 @@ function FormModule({ slug, id, mode }: { slug: string; id: string; mode: string
                             <FormItem>
                               {renderLabel()}
                               <FormControl>
-                                <FilesUpload
+                                <FormFilesUpload
                                   showCard={false}
                                   maxFiles={maxFiles}
                                   multiple={isMultiple}
