@@ -29,26 +29,54 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { LoaderCircleIcon } from 'lucide-react';
 import { toast } from 'sonner';
-import { fetchReceptchSettings, updateReceptchSettings } from "@/store/thunk/settings.thunk";
+import { fetchGeneralSettings, updateGeneralSettings } from "@/store/thunk/settings.thunk";
 import { useEffect, useState } from 'react';
 
-export const recaptchaSettings = [
+export const generalSetting = [
   {
-    label: "Recaptcha Site",
-    name: "RECAPTCHA_SITE",
+    label: "Expired Link Duration",
+    name: "expiredLinkDuration",
     type: "text",
     validation: { required: true },
-    message: "Recaptcha Site Key"
   },
   {
-    label: "Recaptcha Secret",
-    name: "RECAPTCHA_SECRET",
+    label: "Support Email",
+    name: "supportEmail1",
     type: "text",
     validation: { required: true },
-    message: "Recaptcha Secret Key"
+  },
+  {
+    label: "Access Token Expires In Minutes",
+    name: "accessTokenExpires2",
+    type: "text",
+    validation: { required: true },
+  },
+  {
+    label: "Refresh Token Expires In Minutes",
+    name: "RECAPTCHA_SECRET3",
+    type: "text",
+    validation: { required: true },
+  },
+  {
+    label: "Login Attempt Seconds",
+    name: "RECAPT4CHA_SECRET",
+    type: "text",
+    validation: { required: true },
+  },
+  {
+    label: "Login Attempr Minute",
+    name: "RECAPTCH5A_SECRET",
+    type: "text",
+    validation: { required: true },
+  },
+  {
+    label: "Login Attempt Hour",
+    name: "RECAPTCHA6_SECRET",
+    type: "text",
+    validation: { required: true },
   },
 ];
-export default function RecaptchaSetting() {
+export default function GeneralSetting() {
   const dispatch = useDispatch<AppDispatch>();
   const [showPassword, setShowPassword] = useState<Record<string, boolean>>({});
 
@@ -59,13 +87,13 @@ export default function RecaptchaSetting() {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      await dispatch(fetchReceptchSettings());
+      await dispatch(fetchGeneralSettings());
       setLoading(false);
     };
     fetchData();
   }, [dispatch]);
 
-  const schema = generateSchemaFromConfig(recaptchaSettings);
+  const schema = generateSchemaFromConfig(generalSetting);
   const form = useForm({
     resolver: zodResolver(schema),
     defaultValues: {},
@@ -74,7 +102,7 @@ export default function RecaptchaSetting() {
   useEffect(() => {
     if (recaptchaSetting && Object.keys(recaptchaSetting).length > 0) {
       const formatted = Object.fromEntries(
-        recaptchaSettings.map((field) => [
+        generalSetting.map((field) => [
           field.name,
           recaptchaSetting[field.name]?.toString() ?? "",
         ])
@@ -89,7 +117,7 @@ export default function RecaptchaSetting() {
       setSubmitting(true);
 
       const payload = Object.fromEntries(
-        recaptchaSettings.map((field) => [
+        generalSetting.map((field) => [
           field.name,
           field.type === "number"
             ? Number(values[field.name])
@@ -97,14 +125,15 @@ export default function RecaptchaSetting() {
         ])
       );
 
+      console.log("payload", payload);
 
-      const resultAction = await dispatch(updateReceptchSettings(payload));
-      if (updateReceptchSettings.fulfilled.match(resultAction)) {
+      const resultAction = await dispatch(updateGeneralSettings(payload));
+      if (updateGeneralSettings.fulfilled.match(resultAction)) {
         toast.success(resultAction?.payload?.message);
-        await dispatch(fetchReceptchSettings());
+        await dispatch(fetchGeneralSettings());
       }
 
-      if (updateReceptchSettings.rejected.match(resultAction)) {
+      if (updateGeneralSettings.rejected.match(resultAction)) {
         toast.error(resultAction.payload as string);
       }
     } catch (error) {
@@ -118,9 +147,9 @@ export default function RecaptchaSetting() {
     <Card>
       <CardHeader className="py-4">
         <CardHeading>
-          <CardTitle>Captcha Settings</CardTitle>
+          <CardTitle>General Settings</CardTitle>
           <CardDescription>
-            Manage Captcha configurations
+            Manage General Configurations
           </CardDescription>
         </CardHeading>
       </CardHeader>
@@ -132,14 +161,14 @@ export default function RecaptchaSetting() {
             className="max-w-[800px]"
           >
             {loading ? (
-              Array.from({ length: recaptchaSettings.length }).map((_, i) => (
+              Array.from({ length: generalSetting.length }).map((_, i) => (
                 <div key={i} className="space-y-2">
                   <Skeleton className="h-4 w-32" />
                   <Skeleton className="h-10 w-full" />
                 </div>
               ))
             ) : (
-              recaptchaSettings.map((field) => (
+              generalSetting.map((field) => (
                 <div key={field.name} className="mb-6">
 
                   <FormField
@@ -213,7 +242,7 @@ export default function RecaptchaSetting() {
                 {submitting && (
                   <LoaderCircleIcon className="animate-spin mr-2" size={16} />
                 )}
-                Update
+                Save Captcha
               </Button>
             </div>
           </form>

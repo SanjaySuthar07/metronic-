@@ -2,9 +2,7 @@
 
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '@/store';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { getProfileSchema, ProfileSchemaType } from '../forms/profile-schema';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -15,6 +13,8 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
+
 import {
   Form,
   FormControl,
@@ -23,55 +23,82 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import { Skeleton } from '@/components/ui/skeleton';
 import { LoaderCircleIcon } from 'lucide-react';
 import { toast } from 'sonner';
-import { getProfile, updateProfile } from '@/store/thunk/auth.thunk';
+import { fetchGeneralSettings, updateGeneralSettings } from "@/store/thunk/settings.thunk";
+import { useEffect, useState } from 'react';
 
-export default function AccountDetails() {
+function formatLabel(key: string) {
+  return key
+    .split('_')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
+export default function GeneralSetting() {
   const dispatch = useDispatch<AppDispatch>();
 
-  const { user, loading } = useSelector((state: RootState) => state.auth);
+  const { generalSetting } = useSelector((state: RootState) => state.setting);
+  const authSettings = generalSetting?.auth || {};
 
-  const form = useForm<ProfileSchemaType>({
-    resolver: zodResolver(getProfileSchema()),
-    defaultValues: {
-      firstName: user?.first_name || '',
-      lastName: user?.last_name || '',
-      expiredLinkDuration: user?.expired_link_duration || '',
-      accessTokenExpires: user?.accessTokenExpires || '',
-      refreshTokenExpires: user?.refreshTokenExpires || '',
-      loginAttemptSeconds: user?.loginAttemptSeconds || '',
-      loginAttemptMinute: user?.loginAttemptMinute || '',
-      loginAttemptHour: user?.loginAttemptHour || '',
-    },
+  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      await dispatch(fetchGeneralSettings());
+      setLoading(false);
+    };
+    fetchData();
+  }, [dispatch]);
+
+  const form = useForm({
+    defaultValues: {},
   });
 
-  async function onSubmit(values: ProfileSchemaType) {
-    try {
-      const payload = {
-        first_name: values.firstName,
-        last_name: values.lastName,
-        expired_link_duration: values.expiredLinkDuration,
-        access_token_expires: values.accessTokenExpires,
-        refresh_token_expires: values.refreshTokenExpires,
-        login_attempt_seconds: values.loginAttemptSeconds,
-        login_attempt_minute: values.loginAttemptMinute,
-        login_attempt_hour: values.loginAttemptHour,
+  useEffect(() => {
+    if (Object.keys(authSettings).length > 0) {
+      const formatted = Object.fromEntries(
+        Object.entries(authSettings).map(([key, data]: any) => [
+          key,
+          data.type === "toggle" ? !!data.value : data.value?.toString() ?? "",
+        ])
+      );
+      form.reset(formatted);
+    }
+  }, [generalSetting, form]);
 
+  async function onSubmit(values: any) {
+    try {
+      setSubmitting(true);
+
+      // Extract dynamically generated items into what backend expects
+      const payload = {
+        auth: Object.fromEntries(
+          Object.keys(authSettings).map((key) => [
+            key,
+            typeof values[key] === "boolean"
+              ? (values[key] ? true : false)
+              : Number(values[key] || ""),
+          ])
+        ),
       };
-      const resultAction = await dispatch(updateProfile(payload));
-      if (updateProfile.fulfilled.match(resultAction)) {
-        toast.success('Profile updated successfully');
-        const resultActions = await dispatch(getProfile());
-        if (getProfile.fulfilled.match(resultActions)) {
-          form.reset(values);
-        }
-      }
-      if (updateProfile.rejected.match(resultAction)) {
+
+      console.log("Submit payload:", payload);
+
+      const resultAction = await dispatch(updateGeneralSettings(payload));
+      if (updateGeneralSettings.fulfilled.match(resultAction)) {
+        toast.success(resultAction?.payload?.message || "Settings updated successfully.");
+        await dispatch(fetchGeneralSettings());
+      } else {
         toast.error(resultAction.payload as string);
       }
     } catch (error) {
-      toast.error('Something went wrong');
+      toast.error("Something went wrong");
+    } finally {
+      setSubmitting(false);
     }
   }
 
@@ -79,9 +106,9 @@ export default function AccountDetails() {
     <Card>
       <CardHeader className="py-4">
         <CardHeading>
-          <CardTitle>General</CardTitle>
+          <CardTitle>Auth Settings</CardTitle>
           <CardDescription>
-            Manage profile information
+            Manage Auth Configurations dynamically
           </CardDescription>
         </CardHeading>
       </CardHeader>
@@ -90,156 +117,75 @@ export default function AccountDetails() {
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="max-w-[520px] grid md:grid-cols-2 gap-6"
+            className="max-w-[800px]"
           >
-            <FormField
-              control={form.control}
-              name="expiredLinkDuration"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    Expired Link Duration <span className="text-red-500">*</span>
-                  </FormLabel>
+            {loading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="space-y-2">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-10 w-full" />
+                  </div>
+                ))}
+              </div>
+            ) : Object.keys(authSettings).length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {Object.entries(authSettings).map(([key, item]: any) => (
+                  <div key={key}>
+                    <FormField
+                      control={form.control}
+                      name={key}
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col justify-center h-full">
+                          <FormLabel>{formatLabel(key)}</FormLabel>
 
-                  <FormControl>
-                    <Input
-                      placeholder="Enter expired link duration" type="number"
-                      {...field}
+                          <FormControl>
+                            <div className="relative">
+                              {item.type === "toggle" ? (
+                                <div className="mt-2 block">
+                                  <Switch
+                                    checked={!!field.value}
+                                    onCheckedChange={field.onChange}
+                                  />
+                                </div>
+                              ) : item.type === "textarea" ? (
+                                <textarea
+                                  className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                  placeholder={`Enter ${formatLabel(key)}`}
+                                  {...field}
+                                />
+                              ) : (
+                                <Input
+                                  type={item.type === "password" ? "password" : "text"}
+                                  placeholder={`Enter ${formatLabel(key)}`}
+                                  {...field}
+                                />
+                              )}
+                            </div>
+                          </FormControl>
+
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                  </FormControl>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-muted-foreground">No auth settings found.</div>
+            )}
 
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <div>
-              <FormLabel>Support Email</FormLabel>
-
-              <Input
-                value={user?.email || ''}
-                placeholder="Email"
-                disabled
-              />
-            </div>
-
-            <FormField
-              control={form.control}
-              name="accessTokenExpires"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    Access Token Expires In Minutes<span className="text-red-500">*</span>
-                  </FormLabel>
-
-                  <FormControl>
-                    <Input
-                      placeholder="Enter aceess Token Expires" type="number"
-                      {...field}
-                    />
-                  </FormControl>
-
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="refreshTokenExpires"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    Refresh Token Expires In Minutes<span className="text-red-500">*</span>
-                  </FormLabel>
-
-                  <FormControl>
-                    <Input
-                      placeholder="Enter refresh token expires" type='number'
-                      {...field}
-                    />
-                  </FormControl>
-
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="loginAttemptSeconds"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    Login Attempt Seconds<span className="text-red-500">*</span>
-                  </FormLabel>
-
-                  <FormControl>
-                    <Input
-                      placeholder="Enter login attempt in seconds" type="number"
-                      {...field}
-                    />
-                  </FormControl>
-
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="loginAttemptMinute"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    Login Attempr Minute<span className="text-red-500">*</span>
-                  </FormLabel>
-
-                  <FormControl>
-                    <Input
-                      placeholder="Enter login attempt in Minute" type='number'
-                      {...field}
-                    />
-                  </FormControl>
-
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="loginAttemptHour"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    Login Attempt Hour<span className="text-red-500">*</span>
-                  </FormLabel>
-
-                  <FormControl>
-                    <Input
-                      placeholder="Enter login attempt in hour" type='number'
-                      {...field}
-                    />
-                  </FormControl>
-
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <div className=" grid col-span-1 md:col-span-2 flex justify-end gap-3">
-
+            <div className="grid col-span-1 md:col-span-2 flex justify-end gap-3 mt-8">
               <Button
                 type="submit"
-                disabled={loading || !form.formState.isDirty}
+                disabled={submitting || (!form.formState.isDirty && Object.keys(authSettings).length > 0)}
               >
-                {loading && (
-                  <LoaderCircleIcon
-                    className="animate-spin mr-2 "
-                    size={16}
-                  />
+                {submitting && (
+                  <LoaderCircleIcon className="animate-spin mr-2" size={16} />
                 )}
-
                 Update
               </Button>
             </div>
-
-
           </form>
         </Form>
       </CardContent>

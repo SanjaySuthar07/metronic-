@@ -1,13 +1,15 @@
 import { createSlice } from "@reduxjs/toolkit";
 import {
+  fetchGeneralSettings,
   fetchReceptchSettings,
   fetchSmtpSettings,
+  updateGeneralSettings,
   updateReceptchSettings,
   updateSmtpSettings,
 } from "../thunk/settings.thunk";
 
 interface SettingsState {
-  setting: any[];
+  generalSetting: any;
   emailSetting: any;
   loading: boolean;
   error: string | null;
@@ -16,7 +18,7 @@ interface SettingsState {
 }
 
 const initialState: SettingsState = {
-  setting: [],
+  generalSetting: [],
   emailSetting: {},
   recaptchaSetting: {},
   loading: false,
@@ -35,6 +37,41 @@ const settingsSlice = createSlice({
   },
   extraReducers: (builder) => {
     // ------------------------------
+    // general setting reducer
+    // ------------------------------
+    builder.addCase(fetchGeneralSettings.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+
+    builder.addCase(fetchGeneralSettings.fulfilled, (state, action) => {
+      console.log(action.payload)
+      state.generalSetting = action.payload.data; // ✅ yaha change
+    });
+
+    builder.addCase(fetchGeneralSettings.rejected, (state, action: any) => {
+      state.loading = false;
+      state.error = action.payload;
+    });
+
+    builder.addCase(updateGeneralSettings.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+      state.success = false;
+    });
+
+    builder.addCase(updateGeneralSettings.fulfilled, (state, action) => {
+      state.loading = false;
+      state.success = true;
+      state.generalSetting = action.payload;
+    });
+
+    builder.addCase(updateGeneralSettings.rejected, (state, action: any) => {
+      state.loading = false;
+      state.error = action.payload;
+      state.success = false;
+    });
+    // ------------------------------
     // email setting reducer
     // ------------------------------
     builder.addCase(fetchSmtpSettings.pending, (state) => {
@@ -51,6 +88,7 @@ const settingsSlice = createSlice({
       state.loading = false;
       state.error = action.payload;
     });
+
 
     builder.addCase(updateSmtpSettings.pending, (state) => {
       state.loading = true;

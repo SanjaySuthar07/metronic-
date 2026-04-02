@@ -1,5 +1,36 @@
 import api from "@/api/api";
 import { createAsyncThunk } from "@reduxjs/toolkit";
+// general thunk
+export const updateGeneralSettings = createAsyncThunk(
+    "updateGeneralSettings",
+    async (
+        payload: Record<string, any>,
+        { rejectWithValue }
+    ) => {
+        try {
+            const response = await api.post("/update-settings", payload);
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || "Failed to update settings";
+            return rejectWithValue(message);
+        }
+    }
+);
+export const fetchGeneralSettings = createAsyncThunk(
+    "getgeneralsettings",
+    async (_, { rejectWithValue }) => {
+        try {
+            const response = await api.get("/get-all-settings");
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || "Failed to fetch settings";
+            return rejectWithValue(message);
+        }
+    }
+);
+
 
 // email thunk
 export const fetchSmtpSettings = createAsyncThunk(
@@ -57,6 +88,25 @@ export const updateReceptchSettings = createAsyncThunk(
         } catch (error: any) {
             const message =
                 error.response?.data?.message || "Failed to update receptch settings";
+            return rejectWithValue(message);
+        }
+    }
+);
+
+
+
+
+// cache thunk
+export const fetchCacheSettings = createAsyncThunk(
+    "cache/fetch",
+    async (payload: { type: string }, { rejectWithValue }) => {
+        try {
+            const response = await api.post(`/${payload.type}`);
+
+            return response.data;
+        } catch (error: any) {
+            const message =
+                error.response?.data?.message || "Failed to clear cache";
             return rejectWithValue(message);
         }
     }

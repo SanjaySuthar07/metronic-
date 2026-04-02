@@ -1,246 +1,152 @@
-'use client';
+"use client";
 
-import { useDispatch } from 'react-redux';
-import { useState } from 'react';
-import { Eye, EyeOff, LoaderCircleIcon } from 'lucide-react';
-import { AppDispatch } from '@/store';
-import { changePassword } from '@/store/thunk/auth.thunk';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
+import { Card, CardContent, CardDescription, CardHeader, CardHeading, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import {
-  getChangePasswordSchema,
-  ChangePasswordSchemaType,
-} from '../forms/change-password-schema';
+  Database,
+  Settings,
+  Route,
+  FileText,
+} from "lucide-react";
+import { useState } from "react";
+import { Trash2, RefreshCcw } from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchCacheSettings } from "@/store/thunk/settings.thunk";
+import { toast } from "sonner";
 
-import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardHeading,
-  CardTitle,
-} from '@/components/ui/card';
+const cacheList = [
+  {
+    title: "Clear All Cache",
+    description:
+      "Clear caching: database caching, static blocks... Run this command when you don't see the changes after updating data.",
+    icon: Database,
+    color: "bg-blue",
+    action: "clear-cache",
+    buttonText: "Clear",
+    showSize: true,
+    buttonIcon: Trash2,
+  },
+  {
+    title: "Refresh compiled views",
+    description: "Clear compiled views to make views up to date.",
+    icon: RefreshCcw,
+    color: "bg-yellow",
+    action: "clear-view-cache",
+    buttonText: "Refresh",
+    buttonIcon: RefreshCcw,
 
-import { Input } from '@/components/ui/input';
+  },
+  {
+    title: "Clear config cache",
+    description:
+      "You might need to refresh the config caching when you change something on production environment.",
+    icon: Settings,
+    color: "bg-blue",
+    action: "clear-config-cache",
+    buttonText: "Clear",
+    buttonIcon: RefreshCcw,
 
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
+  },
+  {
+    title: "Clear route cache",
+    description: "Clear cache routing.",
+    icon: Route,
+    color: "bg-green",
+    action: "clear-route-cache",
+    buttonText: "Clear",
+    buttonIcon: RefreshCcw,
+  },
+  {
+    title: "Clear log",
+    description: "Clear system log files.",
+    icon: FileText,
+    color: "bg-red",
+    action: "clear-logs",
+    buttonText: "Clear",
+    buttonIcon: Trash2,
+  },
+];
 
-import { toast } from 'sonner';
+export default function Cache() {
+  const { user } = useSelector((s: any) => s.auth)
+  const [loadingAction, setLoadingAction] = useState<string | null>(null);
+  const dispatch = useDispatch();
+  const [cacheSize, setCacheSize] = useState<string>(user?.cache_size?.total || "0.00 B");
 
-export default function ChangePassword() {
-  const dispatch = useDispatch<AppDispatch>();
-
-  const [showCurrent, setShowCurrent] = useState(false);
-  const [showNew, setShowNew] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
-
-  const [isLoading, setIsLoading] = useState(false);
-
-  const form = useForm<ChangePasswordSchemaType>({
-    resolver: zodResolver(getChangePasswordSchema()),
-    defaultValues: {
-      current_password: '',
-      new_password: '',
-      new_password_confirmation: '',
-    },
-  });
-
-  async function onSubmit(values: ChangePasswordSchemaType) {
-
-    setIsLoading(true);
-
-    const resultAction = await dispatch(changePassword(values));
-
-    if (changePassword.fulfilled.match(resultAction)) {
-
-      toast.success('Password changed successfully');
-
-      form.reset();
-
-    } else {
-
-      toast.error(resultAction.payload as string);
-
+  const handleAction = async (type: string) => {
+    try {
+      setLoadingAction(type);
+      const res = await dispatch(fetchCacheSettings({ type }));
+      if (fetchCacheSettings.fulfilled.match(res)) {
+        const total = res.payload?.data?.after?.total;
+        toast.success(res.payload?.message);
+        if (total) {
+          setCacheSize(total);
+        }
+      }
+      setLoadingAction(null);
+    } catch {
+      setLoadingAction(null);
     }
-
-    setIsLoading(false);
-  }
+  };
 
   return (
     <Card>
       <CardHeader className="py-4">
         <CardHeading>
-          <CardTitle>Change Password</CardTitle>
+          <CardTitle>Cache Settings</CardTitle>
           <CardDescription>
-            Update your account password
+            Manage Cache configurations
           </CardDescription>
         </CardHeading>
       </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-6 max-w-[520px]"
+
+      <CardContent className="space-y-4">
+
+        {cacheList.map((item) => (
+          <div
+            key={item.action}
+            className="flex items-center justify-between border rounded-lg p-4"
           >
-            <FormField
-              control={form.control}
-              name="current_password"
-              render={({ field }) => (
-                <FormItem>
+            {/* LEFT */}
+            <div className="flex items-start gap-4">
 
-                  <FormLabel>
-                    Current Password <span className="text-red-500">*</span>
-                  </FormLabel>
-                  <div className="relative">
-                    <FormControl>
-                      <Input
-                        type={showCurrent ? 'text' : 'password'}
-                        placeholder="Enter your current password"
-                        disabled={isLoading}
-                        {...field}
-                      />
-                    </FormControl>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      mode="icon"
-                      size="sm"
-                      onClick={() => setShowCurrent(!showCurrent)}
-                      className="absolute end-0 top-1/2 -translate-y-1/2 h-7 w-7 me-1.5 bg-transparent!"
-                    >
-                      {showCurrent ? (
-                        <Eye className="text-muted-foreground" />
-                      ) : (
-                        <EyeOff className="text-muted-foreground" />
-                      )}
-                    </Button>
-
-                  </div>
-
-                  <FormMessage />
-
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="new_password"
-              render={({ field }) => (
-                <FormItem>
-
-                  <FormLabel>
-                    New Password <span className="text-red-500">*</span>
-                  </FormLabel>
-
-                  <div className="relative">
-
-                    <FormControl>
-                      <Input
-                        type={showNew ? 'text' : 'password'}
-                        placeholder="Enter your new password"
-                        disabled={isLoading}
-                        {...field}
-                      />
-                    </FormControl>
-
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      mode="icon"
-                      size="sm"
-                      onClick={() => setShowNew(!showNew)}
-                      className="absolute end-0 top-1/2 -translate-y-1/2 h-7 w-7 me-1.5 bg-transparent!"
-                    >
-                      {showNew ? (
-                        <Eye className="text-muted-foreground" />
-                      ) : (
-                        <EyeOff className="text-muted-foreground" />
-                      )}
-                    </Button>
-
-                  </div>
-
-                  <FormMessage />
-
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="new_password_confirmation"
-              render={({ field }) => (
-                <FormItem>
-
-                  <FormLabel>
-                    Confirm New Password <span className="text-red-500">*</span>
-                  </FormLabel>
-
-                  <div className="relative">
-
-                    <FormControl>
-                      <Input
-                        type={showConfirm ? 'text' : 'password'}
-                        placeholder="Enter your confirm password"
-                        disabled={isLoading}
-                        {...field}
-                      />
-                    </FormControl>
-
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      mode="icon"
-                      size="sm"
-                      onClick={() => setShowConfirm(!showConfirm)}
-                      className="absolute end-0 top-1/2 -translate-y-1/2 h-7 w-7 me-1.5 bg-transparent!"
-                    >
-                      {showConfirm ? (
-                        <Eye className="text-muted-foreground" />
-                      ) : (
-                        <EyeOff className="text-muted-foreground" />
-                      )}
-                    </Button>
-
-                  </div>
-
-                  <FormMessage />
-
-                </FormItem>
-              )}
-            />
-            <div className="flex justify-end gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                disabled={isLoading}
-                onClick={() => form.reset()}
+              {/* ICON */}
+              <div
+                className={`p-3 rounded-lg text-white ${item.color}-500 `}
               >
-                Reset
-              </Button>
+                <item.icon size={20} />
+              </div>
 
-              <Button
-                type="submit"
-                disabled={isLoading}
-              >
-                {isLoading && (
-                  <LoaderCircleIcon
-                    className="animate-spin mr-2"
-                    size={16}
-                  />
+              {/* TEXT */}
+              <div>
+                <h3 className="font-semibold">{item.title}</h3>
+                <p className="text-sm text-muted-foreground">
+                  {item.description}
+                </p>
+                {item.showSize && (
+                  <div className="mt-2 inline-flex items-center gap-2 bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-xs font-medium">
+                    <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                    Current Size: {cacheSize}
+                  </div>
                 )}
-                Update Password
-              </Button>
+              </div>
+
             </div>
-          </form>
-        </Form>
+
+            <Button
+              onClick={() => handleAction(item.action)}
+              disabled={loadingAction === item.action}
+              className={`flex items-center gap-2 ${item.color}-500`}
+            >
+              {item.buttonIcon && <item.buttonIcon size={16} />}
+
+              {loadingAction === item.action
+                ? "Processing..."
+                : item.buttonText}
+            </Button>
+          </div>
+        ))}
 
       </CardContent>
     </Card>

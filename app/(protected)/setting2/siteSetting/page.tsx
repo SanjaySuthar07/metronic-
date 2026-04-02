@@ -1,18 +1,9 @@
-'use client';
+"use client";
 
-import { useDispatch } from 'react-redux';
-import { useState } from 'react';
-import { Eye, EyeOff, LoaderCircleIcon } from 'lucide-react';
-import { AppDispatch } from '@/store';
-import { changePassword } from '@/store/thunk/auth.thunk';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import {
-  getChangePasswordSchema,
-  ChangePasswordSchemaType,
-} from '../forms/change-password-schema';
-
-import { Button } from '@/components/ui/button';
+import { useSelector, useDispatch } from "react-redux";
+import { RootState, AppDispatch } from "@/store";
+import { useForm } from "react-hook-form";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -20,10 +11,14 @@ import {
   CardHeader,
   CardHeading,
   CardTitle,
-} from '@/components/ui/card';
-
-import { Input } from '@/components/ui/input';
-
+} from "@/components/ui/card";
+import {
+  Globe,
+  Share2,
+  MapPin,
+  BarChart3,
+} from "lucide-react";
+import { Input } from "@/components/ui/input";
 import {
   Form,
   FormControl,
@@ -31,217 +26,283 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
+} from "@/components/ui/form";
+import { Skeleton } from "@/components/ui/skeleton";
+import { LoaderCircleIcon } from "lucide-react";
+import { toast } from "sonner";
+import {
+  fetchGeneralSettings,
+  updateGeneralSettings,
+} from "@/store/thunk/settings.thunk";
+import { useEffect, useState } from "react";
 
-import { toast } from 'sonner';
+/* ================= CONFIG ================= */
+export const siteSettingConfig = [
+  {
+    title: "General Settings",
+    icon: Globe,
+    fields: [
+      { label: "Site Name", name: "site_name", type: "text" },
+      { label: "Site Description", name: "site_description", type: "text" },
+      { label: "Site Logo", name: "site_logo", type: "file" },
+      { label: "Site Favicon", name: "site_favicon", type: "file" },
+      { label: "Site Email", name: "site_email", type: "email" },
+      { label: "Site Phone", name: "site_phone", type: "text" },
+      { label: "Primary Color", name: "primary_color", type: "color" },
+      { label: "Secondary Color", name: "secondary_color", type: "color" },
+    ],
+  },
+  {
+    title: "Social Media",
+    icon: Share2,
+    fields: [
+      { label: "Facebook", name: "facebook", type: "text" },
+      { label: "Instagram", name: "instagram", type: "text" },
+      { label: "Twitter", name: "twitter", type: "text" },
+      { label: "LinkedIn", name: "linkedin", type: "text" },
+      { label: "YouTube", name: "youtube", type: "text" },
+    ],
+  },
+  {
+    title: "Contact Info",
+    icon: MapPin,
+    fields: [
+      { label: "Address", name: "address", type: "text" },
+      { label: "Google Map Link", name: "google_map_link", type: "text" },
+      { label: "Support Email", name: "support_email", type: "email" },
+      { label: "Support Phone", name: "support_phone", type: "text" },
+    ],
+  },
+  {
+    title: "SEO Settings",
+    icon: BarChart3,
+    fields: [
+      { label: "Meta Title", name: "meta_title", type: "text" },
+      { label: "Meta Description", name: "meta_description", type: "text" },
+      { label: "Meta Keywords", name: "meta_keywords", type: "text" },
+    ],
+  },
+];
 
-export default function ChangePassword() {
+/* ================= COMPONENT ================= */
+export default function GeneralSetting() {
   const dispatch = useDispatch<AppDispatch>();
+  const { generalSetting } = useSelector((state: RootState) => state.setting);
 
-  const [showCurrent, setShowCurrent] = useState(false);
-  const [showNew, setShowNew] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-  const [isLoading, setIsLoading] = useState(false);
+  /* ===== FLATTEN ALL FIELDS ===== */
+  const allFields = siteSettingConfig.flatMap((s) => s.fields);
 
-  const form = useForm<ChangePasswordSchemaType>({
-    resolver: zodResolver(getChangePasswordSchema()),
-    defaultValues: {
-      current_password: '',
-      new_password: '',
-      new_password_confirmation: '',
-    },
+  const form = useForm({
+    defaultValues: Object.fromEntries(allFields.map((f) => [f.name, ""])),
   });
 
-  async function onSubmit(values: ChangePasswordSchemaType) {
+  /* ===== FETCH ===== */
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      await dispatch(fetchGeneralSettings());
+      setLoading(false);
+    };
+    fetchData();
+  }, [dispatch]);
 
-    setIsLoading(true);
-
-    const resultAction = await dispatch(changePassword(values));
-
-    if (changePassword.fulfilled.match(resultAction)) {
-
-      toast.success('Password changed successfully');
-
-      form.reset();
-
-    } else {
-
-      toast.error(resultAction.payload as string);
-
+  /* ===== SET DEFAULT VALUES FROM API ===== */
+  useEffect(() => {
+    if (Array.isArray(generalSetting)) {
+      const formatted = Object.fromEntries(
+        allFields.map((field) => {
+          const item = generalSetting.find(
+            (s: any) => s.key === field.name
+          );
+          return [field.name, item?.value || ""];
+        })
+      );
+      form.reset(formatted);
     }
+  }, [generalSetting]);
 
-    setIsLoading(false);
+  /* ===== SUBMIT ===== */
+  async function onSubmit(values: any) {
+    try {
+      setSubmitting(true);
+
+      const payload = {
+        settings: allFields.map((field) => {
+          const existing = generalSetting?.find(
+            (s: any) => s.key === field.name
+          );
+
+          return {
+            id: existing?.id,
+            key: field.name,
+            value:
+              field.type === "file"
+                ? values[field.name] // handle file separately if needed
+                : String(values[field.name] || ""),
+          };
+        }),
+      };
+
+      console.log("payload", payload);
+
+      const res = await dispatch(updateGeneralSettings(payload));
+
+      if (updateGeneralSettings.fulfilled.match(res)) {
+        toast.success("Settings updated");
+        dispatch(fetchGeneralSettings());
+      } else {
+        toast.error("Error updating settings");
+      }
+    } catch {
+      toast.error("Something went wrong");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
+  /* ================= UI ================= */
   return (
     <Card>
-      <CardHeader className="py-4">
+      <CardHeader>
         <CardHeading>
-          <CardTitle>Change Password</CardTitle>
+          <CardTitle>Site Settings</CardTitle>
           <CardDescription>
-            Update your account password
+            Manage your website configuration
           </CardDescription>
         </CardHeading>
       </CardHeader>
+
       <CardContent>
         <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-6 max-w-[520px]"
-          >
-            <FormField
-              control={form.control}
-              name="current_password"
-              render={({ field }) => (
-                <FormItem>
+          <form onSubmit={form.handleSubmit(onSubmit)}>
 
-                  <FormLabel>
-                    Current Password <span className="text-red-500">*</span>
-                  </FormLabel>
-                  <div className="relative">
-                    <FormControl>
-                      <Input
-                        type={showCurrent ? 'text' : 'password'}
-                        placeholder="Enter your current password"
-                        disabled={isLoading}
-                        {...field}
-                      />
-                    </FormControl>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      mode="icon"
-                      size="sm"
-                      onClick={() => setShowCurrent(!showCurrent)}
-                      className="absolute end-0 top-1/2 -translate-y-1/2 h-7 w-7 me-1.5 bg-transparent!"
-                    >
-                      {showCurrent ? (
-                        <Eye className="text-muted-foreground" />
-                      ) : (
-                        <EyeOff className="text-muted-foreground" />
-                      )}
-                    </Button>
+            {/* ===== LOADING ===== */}
+            {loading ? (
+              <>
+                {siteSettingConfig.map((section, sectionIndex) => (
+                  <div key={sectionIndex} className="mb-10">
+
+                    {/* 🔥 Section Header Skeleton */}
+                    <div className="flex items-center gap-3 mb-4 p-2 bg-muted rounded-lg">
+                      <Skeleton className="h-5 w-5 rounded-full" />
+                      <Skeleton className="h-5 w-40" />
+                    </div>
+
+                    {/* 🔥 Fields Skeleton */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {section.fields.map((_, i) => (
+                        <div key={i} className="space-y-2">
+                          <Skeleton className="h-4 w-32" />
+                          <Skeleton className="h-10 w-full" />
+                        </div>
+                      ))}
+                    </div>
 
                   </div>
+                ))}</>
+            ) : (
+              <>
+                {/* ===== SECTIONS ===== */}
+                {siteSettingConfig.map((section) => (
+                  <div key={section.title} className="mb-10">
 
-                  <FormMessage />
+                    <div className="flex items-center gap-3 mb-4 p-2 bg-muted rounded-lg">
+                      <section.icon className="h-5 w-5 text-primary" />
+                      <h2 className="text-lg font-semibold">
+                        {section.title}
+                      </h2>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {section.fields.map((field) => (
+                        <FormField
+                          key={field.name}
+                          control={form.control}
+                          name={field.name}
+                          render={({ field: inputField }) => (
+                            <FormItem>
 
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="new_password"
-              render={({ field }) => (
-                <FormItem>
+                              <FormLabel>{field.label}</FormLabel>
 
-                  <FormLabel>
-                    New Password <span className="text-red-500">*</span>
-                  </FormLabel>
+                              <FormControl>
+                                {field.type === "color" ? (
+                                  <div className="flex items-center ">
 
-                  <div className="relative">
+                                    {/* Preview */}
+                                    {/* <div
+                                      className="w-10 h-10 rounded border"
+                                      style={{
+                                        backgroundColor: inputField.value || "#000000",
+                                      }}
+                                    /> */}
 
-                    <FormControl>
-                      <Input
-                        type={showNew ? 'text' : 'password'}
-                        placeholder="Enter your new password"
-                        disabled={isLoading}
-                        {...field}
-                      />
-                    </FormControl>
+                                    {/* Color Picker */}
+                                    <Input
+                                      type="color"
+                                      value={inputField.value || "#000000"}
+                                      onChange={(e) =>
+                                        inputField.onChange(e.target.value)
+                                      }
+                                      className="w-16 h-10 p-1 cursor-pointer rounded-none rounded-l-md"
+                                    />
 
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      mode="icon"
-                      size="sm"
-                      onClick={() => setShowNew(!showNew)}
-                      className="absolute end-0 top-1/2 -translate-y-1/2 h-7 w-7 me-1.5 bg-transparent!"
-                    >
-                      {showNew ? (
-                        <Eye className="text-muted-foreground" />
-                      ) : (
-                        <EyeOff className="text-muted-foreground" />
-                      )}
-                    </Button>
+                                    {/* HEX Input */}
+                                    <Input
+                                      type="text"
+                                      value={inputField.value || ""}
+                                      onChange={(e) =>
+                                        inputField.onChange(e.target.value)
+                                      }
+                                      placeholder="#000000"
+                                      className=" h-10 p-1 rounded-none  rounded-r-md"
+                                    />
 
+                                  </div>
+                                ) : field.type === "file" ? (
+                                  <Input
+                                    type="file"
+                                    onChange={(e) =>
+                                      inputField.onChange(e.target.files?.[0])
+                                    }
+                                  />
+                                ) : (
+                                  <Input
+                                    type={field.type}
+                                    {...inputField}
+                                  />
+                                )}
+                              </FormControl>
+
+                              <FormMessage />
+
+                            </FormItem>
+                          )}
+                        />
+                      ))}
+
+                    </div>
                   </div>
+                ))}
+              </>
+            )}
 
-                  <FormMessage />
-
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="new_password_confirmation"
-              render={({ field }) => (
-                <FormItem>
-
-                  <FormLabel>
-                    Confirm New Password <span className="text-red-500">*</span>
-                  </FormLabel>
-
-                  <div className="relative">
-
-                    <FormControl>
-                      <Input
-                        type={showConfirm ? 'text' : 'password'}
-                        placeholder="Enter your confirm password"
-                        disabled={isLoading}
-                        {...field}
-                      />
-                    </FormControl>
-
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      mode="icon"
-                      size="sm"
-                      onClick={() => setShowConfirm(!showConfirm)}
-                      className="absolute end-0 top-1/2 -translate-y-1/2 h-7 w-7 me-1.5 bg-transparent!"
-                    >
-                      {showConfirm ? (
-                        <Eye className="text-muted-foreground" />
-                      ) : (
-                        <EyeOff className="text-muted-foreground" />
-                      )}
-                    </Button>
-
-                  </div>
-
-                  <FormMessage />
-
-                </FormItem>
-              )}
-            />
-            <div className="flex justify-end gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                disabled={isLoading}
-                onClick={() => form.reset()}
-              >
-                Reset
-              </Button>
-
+            {/* ===== SUBMIT ===== */}
+            <div className="flex justify-end mt-6">
               <Button
                 type="submit"
-                disabled={isLoading}
+                disabled={submitting}
               >
-                {isLoading && (
-                  <LoaderCircleIcon
-                    className="animate-spin mr-2"
-                    size={16}
-                  />
+                {submitting && (
+                  <LoaderCircleIcon className="animate-spin mr-2" />
                 )}
-                Update Password
+                Update
               </Button>
             </div>
+
           </form>
         </Form>
-
       </CardContent>
     </Card>
   );

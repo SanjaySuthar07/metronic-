@@ -255,7 +255,7 @@ export default function EmailSettings() {
                 {submitting && (
                   <LoaderCircleIcon className="animate-spin mr-2" size={16} />
                 )}
-                Save Email
+                Update
               </Button>
             </div>
           </form>

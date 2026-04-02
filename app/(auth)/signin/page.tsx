@@ -124,7 +124,12 @@ export default function Page() {
         setTenant_id(data?.tenant_id)
       }
     } else {
-      setError(result.payload as string);
+      if (result?.payload == "invalid-input-response") {
+        setError("Captcha verification failed");
+      }
+      else {
+        setError(result.payload as string);
+      }
     }
 
     resetCaptcha();

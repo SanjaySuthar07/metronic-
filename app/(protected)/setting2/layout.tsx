@@ -37,7 +37,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const navRoutes = useMemo<NavRoutes>(
     () => ({
       general: {
-        title: 'General',
+        title: 'Auth',
         icon: Settings, // ⚙️ general settings
         path: '/setting2/general',
       },
@@ -104,7 +104,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
       <div className="flex flex-col gap-10 lg:flex-row lg:gap-14">
         <div className="space-y-7 lg:w-[230px] shrink-0 pt-6 lg:sticky lg:top-24 lg:self-start">
-          <div className="flex items-center gap-3">
+          {/* <div className="flex items-center gap-3">
             <Avatar className="size-12">
               {user?.avatar && (
                 <AvatarImage src={user.avatar} alt={user?.first_name + " " + user?.last_name} />
@@ -121,7 +121,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 {user?.user_type === "agency" ? "Customer" : user?.user_type === "agent" ? "User" : user?.user_type}
               </div>
             </div>
-          </div>
+          </div> */}
 
           <Tabs value={activeTab}>
             <TabsList
