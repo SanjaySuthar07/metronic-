@@ -244,7 +244,7 @@ export default function AddFieldDialog({
         { id: 1, label: "Create form" },
         { id: 2, label: "Edit form" },
         { id: 3, label: "Show page" },
-        { id: 4, label: "Delete action" },
+        { id: 4, label: "List page" },
     ];
 
     return (

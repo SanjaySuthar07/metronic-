@@ -91,18 +91,7 @@ function FormModule({ slug, id, mode }: { slug: string; id: string; mode: string
       moduleList.fields.filter((f: any) => isFieldVisible(f)).forEach((f: any) => {
         let value: any = "";
 
-        const detailField = (mode === "edit" && id && getModuleDetailTableData?.fields)
-          ? getModuleDetailTableData.fields.find((df: any) => df.name === f.name)
-          : null;
-
-        if (detailField) {
-          const detailValue = detailField.value;
-          if (f.type === "checkbox") {
-            value = detailValue === "1" || detailValue === true || detailValue === 1;
-          } else {
-            value = detailValue ?? "";
-          }
-        } else if (id && getModuleDetailTableData?.data) {
+        if (id && getModuleDetailTableData?.data) {
           const apiValue = getModuleDetailTableData.data[f.name];
 
           if (apiValue && typeof apiValue === "object" && apiValue.selected !== undefined) {
@@ -226,17 +215,13 @@ function FormModule({ slug, id, mode }: { slug: string; id: string; mode: string
                   .sort((a: any, b: any) => (Number(a.order_number) || 0) - (Number(b.order_number) || 0))
                   .filter((field: any) => isFieldVisible(field))
                   .map((field: any, ind: number) => {
-                    const detailField = (mode === "edit" && getModuleDetailTableData?.fields)
-                      ? getModuleDetailTableData.fields.find((df: any) => df.name === field.name)
-                      : null;
 
-                    const inputType = detailField?.type || field.type;
+                    const inputType = field.type;
                     const name = field.name;
                     const isRequired = field.validation === "required" || field.validation === "required|string";
-                    const fieldOptions = detailField?.options || field.options || [];
 
                     const renderLabel = () => (
-                      <FormLabel className="flex capitalize items-center gap-1.5 leading-none">
+                      <FormLabel className="flex capitalize items-center gap-1.5">
                         {field.label}
                         {isRequired && <span className="text-red-500">*</span>}
                         {field.tooltip_text && (
@@ -394,6 +379,7 @@ function FormModule({ slug, id, mode }: { slug: string; id: string; mode: string
                     }
 
                     // SELECT
+                    // SELECT
                     if (["select", "select-multiple", "BelongsToMany Relationship"].includes(inputType)) {
                       return (
                         <FormField
@@ -404,7 +390,7 @@ function FormModule({ slug, id, mode }: { slug: string; id: string; mode: string
                             const isMultiple = field.is_multiple || inputType === "select-multiple" || inputType === "BelongsToMany Relationship";
                             const fieldValue = formField.value as any;
 
-                            const options = (fieldOptions || []).map((opt: any) => ({
+                            const options = (field.options || []).map((opt: any) => ({
                               value: String(opt.id ?? opt.option_value ?? opt.value ?? ""),
                               label: String(opt.name ?? opt.option_label ?? opt.label ?? opt.option_value ?? ""),
                             }));
@@ -575,11 +561,6 @@ function FormModule({ slug, id, mode }: { slug: string; id: string; mode: string
 
                     // RADIO
                     if (inputType === "radio") {
-                      const options = (fieldOptions || []).map((opt: any) => ({
-                        value: String(opt.id ?? opt.option_value ?? opt.value ?? ""),
-                        label: String(opt.name ?? opt.option_label ?? opt.label ?? opt.option_value ?? ""),
-                      }));
-
                       return (
                         <FormField
                           key={ind}
@@ -590,16 +571,15 @@ function FormModule({ slug, id, mode }: { slug: string; id: string; mode: string
                             <FormItem>
                               {renderLabel()}
                               <div className="flex gap-4 flex-wrap">
-                                {options.map((opt: any, i: number) => (
-                                  <label key={i} className="flex items-center gap-2 cursor-pointer">
+                                {field.options?.map((opt: any, i: number) => (
+                                  <label key={i} className="flex items-center gap-2">
                                     <input
                                       type="radio"
-                                      value={opt.value}
-                                      checked={formField.value === opt.value}
-                                      onChange={() => formField.onChange(opt.value)}
-                                      className="cursor-pointer"
+                                      value={opt.option_value}
+                                      checked={formField.value === opt.option_value}
+                                      onChange={() => formField.onChange(opt.option_value)}
                                     />
-                                    {opt.label}
+                                    {opt.option_label}
                                   </label>
                                 ))}
                               </div>

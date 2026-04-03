@@ -1079,3 +1079,30 @@ export default function FormModule({ mode, id }: Props) {
     </Card>
   );
 }
+
+
+// {
+//       "name": "select",
+//       "label": "select",
+//       "type": "select",
+//       "is_multiple": false,
+//       "validation": null,
+//       "tooltip_text": null,
+//       "is_ckeditor": false,
+//       "default_value": "select",
+//       "max_file_size": null,
+//       "order_number": 0,
+//       "visibility": [
+//           1,
+//           2,
+//           3,
+//           4
+//       ],
+//       "is_checked": false,
+//       "options": [
+//           {
+//               "option_label": "select",
+//               "option_value": "select"
+//           }
+//       ]
+//   },

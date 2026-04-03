@@ -18,14 +18,17 @@ const RoleViewDialog = ({
   closeDialog,
   editData,
   slug,
+  fields = [],
 }: {
   open: boolean;
   closeDialog: () => void;
   editData: any;
   slug?: string;
+  fields?: any[];
 }) => {
-  const excludeKeys = ['id', 'updated_at', 'deleted_at', 'tenant_id', 'created_at', 'deleted_by', 'created_by'];
-  const keys = editData ? Object.keys(editData).filter(key => !excludeKeys.includes(key)) : [];
+  const visibleFields = (fields || []).filter((f: any) =>
+    Array.isArray(f.visibility) && f.visibility.includes(3)
+  );
 
   const formatValue = (key: string, value: any) => {
     if (value === null || value === undefined) return "-";
@@ -54,15 +57,17 @@ const RoleViewDialog = ({
 
         <ScrollArea className="max-h-[70vh] pr-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
-            {keys.length > 0 ? (
-              keys.map((key) => {
+            {visibleFields.length > 0 ? (
+              visibleFields.map((field) => {
+                const key = field.db_column;
+                const label = field.label;
                 const formatted = formatValue(key, editData[key]);
                 const isHtml = typeof formatted === 'object' && formatted !== null;
 
                 return (
                   <div key={key} className={`space-y-1.5 ${isHtml ? "col-span-full" : ""}`}>
                     <label className="text-sm font-semibold capitalize text-muted-foreground">
-                      {key.replaceAll("_", " ")}
+                      {label}
                     </label>
                     {isHtml ? (
                       <div className="bg-muted/50 border border-muted-foreground/20 rounded-md p-3 min-h-[100px] overflow-auto ck-content">
@@ -78,9 +83,50 @@ const RoleViewDialog = ({
                   </div>
                 );
               })
+            ) : fields.length === 0 && editData ? (
+              // Fallback if no metadata
+              Object.keys(editData)
+                .filter(k => !['id', 'updated_at', 'deleted_at', 'tenant_id'].includes(k))
+                .map((key) => {
+                  const formatted = formatValue(key, editData[key]);
+                  const isHtml = typeof formatted === 'object' && formatted !== null;
+
+                  return (
+                    <div key={key} className={`space-y-1.5 ${isHtml ? "col-span-full" : ""}`}>
+                      <label className="text-sm font-semibold capitalize text-muted-foreground">
+                        {key.replaceAll("_", " ")}
+                      </label>
+                      {isHtml ? (
+                        <div className="bg-muted/50 border border-muted-foreground/20 rounded-md p-3 min-h-[100px] overflow-auto ck-content text-sm">
+                          {formatted}
+                        </div>
+                      ) : (
+                        <Input
+                          value={String(formatted)}
+                          readOnly
+                          className="bg-muted/50 border-muted-foreground/20"
+                        />
+                      )}
+                    </div>
+                  );
+                })
             ) : (
               <div className="col-span-full py-10 text-center text-muted-foreground">
                 No displayable data found.
+              </div>
+            )}
+
+            {/* Always show Created At if available */}
+            {editData?.created_at && (
+              <div className="space-y-1.5">
+                <label className="text-sm font-semibold capitalize text-muted-foreground">
+                  Created At
+                </label>
+                <Input
+                  value={formatValue("created_at", editData.created_at) as string}
+                  readOnly
+                  className="bg-muted/50 border-muted-foreground/20"
+                />
               </div>
             )}
           </div>

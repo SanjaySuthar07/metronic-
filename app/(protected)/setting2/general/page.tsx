@@ -72,40 +72,40 @@ export default function GeneralSetting() {
 
   const allSections = generalSetting;
   async function onSubmit(values: any) {
-    // try {
-      // setSubmitting(true);
+    try {
+      setSubmitting(true);
 
       // Extract dynamically generated items into what backend expects
-      const payload = Object.fromEntries(
-        Object.entries(allSections).map(([sectionKey, sectionData]: any) => [
-          sectionKey,
-          Object.fromEntries(
-            Object.keys(sectionData).map((key) => [
-              key,
-              typeof values[key] === "boolean"
-                ? values[key]
-                : isNaN(values[key])
-                  ? values[key] // text
-                  : Number(values[key]), // number
-            ])
-          ),
-        ])
-      );
-
+      const payload = {
+        auth: Object.fromEntries(
+          Object.entries(authSettings).map(([key, item]: any) => [
+            key,
+            {
+              value:
+                typeof values[key] === "boolean"
+                  ? values[key] ? 1 : 0
+                  : isNaN(values[key])
+                    ? values[key]
+                    : Number(values[key]),
+              type: item.type,
+            },
+          ])
+        )
+      };
       console.log("Submit payload:", payload);
 
-      // const resultAction = await dispatch(updateGeneralSettings(payload));
-      // if (updateGeneralSettings.fulfilled.match(resultAction)) {
-      //   toast.success(resultAction?.payload?.message || "Settings updated successfully.");
-      //   await dispatch(fetchGeneralSettings());
-      // } else {
-      //   toast.error(resultAction.payload as string);
-      // }
-    // } catch (error) {
-    //   toast.error("Something went wrong");
-    // } finally {
-    //   setSubmitting(false);
-    // }
+      const resultAction = await dispatch(updateGeneralSettings(payload));
+      if (updateGeneralSettings.fulfilled.match(resultAction)) {
+        toast.success(resultAction?.payload?.message || "Settings updated successfully.");
+        await dispatch(fetchGeneralSettings());
+      } else {
+        toast.error(resultAction.payload as string);
+      }
+    } catch (error) {
+      toast.error("Something went wrong");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -198,3 +198,6 @@ export default function GeneralSetting() {
     </Card>
   );
 }
+
+
+

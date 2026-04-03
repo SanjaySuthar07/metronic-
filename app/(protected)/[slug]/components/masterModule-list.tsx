@@ -291,42 +291,109 @@ const MasterModuleList = ({ slug }: { slug: string }) => {
     }
   };
   const columns = useMemo<ColumnDef<any>[]>(() => {
-    if (!moduleData || moduleData.length === 0) return [];
+    const apiFields = getModuleTableData?.fields || [];
 
-    // Filter out internal keys that shouldn't be main columns
-    const excludeKeys = ['updated_at', 'deleted_at', 'tenant_id'];
-    const keys = Object.keys(moduleData[0]).filter(key => !excludeKeys.includes(key));
+    // Use fields from API if available, otherwise fallback to keys from data
+    let dynamicCols: ColumnDef<any>[] = [];
 
-    const dynamicCols = keys.map((key) => ({
-      accessorKey: key,
-      id: key,
-      header: ({ column }: any) => (
-        <DataGridColumnHeader
-          title={key.replaceAll("_", " ").toUpperCase()}
-          column={column}
-        />
-      ),
-      cell: ({ row }: any) => {
-        const value = row.original[key];
+    if (apiFields.length > 0) {
+      // Filter fields visible in list (ID 4 = Show/List page)
+      const visibleFields = apiFields.filter((f: any) =>
+        Array.isArray(f.visibility) && f.visibility.includes(4)
+      );
 
-        if (value === null || value === undefined) return "-";
+      dynamicCols = visibleFields.map((field: any) => ({
+        accessorKey: field.db_column,
+        id: field.db_column,
+        header: ({ column }: any) => (
+          <DataGridColumnHeader
+            title={field.label}
+            column={column}
+          />
+        ),
+        cell: ({ row }: any) => {
+          const value = row.original[field.db_column];
 
-        // Dynamic date detection
-        if (typeof value === 'string' && (key.includes("date") || key.includes("created_at") || /^\d{4}-\d{2}-\d{2}/.test(value))) {
-          const date = new Date(value);
-          if (!isNaN(date.getTime())) {
-            return `${String(date.getDate()).padStart(2, '0')}-${String(date.getMonth() + 1).padStart(2, '0')}-${date.getFullYear()}`;
+          if (value === null || value === undefined) return "-";
+
+          // Dynamic date detection (fallback if backend doesn't specify type)
+          const isDateColumn = (field.db_column.includes("date") || field.db_column.includes("created_at") || field.type === "date" || field.type === "datetime-local");
+          if (typeof value === 'string' && (isDateColumn || /^\d{4}-\d{2}-\d{2}/.test(value))) {
+            const date = new Date(value);
+            if (!isNaN(date.getTime())) {
+              return `${String(date.getDate()).padStart(2, '0')}-${String(date.getMonth() + 1).padStart(2, '0')}-${date.getFullYear()}`;
+            }
           }
-        }
 
-        return <div className="ck-content">
-          {parse(String(value))}
-        </div>
-      },
-      meta: {
-        skeleton: <Skeleton className="h-4 w-full max-w-[100px]" />,
-      },
-    }));
+          return (
+            <div className="ck-content">
+              {parse(String(value))}
+            </div>
+          );
+        },
+        meta: {
+          skeleton: <Skeleton className="h-4 w-full max-w-[100px]" />,
+        },
+      }));
+
+      // Add Created At column manually at the end of the dynamic list
+      const createdAtCol: ColumnDef<any> = {
+        accessorKey: "created_at",
+        id: "created_at",
+        header: ({ column }: any) => (
+          <DataGridColumnHeader
+            title="CREATED AT"
+            column={column}
+          />
+        ),
+        cell: ({ row }: any) => {
+          const value = row.original.created_at;
+          if (!value) return "-";
+          const date = new Date(value);
+          if (isNaN(date.getTime())) return value;
+          return `${String(date.getDate()).padStart(2, '0')}-${String(date.getMonth() + 1).padStart(2, '0')}-${date.getFullYear()}`;
+        },
+        meta: {
+          skeleton: <Skeleton className="h-4 w-full max-w-[100px]" />,
+        },
+      };
+
+      dynamicCols.push(createdAtCol);
+    } else if (moduleData && moduleData.length > 0) {
+      // Fallback to key-based columns if no fields metadata is provided
+      const excludeKeys = ['updated_at', 'deleted_at', 'tenant_id'];
+      const keys = Object.keys(moduleData[0]).filter(key => !excludeKeys.includes(key));
+
+      dynamicCols = keys.map((key) => ({
+        accessorKey: key,
+        id: key,
+        header: ({ column }: any) => (
+          <DataGridColumnHeader
+            title={key.replaceAll("_", " ").toUpperCase()}
+            column={column}
+          />
+        ),
+        cell: ({ row }: any) => {
+          const value = row.original[key];
+
+          if (value === null || value === undefined) return "-";
+
+          if (typeof value === 'string' && (key.includes("date") || key.includes("created_at") || /^\d{4}-\d{2}-\d{2}/.test(value))) {
+            const date = new Date(value);
+            if (!isNaN(date.getTime())) {
+              return `${String(date.getDate()).padStart(2, '0')}-${String(date.getMonth() + 1).padStart(2, '0')}-${date.getFullYear()}`;
+            }
+          }
+
+          return <div className="ck-content">
+            {parse(String(value))}
+          </div>
+        },
+        meta: {
+          skeleton: <Skeleton className="h-4 w-full max-w-[100px]" />,
+        },
+      }));
+    }
 
     const actionCol: ColumnDef<any> = {
       id: "actions",
@@ -510,6 +577,7 @@ const MasterModuleList = ({ slug }: { slug: string }) => {
           }}
           editData={editData}
           slug={slug}
+          fields={getModuleTableData?.fields || []}
         />
       )}
 
