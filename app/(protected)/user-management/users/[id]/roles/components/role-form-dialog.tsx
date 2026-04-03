@@ -136,19 +136,7 @@ const RoleInviteDialog = ({
     if (res?.meta?.requestStatus === "fulfilled") {
       await dispatch(fetchRoles({ page: 1, per_page: 10, tenant_id: tenant_id }));
       closeDialog();
-      toast.success(
-        isEdit
-          ? "Roles Update Successfully"
-          : "Role Created Successfully",
-        {
-          position: "top-center",
-          style: {
-            background: "#16a34a",
-            color: "#fff",
-            border: "none",
-          },
-        }
-      );
+      toast.success(isEdit ? "Roles Update Successfully" : "Role Created Successfully",);
     }
     setIsProcess(false);
   };

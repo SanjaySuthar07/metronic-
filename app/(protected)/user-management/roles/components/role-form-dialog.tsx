@@ -158,19 +158,7 @@ const RoleInviteDialog = ({
 
       closeDialog();
 
-      toast.success(
-        isEdit
-          ? 'Roles Update Successfully'
-          : 'Role Created Successfully',
-        {
-          position: 'top-center',
-          style: {
-            background: '#16a34a',
-            color: '#fff',
-            border: 'none',
-          },
-        }
-      );
+      toast.success(isEdit ? 'Roles Update Successfully' : 'Role Created Successfully');
     }
 
     setIsProcess(false);

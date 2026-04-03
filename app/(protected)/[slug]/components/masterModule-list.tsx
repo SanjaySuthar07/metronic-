@@ -370,7 +370,6 @@ const MasterModuleList = ({ slug }: { slug: string }) => {
                 </>
               )}
 
-              {console.log(permissions.canDelete, "canDelete")}
               {permissions.canDelete && (
 
                 <>

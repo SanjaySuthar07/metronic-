@@ -44,14 +44,8 @@ const PermissionDeleteDialog = ({
       const res: any = await dispatch(deleteModule(id));
 
       if (res?.payload?.success || res?.meta?.requestStatus === 'fulfilled') {
-        toast.success('Module deleted successfully', {
-          position: 'top-center',
-          style: {
-            background: '#ef4444',
-            color: '#fff',
-            border: 'none',
-          },
-        });
+        toast.success('Module deleted successfully');
+
 
         onDeleted(); // This will refetch the list
       } else {

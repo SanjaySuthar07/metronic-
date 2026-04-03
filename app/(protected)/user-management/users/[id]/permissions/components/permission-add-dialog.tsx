@@ -121,18 +121,7 @@ const PermissionAddDialog = ({
 
         closeDialog();
 
-        toast.success(
-          isEdit
-            ? 'Permission Updated Successfully'
-            : 'Permission Created Successfully',
-          {
-            position: 'top-center',
-            style: {
-              background: '#16a34a',
-              color: '#fff'
-            }
-          }
-        );
+        toast.success(isEdit ? 'Permission Updated Successfully' : 'Permission Created Successfully');
 
       }
 

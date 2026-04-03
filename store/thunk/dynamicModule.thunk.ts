@@ -93,7 +93,7 @@ export const getDetailApi = createAsyncThunk(
     "getDetail",
     async ({ slug, id }: any, { rejectWithValue }) => {
         try {
-            const response = await api.get(`/dynamic/${slug}/${id}`);
+            const response = await api.get(`/dynamic/edit/${slug}/${id}`);
             return response.data;
         } catch (error: any) {
             if (error.response && error.response.data) {

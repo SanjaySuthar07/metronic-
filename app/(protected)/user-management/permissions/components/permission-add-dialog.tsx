@@ -139,19 +139,7 @@ const PermissionAddDialog = ({
       if (res?.meta?.requestStatus === "fulfilled") {
         await dispatch(fetchPermissions({ page: 1, per_page: 10, id: user.tenant_id }));
         closeDialog();
-        toast.success(
-          isEdit
-            ? "Permissions Update Successfully"
-            : "Permission Created Successfully",
-          {
-            position: "top-center",
-            style: {
-              background: "#16a34a",
-              color: "#fff",
-              border: "none",
-            },
-          }
-        );
+        toast.success(isEdit ? "Permissions Update Successfully" : "Permission Created Successfully");
       }
     } catch (err) {
       console.error('save user error', err);

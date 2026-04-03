@@ -22,7 +22,6 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { ListChecks } from 'lucide-react';
 
 import { useDispatch, useSelector } from "react-redux";
 import { Input } from '@/components/ui/input';
@@ -91,18 +90,7 @@ function FormModule({ slug, id, mode }: { slug: string; id: string; mode: string
       moduleList.fields.filter((f: any) => isFieldVisible(f)).forEach((f: any) => {
         let value: any = "";
 
-        const detailField = (mode === "edit" && id && getModuleDetailTableData?.fields)
-          ? getModuleDetailTableData.fields.find((df: any) => df.name === f.name)
-          : null;
-
-        if (detailField) {
-          const detailValue = detailField.value;
-          if (f.type === "checkbox") {
-            value = detailValue === "1" || detailValue === true || detailValue === 1;
-          } else {
-            value = detailValue ?? "";
-          }
-        } else if (id && getModuleDetailTableData?.data) {
+        if (id && getModuleDetailTableData?.data) {
           const apiValue = getModuleDetailTableData.data[f.name];
 
           if (apiValue && typeof apiValue === "object" && apiValue.selected !== undefined) {
@@ -155,7 +143,6 @@ function FormModule({ slug, id, mode }: { slug: string; id: string; mode: string
       formattedData[field.name] = value;
     });
 
-    console.log("formattedData", formattedData)
     try {
       setLoading(true);
       if (mode === "edit" && id) {
@@ -226,17 +213,13 @@ function FormModule({ slug, id, mode }: { slug: string; id: string; mode: string
                   .sort((a: any, b: any) => (Number(a.order_number) || 0) - (Number(b.order_number) || 0))
                   .filter((field: any) => isFieldVisible(field))
                   .map((field: any, ind: number) => {
-                    const detailField = (mode === "edit" && getModuleDetailTableData?.fields)
-                      ? getModuleDetailTableData.fields.find((df: any) => df.name === field.name)
-                      : null;
 
-                    const inputType = detailField?.type || field.type;
+                    const inputType = field.type;
                     const name = field.name;
                     const isRequired = field.validation === "required" || field.validation === "required|string";
-                    const fieldOptions = detailField?.options || field.options || [];
 
                     const renderLabel = () => (
-                      <FormLabel className="flex capitalize items-center gap-1.5 leading-none">
+                      <FormLabel className="flex capitalize items-center gap-1.5">
                         {field.label}
                         {isRequired && <span className="text-red-500">*</span>}
                         {field.tooltip_text && (
@@ -404,7 +387,7 @@ function FormModule({ slug, id, mode }: { slug: string; id: string; mode: string
                             const isMultiple = field.is_multiple || inputType === "select-multiple" || inputType === "BelongsToMany Relationship";
                             const fieldValue = formField.value as any;
 
-                            const options = (fieldOptions || []).map((opt: any) => ({
+                            const options = (field.options || []).map((opt: any) => ({
                               value: String(opt.id ?? opt.option_value ?? opt.value ?? ""),
                               label: String(opt.name ?? opt.option_label ?? opt.label ?? opt.option_value ?? ""),
                             }));
@@ -417,45 +400,39 @@ function FormModule({ slug, id, mode }: { slug: string; id: string; mode: string
                                 : [];
 
                               return (
-                                <FormItem className="">
+                                <FormItem className="space-y-1">
                                   {renderLabel()}
                                   <Popover>
                                     <PopoverTrigger asChild>
-                                      <div className="flex w-full flex-wrap rounded-md border border-input bg-background px-3 py-1.5 text-sm shadow-sm cursor-pointer items-center justify-between gap-2">
+                                      <div className="flex flex-wrap gap-2 border border-input bg-background rounded-md px-3 py-2 min-h-[40px] cursor-pointer">
+                                        {selectedValues.length > 0 ? (
+                                          selectedValues.map((val: string) => {
+                                            const item = options.find((o: any) => o.value === val);
+                                            if (!item) return null;
 
-                                        {/* LEFT SIDE (Selected items / placeholder) */}
-                                        <div className="flex flex-wrap gap-1 flex-1">
-                                          {selectedValues.length > 0 ? (
-                                            selectedValues.map((val: string) => {
-                                              const item = options.find((o: any) => o.value === val);
-                                              if (!item) return null;
-
-                                              return (
-                                                <span
-                                                  key={val}
-                                                  className="bg-muted px-2 py-0.5 rounded-sm flex items-center gap-1 text-xs font-medium"
-                                                >
-                                                  {item.label}
-                                                  <X
-                                                    size={14}
-                                                    className="cursor-pointer hover:text-destructive"
-                                                    onClick={(e) => {
-                                                      e.stopPropagation();
-                                                      const newValues = selectedValues.filter((v: string) => v !== val);
-                                                      formField.onChange(newValues);
-                                                    }}
-                                                  />
-                                                </span>
-                                              );
-                                            })
-                                          ) : (
-                                            <span className="text-sm text-muted-foreground">
-                                              Select {field.label}
-                                            </span>
-                                          )}
-                                        </div>
-
-                                        <ListChecks className="h-4 w-4 opacity-60 shrink-0" />
+                                            return (
+                                              <span
+                                                key={val}
+                                                className="bg-gray-200 px-2 py-1 rounded flex items-center gap-1 text-sm"
+                                              >
+                                                {item.label}
+                                                <X
+                                                  size={14}
+                                                  className="cursor-pointer"
+                                                  onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    const newValues = selectedValues.filter((v: string) => v !== val);
+                                                    formField.onChange(newValues);
+                                                  }}
+                                                />
+                                              </span>
+                                            );
+                                          })
+                                        ) : (
+                                          <span className="text-sm text-muted-foreground mt-1 block">
+                                            Select {field.label}
+                                          </span>
+                                        )}
                                       </div>
                                     </PopoverTrigger>
 
@@ -520,16 +497,14 @@ function FormModule({ slug, id, mode }: { slug: string; id: string; mode: string
                                       <Button
                                         variant="outline"
                                         className={cn(
-                                          "font-normal w-full justify-between h-10 px-3 py-2 text-sm shadow-sm ring-offset-background",
-                                          !fieldValue && "text-muted-foreground"
+                                          "font-normal w-full justify-between h-9",
+                                          !formField.value && "text-muted-foreground"
                                         )}
                                       >
-                                        <span className="truncate">
-                                          {singleValue
-                                            ? options.find((o) => o.value === singleValue)?.label || `Select ${field.label}`
-                                            : `Select ${field.label}`}
-                                        </span>
-                                        <ChevronDown className="h-4 w-4 opacity-50 shrink-0" />
+                                        {singleValue
+                                          ? options.find((o) => o.value === singleValue)?.label || `Select ${field.label}`
+                                          : `Select ${field.label}`}
+                                        <ChevronDown className="h-4 w-4 opacity-50" />
                                       </Button>
                                     </FormControl>
                                   </PopoverTrigger>
@@ -575,7 +550,7 @@ function FormModule({ slug, id, mode }: { slug: string; id: string; mode: string
 
                     // RADIO
                     if (inputType === "radio") {
-                      const options = (fieldOptions || []).map((opt: any) => ({
+                      const options = (field.options || []).map((opt: any) => ({
                         value: String(opt.id ?? opt.option_value ?? opt.value ?? ""),
                         label: String(opt.name ?? opt.option_label ?? opt.label ?? opt.option_value ?? ""),
                       }));
