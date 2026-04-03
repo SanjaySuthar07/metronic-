@@ -73,15 +73,17 @@ function FormModule({ slug, id, mode }: { slug: string; id: string; mode: string
 
   // Fetch module structure
   useEffect(() => {
-    dispatch(moduleDetailsApi(slug));
+    (dispatch as any)(moduleDetailsApi(slug));
   }, [slug, dispatch]);
+
 
   // Fetch data for edit mode
   useEffect(() => {
     if (mode === "edit" && id) {
-      dispatch(getDetailApi({ slug, id }));
+      (dispatch as any)(getDetailApi({ slug, id }));
     }
   }, [mode, id, slug, dispatch]);
+
 
   // Set default values
   useEffect(() => {
@@ -94,13 +96,22 @@ function FormModule({ slug, id, mode }: { slug: string; id: string; mode: string
         if (id && getModuleDetailTableData?.data) {
           const apiValue = getModuleDetailTableData.data[f.name];
 
-          if (apiValue && typeof apiValue === "object" && apiValue.selected !== undefined) {
+          if (["file", "photo"].includes(f.type)) {
+            if (Array.isArray(apiValue)) {
+              value = apiValue.map((v: any) => typeof v === 'string' ? v : (v.file_path || v.file_name || ""));
+            } else if (apiValue && typeof apiValue === 'object') {
+              value = apiValue.file_path || apiValue.file_name || "";
+            } else {
+              value = apiValue ?? "";
+            }
+          } else if (apiValue && typeof apiValue === "object" && apiValue.selected !== undefined) {
             value = apiValue.selected;
           } else if (f.type === "checkbox") {
             value = apiValue === "1" || apiValue === true;
           } else {
             value = apiValue ?? "";
           }
+
         } else {
           if (f.type === "checkbox") {
             value = f.is_checked ?? false;
@@ -147,21 +158,45 @@ function FormModule({ slug, id, mode }: { slug: string; id: string; mode: string
     console.log("formattedData", formattedData)
     try {
       setLoading(true);
+      // Filter out files that haven't changed if in edit mode
+      const finalPayload = { ...formattedData };
+      if (mode === "edit") {
+        moduleList?.fields?.forEach((field: any) => {
+          if (["file", "photo"].includes(field.type)) {
+            const apiValue = getModuleDetailTableData?.data?.[field.name];
+            let initializedValue: any = "";
+            if (Array.isArray(apiValue)) {
+              initializedValue = apiValue.map((v: any) => typeof v === 'string' ? v : (v.file_path || v.file_name || ""));
+            } else if (apiValue && typeof apiValue === 'object') {
+              initializedValue = apiValue.file_path || apiValue.file_name || "";
+            } else {
+              initializedValue = apiValue ?? "";
+            }
+
+            if (JSON.stringify(formattedData[field.name]) === JSON.stringify(initializedValue)) {
+              delete finalPayload[field.name];
+            }
+          }
+        });
+      }
+
       if (mode === "edit" && id) {
-        await (dispatch(putFormApi({ slug, id, data: formattedData })) as any).unwrap();
+        await (dispatch(putFormApi({ slug, id, data: finalPayload })) as any).unwrap();
         toast.success("Updated " + slug + " successfully");
         router.back()
       } else {
-        await dispatch(addDataApi({ slug, data: formattedData })).unwrap();
+        await (dispatch(addDataApi({ slug, data: formattedData })) as any).unwrap();
         toast.success("Created " + slug + " successfully");
         router.back()
       }
+
     } catch (err: any) {
       toast.error(err?.message || "Error occurred");
     } finally {
       setLoading(false);
     }
   };
+
 
   const onerror = (errors: any) => {
     console.log("❌ FORM ERRORS 👉", errors);
@@ -643,8 +678,60 @@ function FormModule({ slug, id, mode }: { slug: string; id: string; mode: string
                     if (["file", "photo"].includes(inputType)) {
                       const isMultiple = field.is_multiple;
                       const maxFiles = isMultiple ? 10 : 1;
-                      const accept = inputType === "photo" ? "image/*" : ".pdf,.doc,.docx,.xls,.xlsx,.zip,.rar,image/*";
-                      const NEXT_PUBLIC_BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "";
+                      const accept = inputType === "photo" ? "image/*" : ".pdf,.doc,.docx,.xls,.xlsx,.zip,.rar";
+                      const NEXT_PUBLIC_BACKEND_URL = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/api\/?$/, '') + "/storage";
+
+                      if (inputType === "file") {
+                        return (
+                          <FormField
+                            key={ind}
+                            control={form.control}
+                            name={name}
+                            rules={{ required: isRequired ? `${field.label} is required` : false }}
+                            render={({ field: formField }) => (
+                              <FormItem>
+                                {renderLabel()}
+                                <FormControl>
+                                  <div className="flex flex-col gap-2">
+                                    <Input
+                                      type="file"
+                                      accept={accept}
+                                      multiple={isMultiple}
+                                      onChange={(e) => {
+                                        const files = e.target.files;
+                                        if (files && files.length > 0) {
+                                          const fileArray = Array.from(files);
+
+                                          // Validation: No images for 'file' type
+                                          const hasImage = fileArray.some(f => f.type.startsWith('image/'));
+                                          if (hasImage) {
+                                            form.setError(name, { type: "manual", message: "Image not upload! Only documents allowed." });
+                                            e.target.value = '';
+                                            return;
+                                          }
+                                          form.clearErrors(name);
+
+                                          Promise.all(fileArray.map(f => {
+                                            return new Promise((resolve) => {
+                                              const reader = new FileReader();
+                                              reader.onloadend = () => resolve(reader.result);
+                                              reader.readAsDataURL(f);
+                                            });
+                                          })).then(results => {
+                                            formField.onChange(isMultiple ? results : (results[0] || null));
+                                          });
+                                        }
+                                      }}
+                                    />
+                                  </div>
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        );
+                      }
+
 
                       const apiValue = getModuleDetailTableData?.data?.[name];
                       let initialFiles: any[] = [];
@@ -654,14 +741,29 @@ function FormModule({ slug, id, mode }: { slug: string; id: string; mode: string
                           ? apiValue
                           : typeof apiValue === 'string' ? [apiValue] : [];
                         initialFiles = filesArray
-                          .map((val: string, i: number) => ({
-                            id: `${name}_${i}`,
-                            name: val.split('/').pop() || name,
-                            size: 0,
-                            type: val.endsWith('.pdf') ? 'application/pdf' : 'image/jpeg',
-                            url: `${NEXT_PUBLIC_BACKEND_URL}/${val}`,
-                          }))
+                          .map((val: any, i: number) => {
+                            if (typeof val === 'string') {
+                              return {
+                                id: `${name}_${i}`,
+                                name: val.split('/').pop() || name,
+                                size: 0,
+                                type: val.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 'image/jpeg',
+                                url: val.startsWith('http') ? val : `${NEXT_PUBLIC_BACKEND_URL}/${val}`,
+                                originalPath: val,
+                              };
+                            }
+                            return {
+                              id: val.id ? String(val.id) : `${name}_${i}`,
+                              name: val.file_name || val.file_path?.split('/').pop() || name,
+                              size: val.file_size || 0,
+                              type: val.mime_type || (val.file_path?.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 'image/jpeg'),
+                              url: val.file_url || (val.file_path ? (val.file_path.startsWith('http') ? val.file_path : `${NEXT_PUBLIC_BACKEND_URL}/${val.file_path}`) : ""),
+                              originalPath: val.file_path || val.file_url,
+                            };
+                          })
+
                           .filter((f: any) => f.url && !f.url.includes('undefined') && !f.url.includes('null'));
+
                       }
 
                       return (
@@ -684,9 +786,25 @@ function FormModule({ slug, id, mode }: { slug: string; id: string; mode: string
                                     const results = await Promise.all(
                                       files.map(async (f) => {
                                         if (f.file && !(f.file instanceof File)) {
-                                          const url = (f.file as any).url;
-                                          if (url) return url.replace(`${NEXT_PUBLIC_BACKEND_URL}/`, '');
+                                          // Existing file - try to get the original relative path
+                                          const originalPath = (f.file as any).originalPath;
+                                          if (originalPath) return originalPath;
+
+                                          const url = f.preview || (f.file as any).url || "";
+                                          // Fallback path extraction logic
+
+                                          if (url.startsWith('http')) {
+                                            const backendUrl = NEXT_PUBLIC_BACKEND_URL.replace(/\/$/, '');
+                                            let path = url.replace(backendUrl, '');
+                                            // Handle /storage/ prefix common in Laravel
+                                            path = path.replace(/^\/?storage\//, '');
+                                            // Handle leading slash
+                                            path = path.replace(/^\//, '');
+                                            return path;
+                                          }
+                                          return url;
                                         }
+
                                         if (f.preview && f.preview.startsWith('data:')) {
                                           return f.preview;
                                         }
@@ -711,6 +829,7 @@ function FormModule({ slug, id, mode }: { slug: string; id: string; mode: string
                         />
                       );
                     }
+
 
                     return null;
                   })}

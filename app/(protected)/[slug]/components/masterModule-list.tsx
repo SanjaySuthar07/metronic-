@@ -22,7 +22,8 @@ import {
 import { AppDispatch, RootState } from '@/store';
 import { fetchRoleDetail, fetchRoles } from '@/store/thunk/userManagement.thunk';
 
-import { EllipsisVertical, Plus, Search } from 'lucide-react';
+import { Download, EllipsisVertical, Plus, Search } from 'lucide-react';
+
 import { getInitials } from '@/lib/helpers';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -297,7 +298,7 @@ const MasterModuleList = ({ slug }: { slug: string }) => {
     let dynamicCols: ColumnDef<any>[] = [];
 
     if (apiFields.length > 0) {
-      // Filter fields visible in list (ID 4 = Show/List page)
+      // Filter fields visible in list (ID 2 = Show/List page)
       const visibleFields = apiFields.filter((f: any) =>
         Array.isArray(f.visibility) && f.visibility.includes(4)
       );
@@ -314,9 +315,53 @@ const MasterModuleList = ({ slug }: { slug: string }) => {
         cell: ({ row }: any) => {
           const value = row.original[field.db_column];
 
-          if (value === null || value === undefined) return "-";
+          if (value === null || value === undefined || value === "") return "-";
 
-          // Dynamic date detection (fallback if backend doesn't specify type)
+          const STORAGE_URL = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/api\/?$/, '') + "/storage";
+          const valStr = String(value);
+
+          // Support for arrays or single strings
+          const items = Array.isArray(value) ? value : [value];
+
+          // Manual detection functions
+          const isImage = (str: string) => /\.(jpg|jpeg|png|gif|webp|svg|bmp)$/i.test(str);
+          const isDoc = (str: string) => /\.(pdf|doc|docx|xls|xlsx|zip|rar|txt|csv)$/i.test(str);
+
+          // If the values are paths/filenames, render accordingly
+          if (items.some(item => typeof item === 'string' && (isImage(item) || isDoc(item)))) {
+            return (
+              <div className="flex flex-col gap-1.5">
+                {items.map((item: any, i: number) => {
+                  const urlPart = typeof item === 'string' ? item : (item.file_url || item.file_path);
+                  if (!urlPart) return null;
+
+                  const fullUrl = String(urlPart).startsWith('http') ? String(urlPart) : `${STORAGE_URL}/${urlPart}`;
+                  const fileName = typeof item === 'string' ? urlPart.split('/').pop() : (item.file_name || item.file_path?.split('/').pop() || "Download");
+
+                  if (isImage(String(urlPart))) {
+                    return (
+                      <div key={i} className="flex items-center gap-2">
+                        <img src={fullUrl} className="h-10 w-10 object-cover rounded-md border shadow-sm" alt="" />
+                      </div>
+                    );
+                  }
+
+                  if (isDoc(String(urlPart))) {
+                    return (
+                      <a key={i} href={fullUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 hover:underline text-[11px] font-medium inline-flex items-center gap-1.5 transition-colors">
+                        <Download className="size-3.5" />
+                        <span className="truncate max-w-[120px]">{fileName}</span>
+                      </a>
+                    );
+                  }
+
+                  return <span key={i}>{String(urlPart)}</span>;
+                })}
+              </div>
+            );
+          }
+
+          // Fallback to existing logic if it's not a recognized file path
           const isDateColumn = (field.db_column.includes("date") || field.db_column.includes("created_at") || field.type === "date" || field.type === "datetime-local");
           if (typeof value === 'string' && (isDateColumn || /^\d{4}-\d{2}-\d{2}/.test(value))) {
             const date = new Date(value);
@@ -327,10 +372,12 @@ const MasterModuleList = ({ slug }: { slug: string }) => {
 
           return (
             <div className="ck-content">
-              {parse(String(value))}
+              {parse(valStr)}
             </div>
           );
         },
+
+
         meta: {
           skeleton: <Skeleton className="h-4 w-full max-w-[100px]" />,
         },
@@ -376,7 +423,28 @@ const MasterModuleList = ({ slug }: { slug: string }) => {
         cell: ({ row }: any) => {
           const value = row.original[key];
 
-          if (value === null || value === undefined) return "-";
+          if (value === null || value === undefined || value === "") return "-";
+
+          const STORAGE_URL = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/api\/?$/, '') + "/storage";
+          const valStr = String(value);
+
+          // Fallback image detection
+          if (valStr.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i) || key.includes("image") || key.includes("photo")) {
+            const fullUrl = valStr.startsWith('http') ? valStr : `${STORAGE_URL}/${value}`;
+            return <img src={fullUrl} className="h-10 w-10 object-cover rounded-md border shadow-sm" alt="" />;
+          }
+
+          // Fallback file/download detection
+          if (valStr.match(/\.(pdf|doc|docx|xls|xlsx|zip|rar)$/i) || key.includes("file") || key.includes("attachment")) {
+            const fullUrl = valStr.startsWith('http') ? valStr : `${STORAGE_URL}/${value}`;
+            const fileName = valStr.split('/').pop() || "Download";
+            return (
+              <a href={fullUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-[11px] font-medium inline-flex items-center gap-1.5 truncate max-w-[150px]">
+                <Download className="size-3.5" />
+                {fileName}
+              </a>
+            );
+          }
 
           if (typeof value === 'string' && (key.includes("date") || key.includes("created_at") || /^\d{4}-\d{2}-\d{2}/.test(value))) {
             const date = new Date(value);
@@ -386,9 +454,10 @@ const MasterModuleList = ({ slug }: { slug: string }) => {
           }
 
           return <div className="ck-content">
-            {parse(String(value))}
+            {parse(valStr)}
           </div>
         },
+
         meta: {
           skeleton: <Skeleton className="h-4 w-full max-w-[100px]" />,
         },
