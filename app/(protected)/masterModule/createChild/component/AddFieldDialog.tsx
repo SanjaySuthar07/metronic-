@@ -203,7 +203,10 @@ export default function AddFieldDialog({
             label: data.label,
             validation: data.validation,
             status: status,
-            is_multiple: data.is_multiple || false,
+            is_multiple:
+                data.type === "BelongsToMany Relationship"
+                    ? true
+                    : data.is_multiple || false,
             tooltip_text: data.tooltip_text,
             default_value: data.default_value,
             max_file_size: data.max_file_size,

@@ -12,6 +12,7 @@ import {
   CardTitle,
   CardHeading,
 } from "@/components/ui/card";
+import { useRouter } from "next/navigation";
 
 import {
   Form,
@@ -111,6 +112,7 @@ function FormModule({ slug, id, mode }: { slug: string; id: string; mode: string
     }
   }, [moduleList, getModuleDetailTableData, id, form]);
 
+  const router = useRouter()
   const onSubmit = async (values: any) => {
     const formattedData: any = {};
 
@@ -142,9 +144,11 @@ function FormModule({ slug, id, mode }: { slug: string; id: string; mode: string
       if (mode === "edit" && id) {
         await (dispatch(putFormApi({ slug, id, data: formattedData })) as any).unwrap();
         toast.success("Updated " + slug + " successfully");
+        router.back()
       } else {
         await dispatch(addDataApi({ slug, data: formattedData })).unwrap();
         toast.success("Created " + slug + " successfully");
+        router.back()
       }
     } catch (err: any) {
       toast.error(err?.message || "Error occurred");
