@@ -181,7 +181,7 @@ const MasterModuleList = () => {
   const [deleteData, setDeleteData] = useState<any>(null);
 
   const { user } = useSelector((s: any) => s.auth);
-  const isSpecialRole = ['super_admin', 'agency'].includes(user?.user_type)
+  const isSpecialRole = ['super_admin'].includes(user?.user_type)
 
   const canEdit = isSpecialRole || hasPermission(user, ["master-module-edit"])
   const canView = isSpecialRole || hasPermission(user, ["master-module-show"])
