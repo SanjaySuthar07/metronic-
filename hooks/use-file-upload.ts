@@ -1,7 +1,8 @@
 'use client';
 
 import type React from 'react';
-import { useCallback, useRef, useState, type ChangeEvent, type DragEvent, type InputHTMLAttributes } from 'react';
+import { useCallback, useRef, useState, useEffect, type ChangeEvent, type DragEvent, type InputHTMLAttributes } from 'react';
+
 
 export type FileMetadata = {
   name: string;
@@ -71,6 +72,16 @@ export const useFileUpload = (options: FileUploadOptions = {}): [FileUploadState
   });
 
   const inputRef = useRef<HTMLInputElement>(null);
+  const prevFilesRef = useRef<FileWithPreview[]>(state.files);
+
+  // Safe effect for onFilesChange to avoid "update during render" errors
+  useEffect(() => {
+    if (onFilesChange && state.files !== prevFilesRef.current) {
+      onFilesChange(state.files);
+      prevFilesRef.current = state.files;
+    }
+  }, [state.files, onFilesChange]);
+
 
   const validateFile = useCallback(
     (file: File | FileMetadata): string | null => {
@@ -143,7 +154,7 @@ export const useFileUpload = (options: FileUploadOptions = {}): [FileUploadState
         errors: [],
       };
 
-      onFilesChange?.(newState.files);
+
       return newState;
     });
   }, [onFilesChange]);
@@ -213,14 +224,14 @@ export const useFileUpload = (options: FileUploadOptions = {}): [FileUploadState
         onFilesAdded?.(validFiles);
 
         setState((prev) => {
-          const newFiles = !multiple ? validFiles : [...prev.files, ...validFiles];
-          onFilesChange?.(newFiles);
+          const newFilesArray = !multiple ? validFiles : [...prev.files, ...validFiles];
           return {
             ...prev,
-            files: newFiles,
+            files: newFilesArray,
             errors,
           };
         });
+
       } else if (errors.length > 0) {
         setState((prev) => ({
           ...prev,
@@ -261,7 +272,7 @@ export const useFileUpload = (options: FileUploadOptions = {}): [FileUploadState
         }
 
         const newFiles = prev.files.filter((file) => file.id !== id);
-        onFilesChange?.(newFiles);
+
 
         return {
           ...prev,

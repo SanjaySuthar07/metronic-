@@ -352,7 +352,7 @@ export function FilesUpload({
                   <div className="flex items-center justify-between mt-0.75">
                     <p className="inline-flex flex-col justify-center gap-1 truncate font-medium">
                       <span className="text-sm">{fileItem.file.name}</span>
-                      <span className="text-xs text-muted-foreground">{formatBytes(fileItem.file.size)}</span>
+                      {/* <span className="text-xs text-muted-foreground">{formatBytes(fileItem.file.size)}</span> */}
                     </p>
                     <div className="flex items-center gap-2">
                       {/* Remove Button */}

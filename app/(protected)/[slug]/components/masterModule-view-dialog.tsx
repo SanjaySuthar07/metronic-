@@ -161,51 +161,54 @@ const RoleViewDialog = ({
           {loading ? (
             <RenderSkeleton />
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 py-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8 py-6 px-2">
               {visibleFields.length > 0 ? (
                 visibleFields.map((field: any) => {
                   const label = field.label;
-                  const isFullWidth = field.is_ckeditor || field.type === "photo" || field.type === "file";
+                  const isMedia = field.type === "photo" || field.type === "file" || field.is_ckeditor;
+                  const value = renderFieldValue(field);
 
                   return (
-                    <div key={field.name || field.db_column} className={`space-y-1.5 ${isFullWidth ? "col-span-full" : ""}`}>
-                      <label className="text-sm font-semibold capitalize text-muted-foreground">
-                        {label}
-                      </label>
-                      {field.is_ckeditor || field.type === "photo" || field.type === "file" ? (
-                        <div>{renderFieldValue(field)}</div>
-                      ) : (
-                        <Input
-                          value={String(renderFieldValue(field))}
-                          readOnly
-                          className="bg-muted/50 border-muted-foreground/20"
-                        />
+                    <div key={field.name || field.db_column} className={`space-y-1 ${isMedia ? "col-span-full" : ""}`}>
+                      <div className="flex items-baseline">
+                        <dt className="text-sm font-semibold capitalize column text-muted-foreground w-30 shrink-0">
+                          {label}:
+                        </dt>
+                        <dd className="text-sm font-medium flex-1">
+                          {!isMedia && value}
+                        </dd>
+                      </div>
+                      {isMedia && (
+                        <div className="mt-2">
+                          {value}
+                        </div>
                       )}
                     </div>
                   );
                 })
               ) : (
-                <div className="col-span-full py-10 text-center text-muted-foreground">
+                <div className="col-span-full py-10 text-center text-muted-foreground font-medium">
                   No displayable fields with visibility code '3' found.
                 </div>
               )}
 
               {/* Always show Created At */}
               {detailData?.created_at && (
-                <div className="space-y-1.5">
-                  <label className="text-sm font-semibold capitalize text-muted-foreground">
-                    Created At
-                  </label>
-                  <Input
-                    value={new Date(detailData.created_at).toLocaleString()}
-                    readOnly
-                    className="bg-muted/50 border-muted-foreground/20"
-                  />
+                <div className="space-y-1">
+                  <div className="flex items-baseline">
+                    <dt className="text-sm font-semibold text-muted-foreground w-30 shrink-0">
+                      Created At:
+                    </dt>
+                    <dd className="text-sm font-medium">
+                      {new Date(detailData.created_at).toLocaleString()}
+                    </dd>
+                  </div>
                 </div>
               )}
             </div>
           )}
         </ScrollArea>
+
       </DialogContent>
     </Dialog>
   );

@@ -12,8 +12,11 @@ import {
   CardHeading,
   CardTitle,
 } from "@/components/ui/card";
-import { Globe, Share2, MapPin, BarChart3 } from "lucide-react";
+import { Globe, Share2, MapPin, BarChart3, Settings } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+
 import {
   Form,
   FormControl,
@@ -32,58 +35,29 @@ import {
 import { useEffect, useState } from "react";
 import { FilesUpload } from "../../settings/components";
 /* ================= CONFIG ================= */
-export const siteSettingConfig = [
-  {
-    title: "General Settings",
-    icon: Globe,
-    fields: [
-      { label: "Support Email", name: "support_email", type: "email" },
-      { label: "Site Favicon", name: "favicon_icon", type: "file" },
-      { label: "Mini Logo", name: "mini_logo", type: "file" },
-      { label: "Site Logo", name: "logo", type: "file" },
-      { label : "Default Logo Dark", name: "default_logo_dark", type: "file" },
-      { label: "Mini Logo Dark", name: "mini_logo_dark", type: "file" },
-      { label: "Footer Text", name: "footer_text", type: "text" },
-      { label: "Site Name", name: "site_name", type: "text" },
-      { label: "Site Description", name: "site_description", type: "text" },
-      { label: "Site Email", name: "site_email", type: "email" },
-      { label: "Site Phone", name: "site_phone", type: "text" },
-      { label: "Primary Color", name: "primary_color", type: "color" },
-      { label: "Secondary Color", name: "secondary_color", type: "color" },
+function formatLabel(key: string) {
+  return key
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
 
-    ],
-  },
-  {
-    title: "Social Media",
-    icon: Share2,
-    fields: [
-      { label: "Facebook", name: "facebook", type: "text" },
-      { label: "Instagram", name: "instagram", type: "text" },
-      { label: "Twitter", name: "x", type: "text" },
-      { label: "LinkedIn", name: "linkedin", type: "text" },
-      { label: "YouTube", name: "youtube", type: "text" },
-    ],
-  },
-  {
-    title: "Contact Info",
-    icon: MapPin,
-    fields: [
-      { label: "Address", name: "address", type: "text" },
-      { label: "Google Map Link", name: "google_map_link", type: "text" },
-      { label: "Support Email", name: "support_email", type: "email" },
-      { label: "Support Phone", name: "support_phone", type: "text" },
-    ],
-  },
-  {
-    title: "SEO Settings",
-    icon: BarChart3,
-    fields: [
-      { label: "Meta Title", name: "meta_title", type: "text" },
-      { label: "Meta Description", name: "meta_description", type: "text" },
-      { label: "Meta Keywords", name: "meta_keywords", type: "text" },
-    ],
-  },
-];
+function getSectionIcon(key: string) {
+  switch (key) {
+    case "general":
+      return Globe;
+    case "social_media":
+      return Share2;
+    case "contact_info":
+      return MapPin;
+    case "seo":
+      return BarChart3;
+    default:
+      return Settings;
+  }
+}
+
+
 
 /* ================= COMPONENT ================= */
 export default function GeneralSetting() {
@@ -94,11 +68,11 @@ export default function GeneralSetting() {
   const [submitting, setSubmitting] = useState(false);
 
   /* ===== FLATTEN ALL FIELDS ===== */
-  const allFields = siteSettingConfig.flatMap((s) => s.fields);
-
-  const form = useForm({
-    defaultValues: Object.fromEntries(allFields.map((f) => [f.name, ""])),
+  const form = useForm<any>({
+    defaultValues: {},
   });
+
+
 
   /* ===== FETCH ===== */
   useEffect(() => {
@@ -149,8 +123,8 @@ export default function GeneralSetting() {
   useEffect(() => {
     if (!generalSetting) return;
 
-    const apiData =
-      generalSetting?.data?.data || generalSetting?.data || generalSetting;
+    const apiData = generalSetting;
+
 
     if (!apiData) return;
 
@@ -185,101 +159,109 @@ export default function GeneralSetting() {
   /* ===== SUBMIT ===== */
   async function onSubmit(values: any) {
     try {
-        const apiData = generalSetting?.data || generalSetting;
+      const apiData = generalSetting;
 
-  const settingsPayload: any = {};
 
-  // Loop all sections
-  Object.keys(apiData).forEach((sectionKey) => {
-    const section = apiData[sectionKey];
-    if (!section) return;
+      const settingsPayload: any = {};
 
-    // Create section object
-    settingsPayload[sectionKey] = {};
+      // Loop all sections from API
+      Object.keys(apiData).forEach((sectionKey) => {
+        if (sectionKey === "auth") return; // Skip auth as requested
 
-    // Loop fields inside section
-    Object.keys(section).forEach((fieldKey) => {
-      const field = section[fieldKey];
-      let value = values[fieldKey];
+        const section = apiData[sectionKey];
+        if (!section) return;
 
-      /* Handle File */
-      if (field?.type === "file") {
-        if (value && value instanceof File) {
-          value = value;
-        } 
-        else if (
-          typeof value === "string" &&
-          value.startsWith("data:")
-        ) {
-          // already base64
-        } 
-        else {
-          // keep old file
-          value = field?.value;
+
+        // Create section object
+        settingsPayload[sectionKey] = {};
+
+        // Loop fields inside section
+        Object.keys(section).forEach((fieldKey) => {
+          const field = section[fieldKey];
+          let value = values[fieldKey];
+
+          /* Handle File */
+          if (field?.type === "file") {
+            if (value && value instanceof File) {
+              value = value;
+            }
+            else if (
+              typeof value === "string" &&
+              value.startsWith("data:")
+            ) {
+              // already base64
+            }
+            else {
+              // keep old file
+              value = field?.value;
+            }
+          }
+
+          /* Handle Toggle */
+          if (field?.type === "toggle") {
+            value = value ? 1 : 0;
+          }
+
+          // Save inside section. 
+          // IMPORTANT: If value is undefined (not in form), we MUST keep the original API value
+          const finalValue = value !== undefined ? value : field.value;
+
+          settingsPayload[sectionKey][fieldKey] = {
+            value: finalValue ?? "",
+            type: field?.type || "text",
+          };
+
+        });
+      });
+
+      /* Convert File → base64 */
+      for (const sectionKey of Object.keys(settingsPayload)) {
+        const section = settingsPayload[sectionKey];
+
+        for (const fieldKey of Object.keys(section)) {
+          const field = section[fieldKey];
+
+          if (
+            field.type === "file" &&
+            field.value instanceof File
+          ) {
+            const file = field.value;
+
+            field.value = await new Promise((resolve) => {
+              const reader = new FileReader();
+
+              reader.onloadend = () =>
+                resolve(reader.result as string);
+
+              reader.readAsDataURL(file);
+            });
+          }
         }
       }
 
-      /* Handle Toggle */
-      if (field?.type === "toggle") {
-        value = value ? 1 : 0;
+      const payload = settingsPayload;
+
+      console.log("Final Payload:", payload);
+      // return;
+
+      const res = await dispatch(updateGeneralSettings(payload));
+      if (updateGeneralSettings.fulfilled.match(res)) {
+        toast.success(res?.payload?.message);
+        setLoading(true);
+        await dispatch(fetchGeneralSettings());
+        setLoading(false);
+        form.reset({ ...values });
+      } else {
+
+        toast.error("Error updating settings");
       }
-
-      // Save inside section
-      settingsPayload[sectionKey][fieldKey] = {
-        value: value ?? "",
-        type: field?.type || "text",
-      };
-    });
-  });
-
-  /* Convert File → base64 */
-  for (const sectionKey of Object.keys(settingsPayload)) {
-    const section = settingsPayload[sectionKey];
-
-    for (const fieldKey of Object.keys(section)) {
-      const field = section[fieldKey];
-
-      if (
-        field.type === "file" &&
-        field.value instanceof File
-      ) {
-        const file = field.value;
-
-        field.value = await new Promise((resolve) => {
-          const reader = new FileReader();
-
-          reader.onloadend = () =>
-            resolve(reader.result as string);
-
-          reader.readAsDataURL(file);
-        });
-      }
-    }
-  }
-
-  const payload = settingsPayload;
-
-  console.log("Final Payload:", payload);
-      return;
-
-      // const res = await dispatch(updateGeneralSettings(payload));
-      // if (updateGeneralSettings.fulfilled.match(res)) {
-      //   toast.success("Settings updated");
-      //   dispatch(fetchGeneralSettings());
-      //   // Reset file fields after successful update
-      //   const resetValues = { ...values };
-      //   fileFieldKeys.forEach((key) => {
-      //     resetValues[key] = "";
-      //   });
-      //   form.reset(resetValues);
-      // } else {
-      //   toast.error("Error updating settings");
-      // }
-    } catch {
+    } catch (err) {
+      console.error(err);
       toast.error("Something went wrong");
     } finally {
       setSubmitting(false);
     }
+
   }
 
   const NEXT_PUBLIC_BACKEND_URL = process.env.NEXT_PUBLIC_API_URL
@@ -299,20 +281,16 @@ export default function GeneralSetting() {
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
-            {/* ===== LOADING ===== */}
             {loading ? (
               <>
-                {siteSettingConfig.map((section, sectionIndex) => (
+                {[1, 2, 3].map((sectionIndex) => (
                   <div key={sectionIndex} className="mb-10">
-                    {/* 🔥 Section Header Skeleton */}
                     <div className="flex items-center gap-3 mb-4 p-2 bg-muted rounded-lg">
                       <Skeleton className="h-5 w-5 rounded-full" />
                       <Skeleton className="h-5 w-40" />
                     </div>
-
-                    {/* 🔥 Fields Skeleton */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {section.fields.map((_, i) => (
+                      {[1, 2, 3, 4].map((_, i) => (
                         <div key={i} className="space-y-2">
                           <Skeleton className="h-4 w-32" />
                           <Skeleton className="h-10 w-full" />
@@ -324,140 +302,124 @@ export default function GeneralSetting() {
               </>
             ) : (
               <>
-                {/* ===== SECTIONS ===== */}
-                {siteSettingConfig.map((section) => (
-                  <div key={section.title} className="mb-10">
-                    <div className="flex items-center gap-3 mb-4 p-2 bg-muted rounded-lg">
-                      <section.icon className="h-5 w-5 text-primary" />
-                      <h2 className="text-lg font-semibold">{section.title}</h2>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {section.fields.map((field) => (
-                        <FormField
-                          key={field.name}
-                          control={form.control}
-                          name={field.name}
-                          render={({ field: inputField }) => (
-                            <FormItem>
-                              <FormLabel>{field.label}</FormLabel>
+                {/* ===== DYNAMIC SECTIONS ===== */}
+                {Object.entries(generalSetting || {}).map(([sectionKey, sectionData]: [string, any]) => {
 
-                              <FormControl>
-                                {field.type === "color" ? (
-                                  <div className="flex items-center ">
-                                    {/* Preview */}
-                                    {/* <div
-                                      className="w-10 h-10 rounded border"
-                                      style={{
-                                        backgroundColor: inputField.value || "#000000",
-                                      }}
-                                    /> */}
+                  if (sectionKey === "auth") return null;
 
-                                    {/* Color Picker */}
-                                    <Input
-                                      type="color"
-                                      value={normalizeHexColor(
-                                        inputField.value,
-                                      )}
-                                      onChange={(e) =>
-                                        inputField.onChange(e.target.value)
-                                      }
-                                      className="w-16 h-10 p-1 cursor-pointer rounded-none rounded-l-md"
-                                    />
+                  const Icon = getSectionIcon(sectionKey);
+                  return (
+                    <div key={sectionKey} className="mb-10">
+                      <div className="flex items-center gap-3 mb-4 p-2 bg-muted rounded-lg">
+                        <Icon className="h-5 w-5 text-primary" />
+                        <h2 className="text-lg font-semibold">{formatLabel(sectionKey)}</h2>
+                      </div>
 
-                                    {/* HEX Input */}
-                                    <Input
-                                      type="text"
-                                      value={inputField.value || ""}
-                                      onChange={(e) =>
-                                        inputField.onChange(e.target.value)
-                                      }
-                                      placeholder="#000000"
-                                      className=" h-10 p-1 rounded-none  rounded-r-md"
-                                    />
-                                  </div>
-                                ) : field.type === "file" ? (
-                                  <FilesUpload
-                                    showCard={false}
-                                    maxFiles={1}
-                                    initialFiles={
-                                      inputField.value
-                                        ? [
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {Object.entries(sectionData).map(([fieldKey, fieldData]: [string, any]) => (
+                          <FormField
+                            key={fieldKey}
+                            control={form.control}
+                            name={fieldKey}
+                            render={({ field: inputField }) => (
+                              <FormItem className={fieldData.type === "text" && sectionKey == "general" ? "col-span-1 md:col-span-2" : ""}>
+                                <FormLabel>{formatLabel(fieldKey)}</FormLabel>
+
+                                <FormControl>
+                                  {fieldData.type === "color" ? (
+                                    <div className="flex items-center ">
+                                      <Input
+                                        type="color"
+                                        value={normalizeHexColor(inputField.value)}
+                                        onChange={(e) => inputField.onChange(e.target.value)}
+                                        className="w-16 h-10 p-1 cursor-pointer rounded-none rounded-l-md"
+                                      />
+                                      <Input
+                                        type="text"
+                                        value={inputField.value || ""}
+                                        onChange={(e) => inputField.onChange(e.target.value)}
+                                        placeholder="#000000"
+                                        className=" h-10 p-1 rounded-none  rounded-r-md"
+                                      />
+                                    </div>
+                                  ) : fieldData.type === "file" ? (
+                                    <FilesUpload
+                                      showCard={false}
+                                      maxFiles={1}
+                                      initialFiles={
+                                        inputField.value
+                                          ? [
                                             {
-                                              id: field.name,
-                                              name: field.name,
+                                              id: fieldKey,
+                                              name: fieldKey,
                                               size: 0,
                                               type: "image/png",
-                                              url: inputField.value.startsWith(
-                                                "data:",
-                                              )
+                                              url: (inputField.value as any)?.startsWith?.("data:")
                                                 ? inputField.value
                                                 : `${NEXT_PUBLIC_BACKEND_URL}/${inputField.value}`,
+
                                             },
                                           ]
-                                        : []
-                                    }
-                                    onFilesChange={async (files) => {
-                                      if (files.length > 0) {
-                                        const f = files[0];
-                                        let finalValue = "";
-                                        if (f.preview?.startsWith("data:")) {
-                                          finalValue = f.preview;
-                                        } else if (f.file instanceof File) {
-                                          finalValue = await new Promise(
-                                            (resolve) => {
-                                              const reader = new FileReader();
-                                              reader.onloadend = () =>
-                                                resolve(
-                                                  reader.result as string,
-                                                );
-                                              reader.readAsDataURL(
-                                                f.file as File,
-                                              );
-                                            },
-                                          );
-                                        } else if (f.preview) {
-                                         
-                                          const url = f.preview;
-                                          const cleanBase =
-                                            NEXT_PUBLIC_BACKEND_URL.endsWith(
-                                              "/",
-                                            )
-                                              ? NEXT_PUBLIC_BACKEND_URL.slice(
-                                                  0,
-                                                  -1,
-                                                )
-                                              : NEXT_PUBLIC_BACKEND_URL;
-                                          finalValue = url
-                                            .replace(cleanBase, "")
-                                            .replace(/^\//, "");
-                                        }
-                                        inputField.onChange(finalValue);
-                                      } else {
-                                        inputField.onChange(); // reset to existing value if no files
+                                          : []
                                       }
-                                    }}
-                                  />
-                                ) : (
-                                  <Input
-                                    type={field.type}
-                                    value={inputField.value || ""}
-                                    onChange={(e) =>
-                                      inputField.onChange(e.target.value)
-                                    }
-                                  />
-                                )}
-                              </FormControl>
+                                      onFilesChange={async (files) => {
+                                        if (files.length > 0) {
+                                          const f = files[0];
+                                          let finalValue = "";
+                                          if (f.preview?.startsWith("data:")) {
+                                            finalValue = f.preview;
+                                          } else if (f.file instanceof File) {
+                                            finalValue = await new Promise((resolve) => {
+                                              const reader = new FileReader();
+                                              reader.onloadend = () => resolve(reader.result as string);
+                                              reader.readAsDataURL(f.file as File);
+                                            });
+                                          } else if (f.preview) {
+                                            const url = f.preview;
+                                            const cleanBase = NEXT_PUBLIC_BACKEND_URL.endsWith("/")
+                                              ? NEXT_PUBLIC_BACKEND_URL.slice(0, -1)
+                                              : NEXT_PUBLIC_BACKEND_URL;
+                                            finalValue = url.replace(cleanBase, "").replace(/^\//, "");
+                                          }
+                                          inputField.onChange(finalValue);
+                                        } else {
+                                          inputField.onChange("");
+                                        }
+                                      }}
+                                    />
+                                  ) : fieldData.type === "toggle" ? (
+                                    <Switch
+                                      checked={!!inputField.value}
+                                      onCheckedChange={inputField.onChange}
+                                    />
+                                  ) : fieldData.type === "textarea" || fieldData.type === "text" ? (
+                                    <Textarea
+                                      value={inputField.value || ""}
+                                      onChange={(e) => inputField.onChange(e.target.value)}
+                                      placeholder={formatLabel(fieldKey)}
+                                    />
+                                  ) : (
+                                    <Input
+                                      type={fieldData.type === "number" ? "number" : "text"}
+                                      value={inputField.value || ""}
+                                      onChange={(e) => inputField.onChange(e.target.value)}
+                                    />
+                                  )}
 
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      ))}
+                                </FormControl>
+
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </>
             )}
+
 
             {/* ===== SUBMIT ===== */}
             <div className="flex justify-end mt-6">

@@ -298,10 +298,19 @@ const MasterModuleList = ({ slug }: { slug: string }) => {
     let dynamicCols: ColumnDef<any>[] = [];
 
     if (apiFields.length > 0) {
-      // Filter fields visible in list (ID 2 = Show/List page)
-      const visibleFields = apiFields.filter((f: any) =>
-        Array.isArray(f.visibility) && f.visibility.includes(4)
-      );
+      // Filter fields visible in list (ID 4 = Show/List page)
+      const visibleFields = apiFields.filter((f: any) => {
+        const isVisible = Array.isArray(f.visibility) && f.visibility.includes(4);
+        if (!isVisible) return false;
+
+        // Hide Multiple Files (14) and Photos (15) from list view
+        if ([14, 15].includes(f.column_type_id) && f.is_multiple) {
+          return false;
+        }
+
+        return true;
+      });
+
 
       dynamicCols = visibleFields.map((field: any) => ({
         accessorKey: field.db_column,
@@ -340,9 +349,10 @@ const MasterModuleList = ({ slug }: { slug: string }) => {
 
                   if (isImage(String(urlPart))) {
                     return (
-                      <div key={i} className="flex items-center gap-2">
+                      <div key={i} className="flex items-center justify-center">
                         <img src={fullUrl} className="h-10 w-10 object-cover rounded-md border shadow-sm" alt="" />
                       </div>
+
                     );
                   }
 
