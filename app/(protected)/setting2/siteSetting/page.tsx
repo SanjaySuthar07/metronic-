@@ -37,14 +37,20 @@ export const siteSettingConfig = [
     title: "General Settings",
     icon: Globe,
     fields: [
+      { label: "Support Email", name: "support_email", type: "email" },
+      { label: "Site Favicon", name: "favicon_icon", type: "file" },
+      { label: "Mini Logo", name: "mini_logo", type: "file" },
+      { label: "Site Logo", name: "logo", type: "file" },
+      { label : "Default Logo Dark", name: "default_logo_dark", type: "file" },
+      { label: "Mini Logo Dark", name: "mini_logo_dark", type: "file" },
+      { label: "Footer Text", name: "footer_text", type: "text" },
       { label: "Site Name", name: "site_name", type: "text" },
       { label: "Site Description", name: "site_description", type: "text" },
-      { label: "Site Logo", name: "logo", type: "file" },
-      { label: "Site Favicon", name: "favicon_icon", type: "file" },
       { label: "Site Email", name: "site_email", type: "email" },
       { label: "Site Phone", name: "site_phone", type: "text" },
       { label: "Primary Color", name: "primary_color", type: "color" },
       { label: "Secondary Color", name: "secondary_color", type: "color" },
+
     ],
   },
   {
@@ -53,7 +59,7 @@ export const siteSettingConfig = [
     fields: [
       { label: "Facebook", name: "facebook", type: "text" },
       { label: "Instagram", name: "instagram", type: "text" },
-      { label: "Twitter", name: "twitter", type: "text" },
+      { label: "Twitter", name: "x", type: "text" },
       { label: "LinkedIn", name: "linkedin", type: "text" },
       { label: "YouTube", name: "youtube", type: "text" },
     ],
@@ -174,79 +180,101 @@ export default function GeneralSetting() {
 
     form.reset(formatted);
   }, [generalSetting]);
+
+  console.log("generalSetting from store:", generalSetting);
   /* ===== SUBMIT ===== */
   async function onSubmit(values: any) {
     try {
-      const apiData = generalSetting?.data || generalSetting;
-      const settingsPayload: any = {};
+        const apiData = generalSetting?.data || generalSetting;
 
-      // Loop all sections
-      Object.keys(apiData).forEach((sectionKey) => {
-        const section = apiData[sectionKey];
-        if (!section) return;
-        // Loop all fields inside section
-        Object.keys(section).forEach((fieldKey) => {
-          const field = section[fieldKey];
-          let value = values[fieldKey];
+  const settingsPayload: any = {};
 
-          /* Handle File */
-          if (field?.type === "file") {
-            if (value && typeof value !== "string" && value instanceof File) {
-              // Convert File to base64
-              value = value;
-            } else if (typeof value === "string" && value.startsWith("data:")) {
-              // Already base64
-              // do nothing
-            } else {
-              // keep old file if not changed
-              value = field?.value;
-            }
-          }
+  // Loop all sections
+  Object.keys(apiData).forEach((sectionKey) => {
+    const section = apiData[sectionKey];
+    if (!section) return;
 
-          /* Handle Toggle */
-          if (field?.type === "toggle") {
-            value = value ? 1 : 0;
-          }
+    // Create section object
+    settingsPayload[sectionKey] = {};
 
-          settingsPayload[fieldKey] = {
-            value: value ?? "",
-            type: field?.type || "text",
-          };
-        });
-      });
+    // Loop fields inside section
+    Object.keys(section).forEach((fieldKey) => {
+      const field = section[fieldKey];
+      let value = values[fieldKey];
 
-      // Convert any File objects in settingsPayload to base64
-      const fileFieldKeys = Object.keys(settingsPayload).filter(
-        (key) =>
-          settingsPayload[key].type === "file" &&
-          settingsPayload[key].value instanceof File,
-      );
-      for (const key of fileFieldKeys) {
-        const file = settingsPayload[key].value;
-        settingsPayload[key].value = await new Promise((resolve) => {
+      /* Handle File */
+      if (field?.type === "file") {
+        if (value && value instanceof File) {
+          value = value;
+        } 
+        else if (
+          typeof value === "string" &&
+          value.startsWith("data:")
+        ) {
+          // already base64
+        } 
+        else {
+          // keep old file
+          value = field?.value;
+        }
+      }
+
+      /* Handle Toggle */
+      if (field?.type === "toggle") {
+        value = value ? 1 : 0;
+      }
+
+      // Save inside section
+      settingsPayload[sectionKey][fieldKey] = {
+        value: value ?? "",
+        type: field?.type || "text",
+      };
+    });
+  });
+
+  /* Convert File → base64 */
+  for (const sectionKey of Object.keys(settingsPayload)) {
+    const section = settingsPayload[sectionKey];
+
+    for (const fieldKey of Object.keys(section)) {
+      const field = section[fieldKey];
+
+      if (
+        field.type === "file" &&
+        field.value instanceof File
+      ) {
+        const file = field.value;
+
+        field.value = await new Promise((resolve) => {
           const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result as string);
+
+          reader.onloadend = () =>
+            resolve(reader.result as string);
+
           reader.readAsDataURL(file);
         });
       }
+    }
+  }
 
-      const payload = {
-        settings: settingsPayload,
-      };
+  const payload = settingsPayload;
 
-      const res = await dispatch(updateGeneralSettings(payload));
-      if (updateGeneralSettings.fulfilled.match(res)) {
-        toast.success("Settings updated");
-        dispatch(fetchGeneralSettings());
-        // Reset file fields after successful update
-        const resetValues = { ...values };
-        fileFieldKeys.forEach((key) => {
-          resetValues[key] = "";
-        });
-        form.reset(resetValues);
-      } else {
-        toast.error("Error updating settings");
-      }
+  console.log("Final Payload:", payload);
+      return;
+
+      // const res = await dispatch(updateGeneralSettings(payload));
+      // if (updateGeneralSettings.fulfilled.match(res)) {
+      //   toast.success("Settings updated");
+      //   dispatch(fetchGeneralSettings());
+      //   // Reset file fields after successful update
+      //   const resetValues = { ...values };
+      //   fileFieldKeys.forEach((key) => {
+      //     resetValues[key] = "";
+      //   });
+      //   form.reset(resetValues);
+      // } else {
+      //   toast.error("Error updating settings");
+      // }
     } catch {
       toast.error("Something went wrong");
     } finally {
