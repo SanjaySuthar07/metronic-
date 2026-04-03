@@ -42,7 +42,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         path: '/setting2/general',
       },
       site_setting: {
-        title: 'Site Setting',
+        title: 'General',
         icon: Globe, // 🌐 website related
         path: '/setting2/siteSetting',
       },
