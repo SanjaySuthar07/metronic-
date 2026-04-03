@@ -177,18 +177,21 @@ const MasterModuleList = ({ slug }: { slug: string }) => {
 
     return {
       canCreate:
-        moduleSet.has(`${slug}_create`) || actionSet.has(1),
+        moduleSet.has(`${slug}_create`) &&
+        actionSet.has(1),
 
       canEdit:
-        moduleSet.has(`${slug}_edit`) || actionSet.has(2),
+        moduleSet.has(`${slug}_edit`) &&
+        actionSet.has(2),
 
       canView:
-        moduleSet.has(`${slug}_show`) ||
-        moduleSet.has(`${slug}_access`) ||
+        (moduleSet.has(`${slug}_show`) ||
+          moduleSet.has(`${slug}_access`)) &&
         actionSet.has(3),
 
       canDelete:
-        moduleSet.has(`${slug}_delete`) || actionSet.has(4),
+        moduleSet.has(`${slug}_delete`) &&
+        actionSet.has(4),
     };
   }, [getModuleTableData, slug]);
 
