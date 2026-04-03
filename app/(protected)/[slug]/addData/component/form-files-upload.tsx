@@ -74,10 +74,8 @@ export function FormFilesUpload({
                     initialFiles.map((image) => ({
                         id: image.id,
                         file: {
-                            name: image.name,
-                            size: image.size,
-                            type: image.type,
-                        } as File,
+                            ...image,
+                        } as any,
                         preview: image.url,
                         progress: 100,
                         status: 'completed' as const,
